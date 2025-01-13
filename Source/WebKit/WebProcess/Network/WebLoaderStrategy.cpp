@@ -512,7 +512,7 @@ bool WebLoaderStrategy::fillParametersForNetworkProcessLoad(ResourceLoader& reso
             return false;
     }
 
-    loadParameters.shouldRestrictHTTPResponseAccess = DeprecatedGlobalSettings::restrictedHTTPResponseAccess();
+    loadParameters.shouldRestrictHTTPResponseAccess = true;
 
     loadParameters.isMainFrameNavigation = isMainFrameNavigation;
     if (loadParameters.isMainFrameNavigation && document)
