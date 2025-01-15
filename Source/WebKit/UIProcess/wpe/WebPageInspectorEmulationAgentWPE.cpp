@@ -26,6 +26,7 @@
 #include "config.h"
 #include "WebPageInspectorEmulationAgent.h"
 
+#include "DrawingAreaProxyCoordinatedGraphics.h"
 #include "WebPageProxy.h"
 #include <wpe/wpe.h>
 
@@ -33,9 +34,20 @@ namespace WebKit {
 
 void WebPageInspectorEmulationAgent::platformSetSize(int width, int height, Function<void (const String& error)>&& callback)
 {
+    WebCore::IntSize viewSize(width, height);
+    if (m_page.viewSize() == viewSize) {
+        callback(String());
+        return;
+    }
+
     struct wpe_view_backend* backend = m_page.viewBackend();
-    wpe_view_backend_dispatch_set_size(backend, width, height);
-    callback(String());
+    wpe_view_backend_dispatch_set_size(backend, viewSize.width(), viewSize.height());
+    if (auto* drawingArea = static_cast<DrawingAreaProxyCoordinatedGraphics*>(m_page.drawingArea())) {
+        drawingArea->waitForSizeUpdate([callback = WTFMove(callback)](const DrawingAreaProxyCoordinatedGraphics&) mutable {
+            callback(String());
+        });
+    } else
+        callback(String());
 }
 
 } // namespace WebKit
