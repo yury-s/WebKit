@@ -39,9 +39,9 @@ PlaywrightFullScreenManagerProxyClient::PlaywrightFullScreenManagerProxyClient(W
 {
 }
 
-void PlaywrightFullScreenManagerProxyClient::enterFullScreen()
+void PlaywrightFullScreenManagerProxyClient::enterFullScreen(CompletionHandler<void(bool)>&& completionHandler)
 {
-    m_pageProxy.fullScreenManager()->willEnterFullScreen();
+    m_pageProxy.fullScreenManager()->willEnterFullScreen(WTFMove(completionHandler));
     m_pageProxy.fullScreenManager()->didEnterFullScreen();
 }
 
