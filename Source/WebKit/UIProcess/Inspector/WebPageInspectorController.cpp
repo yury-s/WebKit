@@ -524,9 +524,8 @@ void WebPageInspectorController::adjustPageSettings()
     m_inspectedPage->preferences().setJavaScriptCanOpenWindowsAutomatically(true);
 
     // Enable media stream.
-    if (!m_inspectedPage->preferences().mediaStreamEnabled()) {
+    if (!m_inspectedPage->preferences().mediaDevicesEnabled()) {
         m_inspectedPage->preferences().setMediaDevicesEnabled(true);
-        m_inspectedPage->preferences().setMediaStreamEnabled(true);
         m_inspectedPage->preferences().setPeerConnectionEnabled(true);
     }
 
