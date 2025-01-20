@@ -34,13 +34,9 @@
 #include "TouchGestureController.h"
 #include "WPEWebViewLegacy.h"
 #include "WPEWebViewPlatform.h"
-<<<<<<< HEAD
 #include "WebColorPicker.h"
-||||||| parent of 7227d6f2934d (chore(webkit): bootstrap build #2124)
-=======
 #include "WebColorPickerWPE.h"
 #include "WebDateTimePickerWPE.h"
->>>>>>> 7227d6f2934d (chore(webkit): bootstrap build #2124)
 #include "WebContextMenuProxy.h"
 #include "WebContextMenuProxyWPE.h"
 #include "WebKitDataListSuggestionsDropdown.h"

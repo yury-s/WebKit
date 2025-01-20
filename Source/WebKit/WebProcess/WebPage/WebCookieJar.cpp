@@ -456,7 +456,6 @@ void WebCookieJar::removeChangeListener(const String& host, const WebCore::Cooki
 }
 #endif
 
-<<<<<<< HEAD
 #if HAVE(ALLOW_ONLY_PARTITIONED_COOKIES)
 void WebCookieJar::setOptInCookiePartitioningEnabled(bool enabled)
 {
@@ -464,15 +463,12 @@ void WebCookieJar::setOptInCookiePartitioningEnabled(bool enabled)
 }
 #endif
 
-||||||| parent of 7227d6f2934d (chore(webkit): bootstrap build #2124)
-=======
 void WebCookieJar::setCookieFromResponse(ResourceLoader& loader, const String& setCookieValue)
 {
     const auto& request = loader.request();
     WebProcess::singleton().ensureNetworkProcessConnection().connection().send(Messages::NetworkConnectionToWebProcess::SetCookieFromResponse(request.firstPartyForCookies(), SameSiteInfo::create(request), request.url(), setCookieValue), 0);
 }
 
->>>>>>> 7227d6f2934d (chore(webkit): bootstrap build #2124)
 #if !PLATFORM(COCOA)
 
 String WebCookieJar::cookiesInPartitionedCookieStorage(const WebCore::Document&, const URL&, const WebCore::SameSiteInfo&) const
