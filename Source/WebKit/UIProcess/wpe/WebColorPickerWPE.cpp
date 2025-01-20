@@ -26,8 +26,6 @@
 #include "config.h"
 #include "WebColorPickerWPE.h"
 
-#if ENABLE(INPUT_TYPE_COLOR)
-
 #include "WebPageProxy.h"
 
 namespace WebKit {
@@ -57,5 +55,3 @@ void WebColorPickerWPE::showColorPicker(const Color& color)
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(INPUT_TYPE_COLOR)

@@ -41,7 +41,6 @@
 #include "WebContextMenuProxyWPE.h"
 #include "WebKitDataListSuggestionsDropdown.h"
 #include "WebKitPopupMenu.h"
-#include "WebColorPicker.h"
 #include <WebCore/ActivityState.h>
 #include <WebCore/Cursor.h>
 #include <WebCore/DOMPasteAccess.h>
@@ -307,9 +306,9 @@ Ref<WebContextMenuProxy> PageClientImpl::createContextMenuProxy(WebPageProxy& pa
 }
 #endif
 
-RefPtr<WebColorPicker> PageClientImpl::createColorPicker(WebPageProxy&, const WebCore::Color& intialColor, const WebCore::IntRect&, ColorControlSupportsAlpha supportsAlpha, Vector<WebCore::Color>&&)
+RefPtr<WebColorPicker> PageClientImpl::createColorPicker(WebPageProxy& page, const WebCore::Color& intialColor, const WebCore::IntRect& rect, ColorControlSupportsAlpha supportsAlpha, Vector<WebCore::Color>&&)
 {
-    return nullptr;
+    return WebColorPickerWPE::create(page, intialColor, rect);
 }
 
 void PageClientImpl::enterAcceleratedCompositingMode(const LayerTreeContext& context)
@@ -582,11 +581,6 @@ RefPtr<WebKit::WebDataListSuggestionsDropdown> PageClientImpl::createDataListSug
     return WebKitDataListSuggestionsDropdown::create(page);
 }
 #endif
-
-RefPtr<WebColorPicker> PageClientImpl::createColorPicker(WebPageProxy* page, const WebCore::Color& color, const WebCore::IntRect& rect, ColorControlSupportsAlpha, Vector<WebCore::Color>&&)
-{
-    return WebColorPickerWPE::create(*page, color, rect);
-}
 
 #if ENABLE(DATE_AND_TIME_INPUT_TYPES)
 RefPtr<WebDateTimePicker> PageClientImpl::createDateTimePicker(WebPageProxy& page)

@@ -26,8 +26,6 @@
 #ifndef WebColorPickerWPE_h
 #define WebColorPickerWPE_h
 
-#if ENABLE(INPUT_TYPE_COLOR)
-
 #include "WebColorPicker.h"
 
 typedef struct _GtkColorChooser GtkColorChooser;
@@ -53,5 +51,4 @@ protected:
 
 } // namespace WebKit
 
-#endif // ENABLE(INPUT_TYPE_COLOR)
 #endif // WebColorPickerWPE_h
