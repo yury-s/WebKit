@@ -1914,7 +1914,7 @@ Protocol::ErrorStringOr<Ref<Protocol::Page::AXNode>> InspectorPageAgent::accessi
     if (!axObjectCache)
         return makeUnexpected("No AXObjectCache for main document"_s);
 
-    AXCoreObject* axObject = axObjectCache->rootObject();
+    AXCoreObject* axObject = axObjectCache->rootObjectForFrame(*localMainFrame);
     if (!axObject)
         return makeUnexpected("No AXObject for main document"_s);
 
