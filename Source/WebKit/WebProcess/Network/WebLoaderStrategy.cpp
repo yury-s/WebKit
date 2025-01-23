@@ -406,7 +406,7 @@ bool WebLoaderStrategy::fillParametersForNetworkProcessLoad(ResourceLoader& reso
             && resourceLoader.frameLoader()->notifier().isInitialRequestIdentifier(identifier)
             ? MainFrameMainResource::Yes : MainFrameMainResource::No;
         if (!page->allowsLoadFromURL(request.url(), mainFrameMainResource)) {
-            RunLoop::main().dispatch([resourceLoader = Ref { resourceLoader }, error = blockedError(request)] {
+            RunLoop::main().dispatch([resourceLoader = Ref { resourceLoader }, error = WebKit::blockedError(request)] {
                 resourceLoader->didFail(error);
             });
             return false;
