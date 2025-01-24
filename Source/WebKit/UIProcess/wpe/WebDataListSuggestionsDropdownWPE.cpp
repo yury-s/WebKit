@@ -24,35 +24,32 @@
  */
 
 #include "config.h"
-#include "WebKitDataListSuggestionsDropdown.h"
-
-#if ENABLE(DATALIST_ELEMENT)
+#include "WebDataListSuggestionsDropdownWPE.h"
 
 #include "WebPageProxy.h"
+#include <WebCore/DataListSuggestionInformation.h>
 
 namespace WebKit {
 
-WebKitDataListSuggestionsDropdown::WebKitDataListSuggestionsDropdown(WebPageProxy& page)
+WebDataListSuggestionsDropdownWPE::WebDataListSuggestionsDropdownWPE(WebPageProxy& page)
     : WebDataListSuggestionsDropdown(page)
 {
 }
 
-WebKitDataListSuggestionsDropdown::~WebKitDataListSuggestionsDropdown()
+WebDataListSuggestionsDropdownWPE::~WebDataListSuggestionsDropdownWPE()
 {
 }
 
-void WebKitDataListSuggestionsDropdown::show(WebCore::DataListSuggestionInformation&& information)
+void WebDataListSuggestionsDropdownWPE::show(WebCore::DataListSuggestionInformation&& information)
 {
 }
 
-void WebKitDataListSuggestionsDropdown::handleKeydownWithIdentifier(const String& key)
+void WebDataListSuggestionsDropdownWPE::handleKeydownWithIdentifier(const String& key)
 {
 }
 
-void WebKitDataListSuggestionsDropdown::close()
+void WebDataListSuggestionsDropdownWPE::close()
 {
 }
 
 } // namespace WebKit
-
-#endif // ENABLE(DATALIST_ELEMENT)

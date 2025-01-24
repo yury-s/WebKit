@@ -25,25 +25,23 @@
 
 #pragma once
 
-#if ENABLE(DATALIST_ELEMENT)
-
 #include "WebDataListSuggestionsDropdown.h"
 
 namespace WebKit {
 
 class WebPageProxy;
 
-class WebKitDataListSuggestionsDropdown final : public WebDataListSuggestionsDropdown {
+class WebDataListSuggestionsDropdownWPE final : public WebDataListSuggestionsDropdown {
 public:
-    static Ref<WebKitDataListSuggestionsDropdown> create(WebPageProxy& page)
+    static Ref<WebDataListSuggestionsDropdown> create(WebPageProxy& page)
     {
-        return adoptRef(*new WebKitDataListSuggestionsDropdown(page));
+        return adoptRef(*new WebDataListSuggestionsDropdownWPE(page));
     }
 
-    ~WebKitDataListSuggestionsDropdown();
+    ~WebDataListSuggestionsDropdownWPE();
 
 private:
-    WebKitDataListSuggestionsDropdown(WebPageProxy&);
+    WebDataListSuggestionsDropdownWPE(WebPageProxy&);
 
     void show(WebCore::DataListSuggestionInformation&&) final;
     void handleKeydownWithIdentifier(const String&) final;
@@ -51,5 +49,3 @@ private:
 };
 
 } // namespace WebKit
-
-#endif // ENABLE(DATALIST_ELEMENT)

@@ -195,7 +195,6 @@ UIProcess/API/soup/HTTPCookieStoreSoup.cpp
 UIProcess/API/wpe/InputMethodFilterWPE.cpp @no-unify
 UIProcess/API/wpe/PageClientImpl.cpp @no-unify
 UIProcess/API/wpe/WebKitColor.cpp @no-unify
-UIProcess/API/wpe/WebKitDataListSuggestionsDropdown.cpp @no-unify
 UIProcess/API/wpe/WebKitInputMethodContextWPE.cpp @no-unify
 UIProcess/API/wpe/WebKitInputMethodContextImplWPE.cpp @no-unify
 UIProcess/API/wpe/WebKitPopupMenu.cpp @no-unify
@@ -262,6 +261,7 @@ UIProcess/wpe/InspectorTargetProxyWPE.cpp
 UIProcess/wpe/ScreenManagerWPE.cpp
 UIProcess/wpe/SystemSettingsManagerProxyWPE.cpp
 UIProcess/wpe/WebColorPickerWPE.cpp
+UIProcess/wpe/WebDataListSuggestionsDropdownWPE.cpp
 UIProcess/wpe/WebDateTimePickerWPE.cpp
 UIProcess/wpe/WebPageInspectorEmulationAgentWPE.cpp
 UIProcess/wpe/WebPageInspectorInputAgentWPE.cpp
