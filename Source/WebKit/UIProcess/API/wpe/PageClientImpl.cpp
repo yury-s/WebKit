@@ -39,12 +39,8 @@
 #include "WebDateTimePickerWPE.h"
 #include "WebContextMenuProxy.h"
 #include "WebContextMenuProxyWPE.h"
-<<<<<<< HEAD
 #include "WebDataListSuggestionsDropdown.h"
-||||||| parent of 3f7e3c87c56d (chore(webkit): bootstrap build #2126)
-=======
 #include "WebKitDataListSuggestionsDropdown.h"
->>>>>>> 3f7e3c87c56d (chore(webkit): bootstrap build #2126)
 #include "WebKitPopupMenu.h"
 #include <WebCore/ActivityState.h>
 #include <WebCore/Cursor.h>
@@ -311,18 +307,12 @@ Ref<WebContextMenuProxy> PageClientImpl::createContextMenuProxy(WebPageProxy& pa
 }
 #endif
 
-<<<<<<< HEAD
 RefPtr<WebColorPicker> PageClientImpl::createColorPicker(WebPageProxy&, const WebCore::Color& intialColor, const WebCore::IntRect&, ColorControlSupportsAlpha supportsAlpha, Vector<WebCore::Color>&&)
 {
     return nullptr;
 }
 
-RefPtr<WebDataListSuggestionsDropdown> PageClientImpl::createDataListSuggestionsDropdown(WebPageProxy&)
-||||||| parent of 3f7e3c87c56d (chore(webkit): bootstrap build #2126)
-RefPtr<WebColorPicker> PageClientImpl::createColorPicker(WebPageProxy*, const WebCore::Color& intialColor, const WebCore::IntRect&, ColorControlSupportsAlpha supportsAlpha, Vector<WebCore::Color>&&)
-=======
 RefPtr<WebColorPicker> PageClientImpl::createColorPicker(WebPageProxy* page, const WebCore::Color& intialColor, const WebCore::IntRect& rect, ColorControlSupportsAlpha supportsAlpha, Vector<WebCore::Color>&&)
->>>>>>> 3f7e3c87c56d (chore(webkit): bootstrap build #2126)
 {
     return WebColorPickerWPE::create(*page, intialColor, rect);
 }

@@ -1642,18 +1642,12 @@ private:
     std::optional<ApplicationManifest> m_applicationManifest;
 #endif
 
-<<<<<<< HEAD
     std::unique_ptr<ViewportArguments> m_overrideViewportArguments;
-||||||| parent of 3f7e3c87c56d (chore(webkit): bootstrap build #2126)
-    std::optional<ViewportArguments> m_overrideViewportArguments;
-=======
-    std::optional<ViewportArguments> m_overrideViewportArguments;
     std::optional<FloatSize> m_overrideScreenSize;
 
 #if ENABLE(ORIENTATION_EVENTS)
     std::optional<int> m_overrideOrientation;
 #endif
->>>>>>> 3f7e3c87c56d (chore(webkit): bootstrap build #2126)
 
 #if ENABLE(DEVICE_ORIENTATION) && PLATFORM(IOS_FAMILY)
     RefPtr<DeviceOrientationUpdateProvider> m_deviceOrientationUpdateProvider;
