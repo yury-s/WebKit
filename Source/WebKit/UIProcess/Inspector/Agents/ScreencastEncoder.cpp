@@ -317,7 +317,7 @@ RefPtr<ScreencastEncoder> ScreencastEncoder::create(String& errorString, const S
     memset(&cfg, 0, sizeof(cfg));
     vpx_codec_err_t error = vpx_codec_enc_config_default(codec_interface, &cfg, 0);
     if (error) {
-        errorString = makeString("Failed to get default codec config: "_s, span(vpx_codec_err_to_string(error)));
+        errorString = makeString("Failed to get default codec config: "_s, unsafeSpan(vpx_codec_err_to_string(error)));
         return nullptr;
     }
 
@@ -329,13 +329,13 @@ RefPtr<ScreencastEncoder> ScreencastEncoder::create(String& errorString, const S
 
     ScopedVpxCodec codec(new vpx_codec_ctx_t);
     if (vpx_codec_enc_init(codec.get(), codec_interface, &cfg, 0)) {
-        errorString = makeString("Failed to initialize encoder: "_s, span(vpx_codec_error(codec.get())));
+        errorString = makeString("Failed to initialize encoder: "_s, unsafeSpan(vpx_codec_error(codec.get())));
         return nullptr;
     }
 
     FILE* file = fopen(filePath.utf8().data(), "wb");
     if (!file) {
-        errorString = makeString("Failed to open file '"_s, filePath, "' for writing: "_s, span(strerror(errno)));
+        errorString = makeString("Failed to open file '"_s, filePath, "' for writing: "_s, unsafeSpan(strerror(errno)));
         return nullptr;
     }
 
