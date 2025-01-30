@@ -204,14 +204,8 @@ private:
     std::unique_ptr<Inspector::PageFrontendDispatcher> m_frontendDispatcher;
     RefPtr<Inspector::PageBackendDispatcher> m_backendDispatcher;
 
-<<<<<<< HEAD
     WeakRef<Page> m_inspectedPage;
-||||||| parent of 4541524752a9 (chore(webkit): bootstrap build #2126)
-    Page& m_inspectedPage;
-=======
-    Page& m_inspectedPage;
     Inspector::InjectedScriptManager& m_injectedScriptManager;
->>>>>>> 4541524752a9 (chore(webkit): bootstrap build #2126)
     InspectorClient* m_client { nullptr };
     WeakRef<InspectorOverlay> m_overlay;
 

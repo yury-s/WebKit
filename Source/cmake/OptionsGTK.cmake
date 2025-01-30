@@ -7,14 +7,11 @@ SET_PROJECT_VERSION(2 47 3)
 
 set(USER_AGENT_BRANDING "" CACHE STRING "Branding to add to user agent string")
 
-<<<<<<< HEAD
 find_package(GLIB 2.70.0 REQUIRED COMPONENTS gio gio-unix gobject gthread gmodule)
-||||||| parent of 4541524752a9 (chore(webkit): bootstrap build #2126)
-=======
+
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 
->>>>>>> 4541524752a9 (chore(webkit): bootstrap build #2126)
 find_package(Cairo 1.16.0 REQUIRED)
 find_package(LibGcrypt 1.7.0 REQUIRED)
 find_package(Libtasn1 REQUIRED)

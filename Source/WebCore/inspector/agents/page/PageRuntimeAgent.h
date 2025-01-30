@@ -80,14 +80,8 @@ private:
 
     InstrumentingAgents& m_instrumentingAgents;
 
-<<<<<<< HEAD
     WeakRef<Page> m_inspectedPage;
-||||||| parent of 4541524752a9 (chore(webkit): bootstrap build #2126)
-    Page& m_inspectedPage;
-=======
-    Page& m_inspectedPage;
     HashSet<String> m_bindingNames;
->>>>>>> 4541524752a9 (chore(webkit): bootstrap build #2126)
 };
 
 } // namespace WebCore
