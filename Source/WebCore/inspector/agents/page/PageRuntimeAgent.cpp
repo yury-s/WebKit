@@ -142,7 +142,7 @@ Protocol::ErrorStringOr<void> PageRuntimeAgent::addBinding(const String& name)
     if (!m_bindingNames.add(name).isNewEntry)
         return {};
 
-    m_inspectedPage.forEachLocalFrame([&](LocalFrame& frame) {
+    m_inspectedPage->forEachLocalFrame([&](LocalFrame& frame) {
         if (!frame.script().canExecuteScripts(ReasonForCallingCanExecuteScripts::NotAboutToExecuteScript))
             return;
 

@@ -472,7 +472,7 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::reload(std::optiona
 
 Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::goBack()
 {
-    if (!m_inspectedPage.backForward().goBack())
+    if (!m_inspectedPage->backForward().goBack())
         return makeUnexpected("Failed to go back"_s);
 
     return { };
@@ -480,7 +480,7 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::goBack()
 
 Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::goForward()
 {
-    if (!m_inspectedPage.backForward().goForward())
+    if (!m_inspectedPage->backForward().goForward())
         return makeUnexpected("Failed to go forward"_s);
 
     return { };
@@ -1435,16 +1435,16 @@ Inspector::Protocol::ErrorStringOr<String> InspectorPageAgent::snapshotRect(int 
 Protocol::ErrorStringOr<void> InspectorPageAgent::setForcedColors(std::optional<Protocol::Page::ForcedColors>&& forcedColors)
 {
     if (!forcedColors) {
-        m_inspectedPage.setUseForcedColorsOverride(std::nullopt);
+        m_inspectedPage->setUseForcedColorsOverride(std::nullopt);
         return { };
     }
 
     switch (*forcedColors) {
         case Protocol::Page::ForcedColors::Active:
-            m_inspectedPage.setUseForcedColorsOverride(true);
+            m_inspectedPage->setUseForcedColorsOverride(true);
             return { };
         case Protocol::Page::ForcedColors::None:
-            m_inspectedPage.setUseForcedColorsOverride(false);
+            m_inspectedPage->setUseForcedColorsOverride(false);
             return { };
     }
 
@@ -1464,7 +1464,7 @@ Protocol::ErrorStringOr<void> InspectorPageAgent::setTimeZone(const String& time
 Protocol::ErrorStringOr<void> InspectorPageAgent::setTouchEmulationEnabled(bool enabled)
 {
   setScreenHasTouchDeviceOverride(enabled);
-  m_inspectedPage.settings().setTouchEventDOMAttributesEnabled(enabled);
+  m_inspectedPage->settings().setTouchEventDOMAttributesEnabled(enabled);
   return { };
 }
 
@@ -1506,7 +1506,7 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::setScreenSizeOverri
 Protocol::ErrorStringOr<void> InspectorPageAgent::insertText(const String& text)
 {
     UserGestureIndicator indicator { IsProcessingUserGesture::Yes };
-    RefPtr frame = m_inspectedPage.checkedFocusController()->focusedOrMainFrame();
+    RefPtr frame = m_inspectedPage->checkedFocusController()->focusedOrMainFrame();
     if (!frame)
         return { };
 
@@ -1902,7 +1902,7 @@ Protocol::ErrorStringOr<Ref<Protocol::Page::AXNode>> InspectorPageAgent::accessi
     if (!WebCore::AXObjectCache::accessibilityEnabled())
         WebCore::AXObjectCache::enableAccessibility();
 
-    auto* localMainFrame = dynamicDowncast<LocalFrame>(m_inspectedPage.mainFrame());
+    auto* localMainFrame = dynamicDowncast<LocalFrame>(m_inspectedPage->mainFrame());
     if (!localMainFrame)
         return makeUnexpected("No local main frame"_s);
 
@@ -1914,7 +1914,7 @@ Protocol::ErrorStringOr<Ref<Protocol::Page::AXNode>> InspectorPageAgent::accessi
     if (!axObjectCache)
         return makeUnexpected("No AXObjectCache for main document"_s);
 
-    AXCoreObject* axObject = axObjectCache->rootObjectForFrame(*localMainFrame);
+    AXCoreObject* axObject = axObjectCache->rootObjectForFrame(localMainFrame);
     if (!axObject)
         return makeUnexpected("No AXObject for main document"_s);
 
@@ -1941,7 +1941,7 @@ Protocol::ErrorStringOr<void> InspectorPageAgent::setInterceptFileChooserDialog(
 
 Protocol::ErrorStringOr<void> InspectorPageAgent::setDefaultBackgroundColorOverride(RefPtr<JSON::Object>&& color)
 {
-    auto* localFrame = dynamicDowncast<LocalFrame>(m_inspectedPage.mainFrame());
+    auto* localFrame = dynamicDowncast<LocalFrame>(m_inspectedPage->mainFrame());
     LocalFrameView* view = localFrame ? localFrame->view() : nullptr;
     if (!view)
         return makeUnexpected("Internal error: No frame view to set color two"_s);
@@ -1968,7 +1968,7 @@ Protocol::ErrorStringOr<void> InspectorPageAgent::createUserWorld(const String& 
 
 void InspectorPageAgent::ensureUserWorldsExistInAllFrames(const Vector<DOMWrapperWorld*>& worlds)
 {
-    for (Frame* frame = &m_inspectedPage.mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (Frame* frame = &m_inspectedPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         auto* localFrame = dynamicDowncast<LocalFrame>(frame);
         for (auto* world : worlds)
             localFrame->windowProxy().jsWindowProxy(*world)->window();
@@ -1989,7 +1989,7 @@ Protocol::ErrorStringOr<void> InspectorPageAgent::crash()
 
 Protocol::ErrorStringOr<void> InspectorPageAgent::updateScrollingState()
 {
-    auto* scrollingCoordinator = m_inspectedPage.scrollingCoordinator();
+    auto* scrollingCoordinator = m_inspectedPage->scrollingCoordinator();
     if (!scrollingCoordinator)
         return {};
     scrollingCoordinator->commitTreeStateIfNeeded();

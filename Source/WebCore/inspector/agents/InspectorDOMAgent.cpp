@@ -1910,7 +1910,7 @@ Protocol::ErrorStringOr<void> InspectorDOMAgent::scrollIntoViewIfNeeded(const St
     if (!node)
         return makeUnexpected("Node not found"_s);
 
-    m_inspectedPage.isolatedUpdateRendering();
+    m_inspectedPage->isolatedUpdateRendering();
     if (!node->isConnected())
         return makeUnexpected("Node is detached from document"_s);
 
@@ -1956,7 +1956,7 @@ Protocol::ErrorStringOr<Ref<JSON::ArrayOf<Protocol::DOM::Quad>>> InspectorDOMAge
         return makeUnexpected("Node not found"_s);
 
     // Ensure quads are up to date.
-    m_inspectedPage.isolatedUpdateRendering();
+    m_inspectedPage->isolatedUpdateRendering();
 
     LocalFrameView* containingView = node->document().view();
     if (!containingView)
@@ -1965,7 +1965,7 @@ Protocol::ErrorStringOr<Ref<JSON::ArrayOf<Protocol::DOM::Quad>>> InspectorDOMAge
     Vector<FloatQuad> quads;
     CollectQuads(node, quads);
     for (auto& quad : quads)
-        frameQuadToViewport(*containingView, quad, m_inspectedPage.pageScaleFactor());
+        frameQuadToViewport(*containingView, quad, m_inspectedPage->pageScaleFactor());
     return buildArrayOfQuads(quads);
 }
 
