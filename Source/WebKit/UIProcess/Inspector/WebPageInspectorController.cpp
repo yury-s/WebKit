@@ -27,6 +27,7 @@
 #include "WebPageInspectorController.h"
 
 #include "APINavigation.h"
+#include "APIPageConfiguration.h"
 #include "APIUIClient.h"
 #include "InspectorBrowserAgent.h"
 #include "InspectorDialogAgent.h"
@@ -102,15 +103,9 @@ void WebPageInspectorController::init()
     m_agents.append(WTFMove(screencastAgent));
     if (s_observer)
         s_observer->didCreateInspectorController(m_inspectedPage);
-
-    // window.open will create page with already running process.
-    if (!m_inspectedPage->hasRunningProcess())
-        return;
-    String pageTargetId = WebPageInspectorTarget::toTargetID(m_inspectedPage->webPageIDInMainFrameProcess());
-    createInspectorTarget(pageTargetId, Inspector::InspectorTargetType::Page);
 }
 
-void WebPageInspectorController::didFinishAttachingToWebProcess()
+void WebPageInspectorController::didInitializeWebPage()
 {
     String pageTargetID = WebPageInspectorTarget::toTargetID(m_inspectedPage->webPageIDInMainFrameProcess());
     // Create target only after attaching to a Web Process first time. Before that
@@ -389,7 +384,11 @@ bool WebPageInspectorController::shouldPauseInInspectorWhenShown() const
     if (!m_frontendRouter->hasFrontends())
         return false;
 
-    if (!m_inspectedPage->isPageOpenedByDOMShowingInitialEmptyDocument())
+    // Only pause if the page was opened by window.open() or new tab navigation.
+    // We cannot use isPageOpenedByDOMShowingInitialEmptyDocument() here because
+    // this method maybe called from WebPageProxy::initializeWebPage and setOpenedByDOM
+    // is called after the page is initialized.
+    if (!m_inspectedPage->configuration().windowFeatures())
         return false;
 
     // The method is called from WebPageProxy::initializePage and the

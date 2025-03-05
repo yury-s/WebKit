@@ -95,7 +95,7 @@ public:
     ~WebPageInspectorController();
 
     void init();
-    void didFinishAttachingToWebProcess();
+    void didInitializeWebPage();
 
     static void setObserver(WebPageInspectorControllerObserver*);
     static WebPageInspectorControllerObserver* observer();
