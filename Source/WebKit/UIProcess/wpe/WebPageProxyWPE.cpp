@@ -231,9 +231,6 @@ void WebPageProxy::callAfterNextPresentationUpdate(CompletionHandler<void()>&& c
         if (!protectedThis)
             return callback();
 
-        if (!protectedThis->m_drawingArea)
-            return callback();
-
         if (RefPtr pageClient = protectedThis->pageClient())
             static_cast<PageClientImpl&>(*pageClient).callAfterNextPresentationUpdate(WTFMove(callback));
     });
