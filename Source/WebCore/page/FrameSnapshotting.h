@@ -45,7 +45,6 @@ class LocalFrame;
 class Node;
 
 enum class SnapshotFlags : uint16_t {
-<<<<<<< HEAD
     ExcludeSelectionHighlighting            = 1 << 0,
     PaintSelectionOnly                      = 1 << 1,
     InViewCoordinates                       = 1 << 2,
@@ -59,32 +58,7 @@ enum class SnapshotFlags : uint16_t {
     PaintWith3xBaseScale                    = 1 << 10,
     ExcludeText                             = 1 << 11,
     FixedAndStickyLayersOnly                = 1 << 12,
-||||||| parent of 36b37f1f1190 (chore(webkit): bootstrap build #2147)
-    ExcludeSelectionHighlighting = 1 << 0,
-    PaintSelectionOnly = 1 << 1,
-    InViewCoordinates = 1 << 2,
-    ForceBlackText = 1 << 3,
-    PaintSelectionAndBackgroundsOnly = 1 << 4,
-    PaintEverythingExcludingSelection = 1 << 5,
-    PaintWithIntegralScaleFactor = 1 << 6,
-    Shareable = 1 << 7,
-    Accelerated = 1 << 8,
-    ExcludeReplacedContent = 1 << 9,
-    PaintWith3xBaseScale = 1 << 10,
-=======
-    ExcludeSelectionHighlighting = 1 << 0,
-    PaintSelectionOnly = 1 << 1,
-    InViewCoordinates = 1 << 2,
-    ForceBlackText = 1 << 3,
-    PaintSelectionAndBackgroundsOnly = 1 << 4,
-    PaintEverythingExcludingSelection = 1 << 5,
-    PaintWithIntegralScaleFactor = 1 << 6,
-    Shareable = 1 << 7,
-    Accelerated = 1 << 8,
-    ExcludeReplacedContent = 1 << 9,
-    PaintWith3xBaseScale = 1 << 10,
-    OmitDeviceScaleFactor = 1 << 11,
->>>>>>> 36b37f1f1190 (chore(webkit): bootstrap build #2147)
+    OmitDeviceScaleFactor                   = 1 << 13,
 };
 
 struct SnapshotOptions {
