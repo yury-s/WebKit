@@ -161,7 +161,7 @@ void FileInputType::handleDOMActivateEvent(Event& event)
         return;
 
     bool intercept = false;
-    InspectorInstrumentation::runOpenPanel(input.document().frame(), element(), &intercept);
+    InspectorInstrumentation::runOpenPanel(element()->document().frame(), element(), &intercept);
     if (intercept)
         return;
 
