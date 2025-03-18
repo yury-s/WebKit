@@ -320,15 +320,14 @@ void NetworkDataTaskCurl::downloadDataURL(Download& download)
         return;
     }
 
-    if (-1 == FileSystem::writeToFile(m_downloadDestinationFile, std::span<const uint8_t>(m_dataURLResult.value().data.data(), m_dataURLResult.value().data.size()))) {
+    if (!m_downloadDestinationFile.write(std::span<const uint8_t>(m_dataURLResult.value().data.data(), m_dataURLResult.value().data.size()))) {
         deleteDownloadFile();
         download.didFail(ResourceError(CURLE_WRITE_ERROR, m_response.url()), std::span<const uint8_t>());
         return;
     }
 
     download.didReceiveData(m_dataURLResult.value().data.size(), 0, 0);
-    FileSystem::closeFile(m_downloadDestinationFile);
-    m_downloadDestinationFile = FileSystem::invalidPlatformFileHandle;
+    m_downloadDestinationFile = { };
     download.didFinish();
 }
 
