@@ -120,16 +120,10 @@ private:
     unsigned m_authFailureCount { 0 };
 
     bool m_allowOverwriteDownload { false };
-<<<<<<< HEAD
-    FileSystem::FileHandle m_downloadDestinationFile;
-||||||| parent of 3c38f91671c4 (chore(webkit): bootstrap build #2150)
-    FileSystem::PlatformFileHandle m_downloadDestinationFile { FileSystem::invalidPlatformFileHandle };
-=======
 
     std::optional<WebCore::DataURLDecoder::Result> m_dataURLResult;
 
-    FileSystem::PlatformFileHandle m_downloadDestinationFile { FileSystem::invalidPlatformFileHandle };
->>>>>>> 3c38f91671c4 (chore(webkit): bootstrap build #2150)
+    FileSystem::FileHandle m_downloadDestinationFile;
 
     bool m_blockingCookies { false };
 

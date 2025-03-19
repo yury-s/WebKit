@@ -976,18 +976,8 @@ void WebProcess::createWebPage(PageIdentifier pageID, WebPageCreationParameters&
         accessibilityRelayProcessSuspended(false);
     }
     ASSERT(result.iterator->value);
-<<<<<<< HEAD
-||||||| parent of 3c38f91671c4 (chore(webkit): bootstrap build #2150)
-
-    if (m_shouldSuppressHDR)
-        RefPtr { result.iterator->value }->setShouldSuppressHDR(m_shouldSuppressHDR);
-=======
-
-    if (m_shouldSuppressHDR)
-        RefPtr { result.iterator->value }->setShouldSuppressHDR(m_shouldSuppressHDR);
 
     result.iterator->value->didAddWebPageToWebProcess();
->>>>>>> 3c38f91671c4 (chore(webkit): bootstrap build #2150)
 }
 
 void WebProcess::removeWebPage(PageIdentifier pageID)

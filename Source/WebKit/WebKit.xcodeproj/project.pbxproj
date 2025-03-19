@@ -17338,12 +17338,8 @@
 				E1E552C516AE065F004ED653 /* SandboxInitializationParameters.h in Headers */,
 				E36FF00327F36FBD004BE21A /* SandboxStateVariables.h in Headers */,
 				7BAB111025DD02B3008FC479 /* ScopedActiveMessageReceiveQueue.h in Headers */,
-<<<<<<< HEAD
-				6D4DF20C2D824242001F964C /* ScreenTimeWebsiteDataSupport.h in Headers */,
-||||||| parent of 3c38f91671c4 (chore(webkit): bootstrap build #2150)
-=======
 				F303B849249A8D640031DE5C /* ScreencastEncoder.h in Headers */,
->>>>>>> 3c38f91671c4 (chore(webkit): bootstrap build #2150)
+				6D4DF20C2D824242001F964C /* ScreenTimeWebsiteDataSupport.h in Headers */,
 				463BB93A2B9D08D80098C5C3 /* ScriptMessageHandlerIdentifier.h in Headers */,
 				F4E28A362C923814008120DD /* ScriptTelemetry.h in Headers */,
 				E4D54D0421F1D72D007E3C36 /* ScrollingTreeFrameScrollingNodeRemoteIOS.h in Headers */,
