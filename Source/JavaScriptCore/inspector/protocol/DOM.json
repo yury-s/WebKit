@@ -278,16 +278,6 @@
                 { "name": "width", "type": "number" },
                 { "name": "height", "type": "number" }
             ]
-        },
-        {
-            "id": "FilePayload",
-            "type": "object",
-            "description": "Data to construct File object.",
-            "properties": [
-                { "name": "name", "type": "string", "description": "File name." },
-                { "name": "type", "type": "string", "description": "File type." },
-                { "name": "data", "type": "string", "description": "Base64-encoded file data." }
-            ]
         }
     ],
     "commands": [
@@ -834,8 +824,7 @@
             "description": "Sets input files for given <input type=file>",
             "parameters": [
                 { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "description": "Input element handle." },
-                { "name": "files", "type": "array", "items": { "$ref": "FilePayload" }, "optional": true, "description": "Files to set" },
-                { "name": "paths", "type": "array", "items": { "type": "string" }, "optional": true, "description": "File paths to set" }
+                { "name": "paths", "type": "array", "items": { "type": "string" }, "description": "File paths to set" }
             ],
             "async": true
         }

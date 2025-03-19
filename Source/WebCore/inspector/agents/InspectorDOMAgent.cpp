@@ -3388,7 +3388,7 @@ Inspector::Protocol::ErrorStringOr<Ref<Inspector::Protocol::DOM::MediaStats>> In
 #endif
 }
 
-void InspectorDOMAgent::setInputFiles(const String& objectId, RefPtr<JSON::Array>&& files, RefPtr<JSON::Array>&& paths, Ref<SetInputFilesCallback>&& callback) {
+void InspectorDOMAgent::setInputFiles(const String& objectId, Ref<JSON::Array>&& paths, Ref<SetInputFilesCallback>&& callback) {
     InjectedScript injectedScript = m_injectedScriptManager.injectedScriptForObjectId(objectId);
     if (injectedScript.hasNoValue()) {
         callback->sendFailure("Can not find element's context for given id"_s);
@@ -3406,70 +3406,34 @@ void InspectorDOMAgent::setInputFiles(const String& objectId, RefPtr<JSON::Array
         return;
     }
 
-    if (!(bool(files) ^ bool(paths))) {
-        callback->sendFailure("Exactly one of files and paths should be specified"_s);
-        return;
-    }
-
     HTMLInputElement* element = static_cast<HTMLInputElement*>(node);
     Vector<Ref<File>> fileObjects;
-    if (files) {
-        for (unsigned i = 0; i < files->length(); ++i) {
-            RefPtr<JSON::Value> item = files->get(i);
-            RefPtr<JSON::Object> obj = item->asObject();
-            if (!obj) {
-                callback->sendFailure("Invalid file payload format"_s);
-                return;
-            }
-
-            String name;
-            String type;
-            String data;
-            if (!obj->getString("name"_s, name) || !obj->getString("type"_s, type) || !obj->getString("data"_s, data)) {
-                callback->sendFailure("Invalid file payload format"_s);
-                return;
-            }
-
-            std::optional<Vector<uint8_t>> buffer = base64Decode(data);
-            if (!buffer) {
-                callback->sendFailure("Unable to decode given content"_s);
+    if (element->hasAttributeWithoutSynchronization(webkitdirectoryAttr)) {
+        auto directoryFileListCreator = DirectoryFileListCreator::create([element = RefPtr { element }, callback = WTFMove(callback)](Ref<FileList>&& fileList) mutable {
+            ASSERT(isMainThread());
+            element->setFiles(WTFMove(fileList));
+            callback->sendSuccess();
+        });
+        Vector<FileChooserFileInfo> fileChooserFiles;
+        for (size_t i = 0; i < paths->length(); ++i) {
+            fileChooserFiles.append(FileChooserFileInfo { paths->get(i)->asString(), nullString(), { } });
+        }
+        directoryFileListCreator->start(m_document.get(), fileChooserFiles);
+    } else {
+        for (unsigned i = 0; i < paths->length(); ++i) {
+            RefPtr<JSON::Value> item = paths->get(i);
+            String path = item->asString();
+            if (path.isEmpty()) {
+                callback->sendFailure("Invalid file path"_s);
                 return;
             }
 
             ScriptExecutionContext* context = element->scriptExecutionContext();
-            fileObjects.append(File::create(context, Blob::create(context, WTFMove(*buffer), type), name));
+            fileObjects.append(File::create(context, path));
         }
         RefPtr<FileList> fileList = FileList::create(WTFMove(fileObjects));
         element->setFiles(WTFMove(fileList));
         callback->sendSuccess();
-    } else {
-        if (element->hasAttributeWithoutSynchronization(webkitdirectoryAttr)) {
-            auto directoryFileListCreator = DirectoryFileListCreator::create([element = RefPtr { element }, callback = WTFMove(callback)](Ref<FileList>&& fileList) mutable {
-                ASSERT(isMainThread());
-                element->setFiles(WTFMove(fileList));
-                callback->sendSuccess();
-            });
-            Vector<FileChooserFileInfo> fileChooserFiles;
-            for (size_t i = 0; i < paths->length(); ++i) {
-                fileChooserFiles.append(FileChooserFileInfo { paths->get(i)->asString(), nullString(), { } });
-            }
-            directoryFileListCreator->start(m_document.get(), fileChooserFiles);
-        } else {
-            for (unsigned i = 0; i < paths->length(); ++i) {
-                RefPtr<JSON::Value> item = paths->get(i);
-                String path = item->asString();
-                if (path.isEmpty()) {
-                    callback->sendFailure("Invalid file path"_s);
-                    return;
-                }
-
-                ScriptExecutionContext* context = element->scriptExecutionContext();
-                fileObjects.append(File::create(context, path));
-            }
-            RefPtr<FileList> fileList = FileList::create(WTFMove(fileObjects));
-            element->setFiles(WTFMove(fileList));
-            callback->sendSuccess();
-        }
     }
 }
 
