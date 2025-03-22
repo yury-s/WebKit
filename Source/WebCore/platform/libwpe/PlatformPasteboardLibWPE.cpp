@@ -62,57 +62,13 @@ void PlatformPasteboard::performAsDataOwner(DataOwnerType, NOESCAPE Function<voi
 
 void PlatformPasteboard::getTypes(Vector<String>& types) const
 {
-<<<<<<< HEAD
-    struct wpe_pasteboard_string_vector pasteboardTypes = { nullptr, 0 };
-    wpe_pasteboard_get_types(m_pasteboard, &pasteboardTypes);
-    for (auto& typeString : unsafeMakeSpan(pasteboardTypes.strings, pasteboardTypes.length)) {
-        const auto length = std::min(static_cast<size_t>(typeString.length), std::numeric_limits<size_t>::max());
-        types.append(String(unsafeMakeSpan(typeString.data, length)));
-    }
-
-    wpe_pasteboard_string_vector_free(&pasteboardTypes);
-||||||| parent of c58b93b0a015 (chore(webkit): bootstrap build #2150)
-    struct wpe_pasteboard_string_vector pasteboardTypes = { nullptr, 0 };
-    wpe_pasteboard_get_types(m_pasteboard, &pasteboardTypes);
-    for (auto& typeString : unsafeMakeSpan(pasteboardTypes.strings, pasteboardTypes.length)) {
-        const auto length = std::min(static_cast<size_t>(typeString.length), std::numeric_limits<size_t>::max());
-        types.append(String({ typeString.data, length }));
-    }
-
-    wpe_pasteboard_string_vector_free(&pasteboardTypes);
-=======
     for (const auto& type : sharedPasteboard().keys())
         types.append(type);
->>>>>>> c58b93b0a015 (chore(webkit): bootstrap build #2150)
 }
 
 String PlatformPasteboard::readString(size_t, const String& type) const
 {
-<<<<<<< HEAD
-    struct wpe_pasteboard_string string = { nullptr, 0 };
-    wpe_pasteboard_get_string(m_pasteboard, type.utf8().data(), &string);
-    if (!string.length)
-        return String();
-
-    const auto length = std::min(static_cast<size_t>(string.length), std::numeric_limits<size_t>::max());
-    String returnValue(unsafeMakeSpan(string.data, length));
-
-    wpe_pasteboard_string_free(&string);
-    return returnValue;
-||||||| parent of c58b93b0a015 (chore(webkit): bootstrap build #2150)
-    struct wpe_pasteboard_string string = { nullptr, 0 };
-    wpe_pasteboard_get_string(m_pasteboard, type.utf8().data(), &string);
-    if (!string.length)
-        return String();
-
-    const auto length = std::min(static_cast<size_t>(string.length), std::numeric_limits<size_t>::max());
-    String returnValue({ string.data, length });
-
-    wpe_pasteboard_string_free(&string);
-    return returnValue;
-=======
     return sharedPasteboard().get(type);
->>>>>>> c58b93b0a015 (chore(webkit): bootstrap build #2150)
 }
 
 void PlatformPasteboard::write(const PasteboardWebContent& content)

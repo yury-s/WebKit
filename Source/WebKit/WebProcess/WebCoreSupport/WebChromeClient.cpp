@@ -490,13 +490,9 @@ void WebChromeClient::addMessageToConsole(MessageSource source, MessageLevel lev
 {
     // Notify the bundle client.
     auto page = protectedPage();
-<<<<<<< HEAD
-    // FIXME: Remove this after rdar://143399667 is fixed.
-||||||| parent of c58b93b0a015 (chore(webkit): bootstrap build #2150)
-=======
     if (level == MessageLevel::Error)
         page->send(Messages::WebPageProxy::LogToStderr(message));
->>>>>>> c58b93b0a015 (chore(webkit): bootstrap build #2150)
+    // FIXME: Remove this after rdar://143399667 is fixed.
     page->injectedBundleUIClient().willAddMessageToConsole(page.ptr(), source, level, message, lineNumber, columnNumber, sourceID);
 
     if (!page->shouldSendConsoleLogsToUIProcessForTesting())

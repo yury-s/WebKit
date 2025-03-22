@@ -1926,7 +1926,6 @@ void WKPageSetPageUIClient(WKPageRef pageRef, const WKPageUIClientBase* wkClient
             completionHandler(String());
         }
 
-<<<<<<< HEAD
         void addMessageToConsoleForTesting(WebPageProxy& page, String&& message) final
         {
             if (!m_client.addMessageToConsole)
@@ -1934,8 +1933,6 @@ void WKPageSetPageUIClient(WKPageRef pageRef, const WKPageUIClientBase* wkClient
             m_client.addMessageToConsole(toAPI(&page), toAPI(message.impl()), m_client.base.clientInfo);
         }
 
-||||||| parent of c58b93b0a015 (chore(webkit): bootstrap build #2150)
-=======
         void handleJavaScriptDialog(WebPageProxy& page, bool accept, const String& value) final {
             if (m_client.handleJavaScriptDialog) {
                 m_client.handleJavaScriptDialog(toAPI(&page), accept, toAPI(value.impl()), m_client.base.clientInfo);
@@ -1943,7 +1940,6 @@ void WKPageSetPageUIClient(WKPageRef pageRef, const WKPageUIClientBase* wkClient
             }
         }
 
->>>>>>> c58b93b0a015 (chore(webkit): bootstrap build #2150)
         void setStatusText(WebPageProxy* page, const String& text) final
         {
             if (!m_client.setStatusText)
