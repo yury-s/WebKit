@@ -931,7 +931,7 @@ void InspectorPlaywrightAgent::downloadCreated(const String& uuid, const WebCore
 {
     if (!m_isEnabled)
         return;
-    String frameID = WebCore::InspectorPageAgent::serializeFrameID(*frameInfoData.frameID);
+    String frameID = WebCore::InspectorPageAgent::serializeFrameID(frameInfoData.frameID);
     m_downloads.set(uuid, download);
     m_frontendDispatcher->downloadCreated(
         toPageProxyIDProtocolString(*page),
