@@ -1165,7 +1165,14 @@ void TestController::createWebViewWithOptions(const TestOptions& options)
         nullptr, // requestStorageAccessConfirm
         shouldAllowDeviceOrientationAndMotionAccess,
         runWebAuthenticationPanel,
+<<<<<<< HEAD
         nullptr, // decidePolicyForSpeechRecognitionPermissionRequest
+||||||| parent of c58b93b0a015 (chore(webkit): bootstrap build #2150)
+        0,
+=======
+        0, // handleJavaScriptDialog
+        0,
+>>>>>>> c58b93b0a015 (chore(webkit): bootstrap build #2150)
         decidePolicyForMediaKeySystemPermissionRequest,
         queryPermission,
 #if PLATFORM(IOS) || PLATFORM(VISION)
