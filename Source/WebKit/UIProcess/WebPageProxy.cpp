@@ -4220,7 +4220,7 @@ void WebPageProxy::processNextQueuedMouseEvent()
             m_dragSelectionData = std::nullopt;
             dragEnded(event.position(), event.globalPosition(), m_dragSourceOperationMask);
         }
-        didReceiveEvent(eventType, true, std::nullopt);
+        didReceiveEventIPC(process->connection(), eventType, true, std::nullopt);
     }
 }
 
