@@ -1510,33 +1510,6 @@ void LocalFrame::reportResourceMonitoringWarning()
 
 #endif
 
-<<<<<<< HEAD
-||||||| parent of 58f6d24e0a63 (chore(webkit): bootstrap build #2152)
-bool LocalFrame::frameCanCreatePaymentSession() const
-{
-#if ENABLE(APPLE_PAY)
-    if (auto* documentLoader = loader().activeDocumentLoader())
-        return PaymentSession::isSecureForSession(documentLoader->response().url(), documentLoader->response().certificateInfo());
-    return false;
-#else
-    return false;
-#endif
-
-}
-
-=======
-bool LocalFrame::frameCanCreatePaymentSession() const
-{
-#if ENABLE(APPLE_PAY)
-    if (auto* documentLoader = loader().activeDocumentLoader())
-        return PaymentSession::isSecureForSession(documentLoader->response().url(), documentLoader->response().certificateInfo());
-    return false;
-#else
-    return false;
-#endif
-
-}
-
 #if !PLATFORM(IOS_FAMILY)
 
 void LocalFrame::betterApproximateNode(const IntPoint& testPoint, const NodeQualifier& nodeQualifierFunction, Node*& best, Node* failedNode, IntPoint& bestPoint, IntRect& bestRect, const IntRect& testRect)
@@ -1895,7 +1868,6 @@ Node* LocalFrame::nodeRespondingToScrollWheelEvents(const FloatPoint& viewportLo
 
 #endif // !PLATFORM(IOS_FAMILY)
 
->>>>>>> 58f6d24e0a63 (chore(webkit): bootstrap build #2152)
 } // namespace WebCore
 
 #undef FRAME_RELEASE_LOG_ERROR

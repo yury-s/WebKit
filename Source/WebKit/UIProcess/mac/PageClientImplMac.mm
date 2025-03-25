@@ -528,15 +528,9 @@ void PageClientImpl::computeHasVisualSearchResults(const URL& imageURL, Shareabl
 
 RefPtr<WebPopupMenuProxy> PageClientImpl::createPopupMenuProxy(WebPageProxy& page)
 {
-<<<<<<< HEAD
-    return WebPopupMenuProxyMac::create(m_view.get().get(), page.popupMenuClient());
-||||||| parent of 58f6d24e0a63 (chore(webkit): bootstrap build #2152)
-    return WebPopupMenuProxyMac::create(m_view, page.popupMenuClient());
-=======
     if (_headless)
         return nullptr;
-    return WebPopupMenuProxyMac::create(m_view, page.popupMenuClient());
->>>>>>> 58f6d24e0a63 (chore(webkit): bootstrap build #2152)
+    return WebPopupMenuProxyMac::create(m_view.get().get(), page.popupMenuClient());
 }
 
 #if ENABLE(CONTEXT_MENUS)
