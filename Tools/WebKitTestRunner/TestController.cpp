@@ -690,6 +690,7 @@ PlatformWebView* TestController::createOtherPlatformWebView(PlatformWebView* par
         nullptr, // requestStorageAccessConfirm
         nullptr, // shouldAllowDeviceOrientationAndMotionAccess
         nullptr, // runWebAuthenticationPanel
+        0,       // handleJavaScriptDialog
         nullptr, // decidePolicyForSpeechRecognitionPermissionRequest
         nullptr, // decidePolicyForMediaKeySystemPermissionRequest
         nullptr, // queryPermission
@@ -1165,6 +1166,7 @@ void TestController::createWebViewWithOptions(const TestOptions& options)
         nullptr, // requestStorageAccessConfirm
         shouldAllowDeviceOrientationAndMotionAccess,
         runWebAuthenticationPanel,
+        0, // handleJavaScriptDialog
         nullptr, // decidePolicyForSpeechRecognitionPermissionRequest
         decidePolicyForMediaKeySystemPermissionRequest,
         queryPermission,
