@@ -4571,7 +4571,7 @@ void FrameLoader::dispatchDidClearWindowObjectsInAllWorlds()
 void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld& world)
 {
     Ref frame = m_frame.get();
-    if (frame->windowProxy()->existingJSWindowProxy(world)) {
+    if (frame->windowProxy().existingJSWindowProxy(world)) {
         if (frame->checkedScript()->canExecuteScripts(ReasonForCallingCanExecuteScripts::NotAboutToExecuteScript))
             m_client->dispatchDidClearWindowObjectInWorld(world);
         if (RefPtr page = frame->page())
