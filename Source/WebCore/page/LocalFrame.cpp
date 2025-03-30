@@ -1511,7 +1511,6 @@ void LocalFrame::reportResourceMonitoringWarning()
 
 #endif
 
-<<<<<<< HEAD
 bool LocalFrame::frameCanCreatePaymentSession() const
 {
 #if ENABLE(APPLE_PAY)
@@ -1524,8 +1523,6 @@ bool LocalFrame::frameCanCreatePaymentSession() const
 
 }
 
-||||||| parent of 679e1624bf0c (chore(webkit): bootstrap build #2153)
-=======
 #if !PLATFORM(IOS_FAMILY)
 
 void LocalFrame::betterApproximateNode(const IntPoint& testPoint, const NodeQualifier& nodeQualifierFunction, Node*& best, Node* failedNode, IntPoint& bestPoint, IntRect& bestRect, const IntRect& testRect)
@@ -1884,7 +1881,6 @@ Node* LocalFrame::nodeRespondingToScrollWheelEvents(const FloatPoint& viewportLo
 
 #endif // !PLATFORM(IOS_FAMILY)
 
->>>>>>> 679e1624bf0c (chore(webkit): bootstrap build #2153)
 } // namespace WebCore
 
 #undef FRAME_RELEASE_LOG_ERROR

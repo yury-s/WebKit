@@ -1900,15 +1900,9 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
 
     auto policyDecisionMode = loader->triggeringAction().isFromNavigationAPI() ? PolicyDecisionMode::Synchronous : PolicyDecisionMode::Asynchronous;
     RELEASE_ASSERT(!isBackForwardLoadType(policyChecker().loadType()) || history().provisionalItem());
-<<<<<<< HEAD
-    policyChecker().checkNavigationPolicy(ResourceRequest(loader->request()), ResourceResponse { } /* redirectResponse */, loader, WTFMove(formState), [this, protectedThis = Ref { *this }, allowNavigationToInvalidURL, completionHandler = completionHandlerCaller.release()] (const ResourceRequest& request, WeakPtr<FormState>&& weakFormState, NavigationPolicyDecision navigationPolicyDecision) mutable {
-||||||| parent of 679e1624bf0c (chore(webkit): bootstrap build #2153)
-    policyChecker().checkNavigationPolicy(ResourceRequest(loader->request()), ResourceResponse { } /* redirectResponse */, loader, WTFMove(formState), [this, frame, allowNavigationToInvalidURL, completionHandler = completionHandlerCaller.release()] (const ResourceRequest& request, WeakPtr<FormState>&& weakFormState, NavigationPolicyDecision navigationPolicyDecision) mutable {
-=======
     InspectorInstrumentation::willCheckNavigationPolicy(m_frame);
-    policyChecker().checkNavigationPolicy(ResourceRequest(loader->request()), ResourceResponse { } /* redirectResponse */, loader, WTFMove(formState), [this, frame, allowNavigationToInvalidURL, completionHandler = completionHandlerCaller.release()] (const ResourceRequest& request, WeakPtr<FormState>&& weakFormState, NavigationPolicyDecision navigationPolicyDecision) mutable {
+    policyChecker().checkNavigationPolicy(ResourceRequest(loader->request()), ResourceResponse { } /* redirectResponse */, loader, WTFMove(formState), [this, protectedThis = Ref { *this }, allowNavigationToInvalidURL, completionHandler = completionHandlerCaller.release()] (const ResourceRequest& request, WeakPtr<FormState>&& weakFormState, NavigationPolicyDecision navigationPolicyDecision) mutable {
         InspectorInstrumentation::didCheckNavigationPolicy(m_frame, navigationPolicyDecision != NavigationPolicyDecision::ContinueLoad);
->>>>>>> 679e1624bf0c (chore(webkit): bootstrap build #2153)
         continueLoadAfterNavigationPolicy(request, RefPtr { weakFormState.get() }.get(), navigationPolicyDecision, allowNavigationToInvalidURL);
         completionHandler();
     }, policyDecisionMode);
@@ -3205,15 +3199,9 @@ String FrameLoader::userAgent(const URL& url) const
 
 String FrameLoader::navigatorPlatform() const
 {
-<<<<<<< HEAD
-    auto customNavigatorPlatform = m_frame->protectedMainFrame()->customNavigatorPlatform();
-||||||| parent of 679e1624bf0c (chore(webkit): bootstrap build #2153)
-    auto customNavigatorPlatform = m_frame->mainFrame().customNavigatorPlatform();
-=======
     String platform;
 
-    auto customNavigatorPlatform = m_frame->mainFrame().customNavigatorPlatform();
->>>>>>> 679e1624bf0c (chore(webkit): bootstrap build #2153)
+    auto customNavigatorPlatform = m_frame->protectedMainFrame()->customNavigatorPlatform();
     if (!customNavigatorPlatform.isEmpty())
         platform = customNavigatorPlatform;
 
@@ -4583,30 +4571,12 @@ void FrameLoader::dispatchDidClearWindowObjectsInAllWorlds()
 void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld& world)
 {
     Ref frame = m_frame.get();
-<<<<<<< HEAD
-    if (!frame->checkedScript()->canExecuteScripts(ReasonForCallingCanExecuteScripts::NotAboutToExecuteScript) || !frame->protectedWindowProxy()->existingJSWindowProxy(world))
-        return;
-
-    m_client->dispatchDidClearWindowObjectInWorld(world);
-
-    if (RefPtr page = frame->page())
-        page->inspectorController().didClearWindowObjectInWorld(frame, world);
-||||||| parent of 679e1624bf0c (chore(webkit): bootstrap build #2153)
-    if (!frame->checkedScript()->canExecuteScripts(ReasonForCallingCanExecuteScripts::NotAboutToExecuteScript) || !frame->windowProxy().existingJSWindowProxy(world))
-        return;
-
-    m_client->dispatchDidClearWindowObjectInWorld(world);
-
-    if (RefPtr page = frame->page())
-        page->inspectorController().didClearWindowObjectInWorld(frame, world);
-=======
-    if (frame->windowProxy().existingJSWindowProxy(world)) {
+    if (frame->windowProxy()->existingJSWindowProxy(world)) {
         if (frame->checkedScript()->canExecuteScripts(ReasonForCallingCanExecuteScripts::NotAboutToExecuteScript))
             m_client->dispatchDidClearWindowObjectInWorld(world);
         if (RefPtr page = frame->page())
             page->inspectorController().didClearWindowObjectInWorld(m_frame, world);
     }
->>>>>>> 679e1624bf0c (chore(webkit): bootstrap build #2153)
 
     InspectorInstrumentation::didClearWindowObjectInWorld(frame, world);
 }
