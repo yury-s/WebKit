@@ -44,7 +44,6 @@ struct FetchOptions;
 namespace WebKit {
 
 class NetworkProcessConnection;
-class NetworkResourceLoadParameters;
 class WebFrame;
 class WebPage;
 class WebProcess;
