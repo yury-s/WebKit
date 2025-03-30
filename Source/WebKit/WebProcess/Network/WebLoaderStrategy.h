@@ -26,6 +26,7 @@
 #pragma once
 
 #include "NetworkResourceLoadIdentifier.h"
+#include "NetworkResourceLoadParameters.h"
 #include "WebResourceLoader.h"
 #include <WebCore/LoaderStrategy.h>
 #include <WebCore/ResourceError.h>
@@ -44,7 +45,6 @@ struct FetchOptions;
 namespace WebKit {
 
 class NetworkProcessConnection;
-class NetworkResourceLoadParameters;
 class WebFrame;
 class WebPage;
 class WebProcess;
