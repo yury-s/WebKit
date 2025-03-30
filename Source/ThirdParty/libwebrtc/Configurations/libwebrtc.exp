@@ -421,4 +421,21 @@ __ZNK8mkvmuxer7Segment16GetTrackByNumberEy
 __ZN8mkvmuxer6Tracks11kAv1CodecIdE
 __ZN8mkvmuxer6Tracks11kVp8CodecIdE
 __ZN8mkvmuxer6Tracks11kVp9CodecIdE
+<<<<<<< HEAD
 __ZN6webrtc21SdpSerializeCandidateERKN7cricket9CandidateE
+||||||| parent of 679e1624bf0c (chore(webkit): bootstrap build #2153)
+=======
+__ZN8mkvmuxer11SegmentInfo4InitEv
+__ZN8mkvmuxer9MkvWriterC1EP7__sFILE
+_ARGBToI420
+_vpx_codec_destroy
+_vpx_codec_enc_config_default
+_vpx_codec_enc_init_ver
+_vpx_codec_encode
+_vpx_codec_err_to_string
+_vpx_codec_error
+_vpx_codec_get_cx_data
+_vpx_codec_iface_name
+_vpx_codec_version_str
+_vpx_codec_vp8_cx
+>>>>>>> 679e1624bf0c (chore(webkit): bootstrap build #2153)
