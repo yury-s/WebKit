@@ -2098,18 +2098,8 @@ void WebPageProxy::loadRequestWithNavigationShared(Ref<WebProcessProxy>&& proces
     loadParameters.advancedPrivacyProtections = navigation.originatorAdvancedPrivacyProtections();
     loadParameters.isRequestFromClientOrUserInput = navigation.isRequestFromClientOrUserInput();
     loadParameters.isPerformingHTTPFallback = isPerformingHTTPFallback == IsPerformingHTTPFallback::Yes;
-<<<<<<< HEAD
     loadParameters.isHandledByAboutSchemeHandler = m_aboutSchemeHandler->canHandleURL(url);
-    if (RefPtr networkProcess = protectedWebsiteDataStore()->networkProcessIfExists())
-        loadParameters.requiredCookiesVersion = networkProcess->cookiesVersion();
-||||||| parent of f0d64349c749 (chore(webkit): bootstrap build #2153)
-    loadParameters.isHandledByAboutSchemeHandler = protectedAboutSchemeHandler()->canHandleURL(url);
-    if (RefPtr networkProcess = protectedWebsiteDataStore()->networkProcessIfExists())
-        loadParameters.requiredCookiesVersion = networkProcess->cookiesVersion();
-=======
-    loadParameters.isHandledByAboutSchemeHandler = protectedAboutSchemeHandler()->canHandleURL(url);
     loadParameters.requiredCookiesVersion = protectedWebsiteDataStore()->cookiesVersion();
->>>>>>> f0d64349c749 (chore(webkit): bootstrap build #2153)
 
 #if ENABLE(CONTENT_EXTENSIONS)
     if (protectedPreferences()->iFrameResourceMonitoringEnabled())

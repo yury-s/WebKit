@@ -288,32 +288,16 @@ void WebLoaderStrategy::scheduleLoad(ResourceLoader& resourceLoader, CachedResou
     }
 
     if (InspectorInstrumentationWebKit::shouldInterceptRequest(resourceLoader)) {
-<<<<<<< HEAD
-        InspectorInstrumentationWebKit::interceptRequest(resourceLoader, [this, protectedThis = Ref { *this }, protectedResourceLoader = Ref { resourceLoader }, trackingParameters, shouldClearReferrerOnHTTPSToHTTPRedirect, resource](const ResourceRequest& request) {
-            auto& resourceLoader = protectedResourceLoader.get();
-            WEBLOADERSTRATEGY_RELEASE_LOG("scheduleLoad: intercepted URL will be scheduled with the NetworkProcess");
-            scheduleLoadFromNetworkProcess(resourceLoader, request, *trackingParameters, shouldClearReferrerOnHTTPSToHTTPRedirect, maximumBufferingTime(resource));
-        });
-        return;
-||||||| parent of f0d64349c749 (chore(webkit): bootstrap build #2153)
-        InspectorInstrumentationWebKit::interceptRequest(resourceLoader, [this, protectedThis = Ref { *this }, protectedResourceLoader = Ref { resourceLoader }, trackingParameters, shouldClearReferrerOnHTTPSToHTTPRedirect, resource](const ResourceRequest& request) {
-            auto& resourceLoader = protectedResourceLoader.get();
-            WEBLOADERSTRATEGY_RELEASE_LOG("scheduleLoad: intercepted URL will be scheduled with the NetworkProcess");
-            scheduleLoadFromNetworkProcess(resourceLoader, request, trackingParameters, shouldClearReferrerOnHTTPSToHTTPRedirect, maximumBufferingTime(resource));
-        });
-        return;
-=======
         bool isMainFrameNavigation = resourceLoader.frame() && resourceLoader.frame()->isMainFrame() && resourceLoader.options().mode == FetchOptions::Mode::Navigate;
         // Do not intercept navigation request which could already have been intercepted and resumed.
         if (!(isMainFrameNavigation && m_existingNetworkResourceLoadIdentifierToResume)) {
             InspectorInstrumentationWebKit::interceptRequest(resourceLoader, [this, protectedThis = Ref { *this }, protectedResourceLoader = Ref { resourceLoader }, trackingParameters, shouldClearReferrerOnHTTPSToHTTPRedirect, resource](const ResourceRequest& request) {
                 auto& resourceLoader = protectedResourceLoader.get();
                 WEBLOADERSTRATEGY_RELEASE_LOG("scheduleLoad: intercepted URL will be scheduled with the NetworkProcess");
-                scheduleLoadFromNetworkProcess(resourceLoader, request, trackingParameters, shouldClearReferrerOnHTTPSToHTTPRedirect, maximumBufferingTime(resource));
+                scheduleLoadFromNetworkProcess(resourceLoader, request, *trackingParameters, shouldClearReferrerOnHTTPSToHTTPRedirect, maximumBufferingTime(resource));
             });
             return;
         }
->>>>>>> f0d64349c749 (chore(webkit): bootstrap build #2153)
     }
 
     WEBLOADERSTRATEGY_RELEASE_LOG_FORWARDABLE(WEBLOADERSTRATEGY_SCHEDULELOAD);
@@ -464,19 +448,6 @@ bool WebLoaderStrategy::fillParametersForNetworkProcessLoad(ResourceLoader& reso
 
     LOG(NetworkScheduling, "(WebProcess) WebLoaderStrategy::scheduleLoad, url '%s' will be scheduled with the NetworkProcess with priority %d, storedCredentialsPolicy %i", resourceLoader.url().string().latin1().data(), static_cast<int>(resourceLoader.request().priority()), (int)storedCredentialsPolicy);
 
-<<<<<<< HEAD
-    NetworkResourceLoadParameters loadParameters {
-        trackingParameters.webPageProxyID,
-        trackingParameters.pageID,
-        trackingParameters.frameID,
-        request
-    };
-    loadParameters.createSandboxExtensionHandlesIfNecessary();
-
-||||||| parent of f0d64349c749 (chore(webkit): bootstrap build #2153)
-    NetworkResourceLoadParameters loadParameters;
-=======
->>>>>>> f0d64349c749 (chore(webkit): bootstrap build #2153)
     loadParameters.identifier = identifier;
     loadParameters.parentPID = legacyPresentingApplicationPID();
     loadParameters.contentSniffingPolicy = contentSniffingPolicy;
@@ -607,25 +578,25 @@ bool WebLoaderStrategy::fillParametersForNetworkProcessLoad(ResourceLoader& reso
     if (RefPtr frameLoader = resourceLoader.frameLoader())
         loadParameters.requiredCookiesVersion = frameLoader->requiredCookiesVersion();
 
-<<<<<<< HEAD
-||||||| parent of f0d64349c749 (chore(webkit): bootstrap build #2153)
-    ASSERT((loadParameters.webPageID && loadParameters.webFrameID) || loadParameters.clientCredentialPolicy == ClientCredentialPolicy::CannotAskClientForCredentials);
-
-=======
-    ASSERT((loadParameters.webPageID && loadParameters.webFrameID) || loadParameters.clientCredentialPolicy == ClientCredentialPolicy::CannotAskClientForCredentials);
     return true;
 }
 
 void WebLoaderStrategy::scheduleLoadFromNetworkProcess(ResourceLoader& resourceLoader, const ResourceRequest& request, const WebResourceLoader::TrackingParameters& trackingParameters, bool shouldClearReferrerOnHTTPSToHTTPRedirect, Seconds maximumBufferingTime)
 {
-    NetworkResourceLoadParameters loadParameters;
+    NetworkResourceLoadParameters loadParameters {
+        trackingParameters.webPageProxyID,
+        trackingParameters.pageID,
+        trackingParameters.frameID,
+        request
+    };
+    loadParameters.createSandboxExtensionHandlesIfNecessary();
+
     if (!fillParametersForNetworkProcessLoad(resourceLoader, request, trackingParameters, shouldClearReferrerOnHTTPSToHTTPRedirect, maximumBufferingTime, loadParameters)) {
         WEBLOADERSTRATEGY_RELEASE_LOG_ERROR("scheduleLoad: no sourceOrigin (priority=%d)", static_cast<int>(resourceLoader.request().priority()));
         scheduleInternallyFailedLoad(resourceLoader);
         return;
     }
 
->>>>>>> f0d64349c749 (chore(webkit): bootstrap build #2153)
     std::optional<NetworkResourceLoadIdentifier> existingNetworkResourceLoadIdentifierToResume;
     if (loadParameters.isMainFrameNavigation)
         existingNetworkResourceLoadIdentifierToResume = std::exchange(m_existingNetworkResourceLoadIdentifierToResume, std::nullopt);
