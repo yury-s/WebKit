@@ -77,6 +77,7 @@ NetworkStorageSession::NetworkStorageSession(PAL::SessionID sessionID, IsInMemor
 
 NetworkStorageSession::~NetworkStorageSession()
 {
+    clearCookiesVersionChangeCallbacks();
     g_signal_handlers_disconnect_matched(m_cookieStorage.get(), G_SIGNAL_MATCH_DATA, 0, 0, nullptr, nullptr, this);
 }
 
@@ -549,6 +550,26 @@ void NetworkStorageSession::replaceCookies(const Vector<Cookie>& cookies)
     // FIXME: This isn't correct usage of this signal, libsoup should have a way to
     //        signal multiple cookies changing at once.
     g_signal_emit(jar, signalId, 0, nullptr, nullptr);
+}
+
+void  NetworkStorageSession::setCookiesFromResponse(const URL& firstParty, const SameSiteInfo&, const URL& url, const String& setCookieValue)
+{
+    auto origin = urlToSoupURI(url);
+    if (!origin)
+        return;
+
+    auto firstPartyURI = urlToSoupURI(firstParty);
+    if (!firstPartyURI)
+        return;
+
+    for (auto& cookieString : setCookieValue.split('\n')) {
+        GUniquePtr<SoupCookie> cookie(soup_cookie_parse(cookieString.utf8().data(), origin.get()));
+
+        if (!cookie)
+            continue;
+
+        soup_cookie_jar_add_cookie_full(cookieStorage(), cookie.release(), origin.get(), firstPartyURI.get());
+    }
 }
 
 void NetworkStorageSession::deleteCookie(const Cookie& cookie, CompletionHandler<void()>&& completionHandler)

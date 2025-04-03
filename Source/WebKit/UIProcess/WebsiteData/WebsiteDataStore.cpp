@@ -43,6 +43,7 @@
 #include "StorageAccessStatus.h"
 #include "UnifiedOriginStorageLevel.h"
 #include "WebBackForwardCache.h"
+#include "WebCookieManagerMessages.h"
 #include "WebFrameProxy.h"
 #include "WebKit2Initialize.h"
 #include "WebNotificationManagerProxy.h"
@@ -315,7 +316,8 @@ SOAuthorizationCoordinator& WebsiteDataStore::soAuthorizationCoordinator(const W
 
 static Ref<NetworkProcessProxy> networkProcessForSession(PAL::SessionID sessionID)
 {
-#if ((PLATFORM(GTK) || PLATFORM(WPE)) && !ENABLE(2022_GLIB_API))
+// Playwright wants to isolate per BrowserContext.
+#if ((PLATFORM(GTK) || PLATFORM(WPE)))
     if (sessionID.isEphemeral()) {
         // Reuse a previous persistent session network process for ephemeral sessions.
         for (auto& dataStore : allDataStores().values()) {
@@ -2177,6 +2179,7 @@ WebsiteDataStoreParameters WebsiteDataStore::parameters()
 #if HAVE(ALLOW_ONLY_PARTITIONED_COOKIES)
     networkSessionParameters.isOptInCookiePartitioningEnabled = isOptInCookiePartitioningEnabled();
 #endif
+    networkSessionParameters.cookiesVersion = cookiesVersion();
     networkSessionParameters.unifiedOriginStorageLevel = m_configuration->unifiedOriginStorageLevel();
     networkSessionParameters.perOriginStorageQuota = perOriginStorageQuota();
     networkSessionParameters.originQuotaRatio = originQuotaRatio();
@@ -2505,6 +2508,12 @@ void WebsiteDataStore::renameOriginInWebsiteData(WebCore::SecurityOriginData&& o
 void WebsiteDataStore::originDirectoryForTesting(WebCore::ClientOrigin&& origin, OptionSet<WebsiteDataType> type, CompletionHandler<void(const String&)>&& completionHandler)
 {
     protectedNetworkProcess()->websiteDataOriginDirectoryForTesting(m_sessionID, WTFMove(origin), type, WTFMove(completionHandler));
+}
+
+void WebsiteDataStore::setDownloadForAutomation(std::optional<bool> allow, const String& downloadPath)
+{
+    m_allowDownloadForAutomation = allow;
+    m_downloadPathForAutomation = downloadPath;
 }
 
 #if ENABLE(APP_BOUND_DOMAINS)
@@ -2907,4 +2916,10 @@ void WebsiteDataStore::resetResourceMonitorThrottlerForTesting(CompletionHandler
     protectedNetworkProcess()->resetResourceMonitorThrottlerForTesting(m_sessionID, WTFMove(completionHandler));
 }
 #endif
+
+void WebsiteDataStore::setCookies(Vector<WebCore::Cookie>&& cookies, CompletionHandler<void()>&& completionHandler)
+{
+    protectedNetworkProcess()->sendWithAsyncReply(Messages::WebCookieManager::SetCookie(m_sessionID, WTFMove(cookies), ++m_cookiesVersion), WTFMove(completionHandler));
+}
+
 } // namespace WebKit

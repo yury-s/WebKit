@@ -524,6 +524,8 @@ void NetworkProcess::addStorageSession(PAL::SessionID sessionID, const WebsiteDa
 #elif USE(SOUP)
     addResult.iterator->value = makeUnique<NetworkStorageSession>(sessionID);
 #endif
+
+    addResult.iterator->value->setCookiesVersion(parameters.networkSessionParameters.cookiesVersion);
 }
 
 void NetworkProcess::addWebsiteDataStore(WebsiteDataStoreParameters&& parameters)
@@ -665,6 +667,12 @@ void NetworkProcess::registrableDomainsExemptFromWebsiteDataDeletion(PAL::Sessio
         }
     }
     completionHandler({ });
+}
+
+void NetworkProcess::setIgnoreCertificateErrors(PAL::SessionID sessionID, bool ignore)
+{
+    if (auto* networkSession = this->networkSession(sessionID))
+        networkSession->setIgnoreCertificateErrors(ignore);
 }
 
 void NetworkProcess::dumpResourceLoadStatistics(PAL::SessionID sessionID, CompletionHandler<void(String)>&& completionHandler)

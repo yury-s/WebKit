@@ -100,6 +100,7 @@ NetworkStorageSession::NetworkStorageSession(PAL::SessionID sessionID, const Str
 
 NetworkStorageSession::~NetworkStorageSession()
 {
+    clearCookiesVersionChangeCallbacks();
 }
 
 void NetworkStorageSession::setCookieDatabase(UniqueRef<CookieJarDB>&& cookieDatabase)
@@ -133,6 +134,12 @@ void NetworkStorageSession::setCookiesFromHTTPResponse(const URL& firstParty, co
 void NetworkStorageSession::setCookieAcceptPolicy(CookieAcceptPolicy policy) const
 {
     cookieDatabase().setAcceptPolicy(policy);
+}
+
+void  NetworkStorageSession::setCookiesFromResponse(const URL& firstParty, const SameSiteInfo&, const URL& url, const String& setCookieValue)
+{
+    for (auto& cookieString : setCookieValue.split('\n'))
+        cookieDatabase().setCookie(firstParty, url, cookieString, CookieJarDB::Source::Network);
 }
 
 HTTPCookieAcceptPolicy NetworkStorageSession::cookieAcceptPolicy() const
