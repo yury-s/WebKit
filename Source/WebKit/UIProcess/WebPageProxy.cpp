@@ -2132,18 +2132,8 @@ void WebPageProxy::loadRequestWithNavigationShared(Ref<WebProcessProxy>&& proces
     loadParameters.advancedPrivacyProtections = navigation.originatorAdvancedPrivacyProtections();
     loadParameters.isRequestFromClientOrUserInput = navigation.isRequestFromClientOrUserInput();
     loadParameters.isPerformingHTTPFallback = isPerformingHTTPFallback == IsPerformingHTTPFallback::Yes;
-<<<<<<< HEAD
     loadParameters.isHandledByAboutSchemeHandler = protectedAboutSchemeHandler()->canHandleURL(url);
-    if (RefPtr networkProcess = protectedWebsiteDataStore()->networkProcessIfExists())
-        loadParameters.requiredCookiesVersion = networkProcess->cookiesVersion();
-||||||| parent of d368e411b41e (Track cookies version in WebsiteDataStore instead of NetworkProcessProxy)
-    loadParameters.isHandledByAboutSchemeHandler = m_aboutSchemeHandler->canHandleURL(url);
-    if (RefPtr networkProcess = protectedWebsiteDataStore()->networkProcessIfExists())
-        loadParameters.requiredCookiesVersion = networkProcess->cookiesVersion();
-=======
-    loadParameters.isHandledByAboutSchemeHandler = m_aboutSchemeHandler->canHandleURL(url);
     loadParameters.requiredCookiesVersion = protectedWebsiteDataStore()->cookiesVersion();
->>>>>>> d368e411b41e (Track cookies version in WebsiteDataStore instead of NetworkProcessProxy)
 
 #if ENABLE(CONTENT_EXTENSIONS)
     if (protectedPreferences()->iFrameResourceMonitoringEnabled())
