@@ -3927,7 +3927,6 @@ InspectorAttachmentSide:
     WebKit:
       default: 0
 
-<<<<<<< HEAD
 InspectorMaximumResourcesContentSize:
   type: uint32_t
   status: embedder
@@ -3941,10 +3940,7 @@ InspectorMaximumResourcesContentSize:
       "PLATFORM(WPE)": 50
       default: 200
 
-||||||| parent of d98005e65297 (chore(webkit): bootstrap build #2154)
-=======
 # Playwright: disable setting.
->>>>>>> d98005e65297 (chore(webkit): bootstrap build #2154)
 InspectorStartsAttached:
   type: bool
   status: embedder
