@@ -1043,27 +1043,16 @@ void InspectorPageAgent::frameNavigated(LocalFrame& frame)
 
 String InspectorPageAgent::serializeFrameID(FrameIdentifier frameID)
 {
-    return makeString(frameID.processIdentifier().toUInt64(), '.', frameID.object().toUInt64());
+    return makeString(frameID.toUInt64());
 }
 
 std::optional<FrameIdentifier> InspectorPageAgent::parseFrameID(String frameID)
 {
-    size_t dotPos = frameID.find("."_s);
-    if (dotPos == notFound)
-        return std::nullopt;
-
     if (!frameID.containsOnlyASCII())
         return std::nullopt;
 
-    String processIDString = frameID.left(dotPos);
-    uint64_t pid = strtoull(processIDString.ascii().data(), 0, 10);
-    auto processID = ObjectIdentifier<WebCore::ProcessIdentifierType>(pid);
-    String frameIDString = frameID.substring(dotPos + 1);
-    uint64_t frameIDNumber = strtoull(frameIDString.ascii().data(), 0, 10);
-    return WebCore::FrameIdentifier {
-       ObjectIdentifier<WebCore::FrameIdentifierType>(frameIDNumber),
-       processID
-    };
+    uint64_t frameIDNumber = strtoull(frameID.ascii().data(), 0, 10);
+    return WebCore::FrameIdentifier(frameIDNumber);
 }
 
 void InspectorPageAgent::frameDetached(LocalFrame& frame)
