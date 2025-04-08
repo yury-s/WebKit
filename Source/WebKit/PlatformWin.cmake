@@ -53,14 +53,10 @@ list(APPEND WebKit_SOURCES
     UIProcess/WebsiteData/win/WebsiteDataStoreWin.cpp
 
     UIProcess/win/AutomationClientWin.cpp
-<<<<<<< HEAD
     UIProcess/win/AutomationSessionClientWin.cpp
-||||||| parent of 0228589afd55 (chore(webkit): bootstrap build #2154)
-=======
 
     UIProcess/win/InspectorTargetProxyWin.cpp
     UIProcess/win/InspectorPlaywrightAgentClientWin.cpp
->>>>>>> 0228589afd55 (chore(webkit): bootstrap build #2154)
     UIProcess/win/PageClientImpl.cpp
     UIProcess/win/WebContextMenuProxyWin.cpp
     UIProcess/win/WebPageInspectorEmulationAgentWin.cpp
