@@ -277,15 +277,9 @@ void DownloadProxy::didFail(const ResourceError& error, std::span<const uint8_t>
 
     m_legacyResumeData = createData(resumeData);
 
-<<<<<<< HEAD
     protectedClient()->didFail(*this, error, m_legacyResumeData.get());
-||||||| parent of 0228589afd55 (chore(webkit): bootstrap build #2154)
-    m_client->didFail(*this, error, m_legacyResumeData.get());
-=======
-    m_client->didFail(*this, error, m_legacyResumeData.get());
     if (auto* instrumentation = m_dataStore->downloadInstrumentation())
       instrumentation->downloadFinished(m_uuid, error.localizedDescription());
->>>>>>> 0228589afd55 (chore(webkit): bootstrap build #2154)
 
     // This can cause the DownloadProxy object to be deleted.
     if (RefPtr downloadProxyMap = m_downloadProxyMap.get())

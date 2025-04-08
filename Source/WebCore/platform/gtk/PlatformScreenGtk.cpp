@@ -142,38 +142,6 @@ bool platformScreenHasTouchDevice()
     auto* seat = gdk_display_get_default_seat(display);
     return seat ? gdk_seat_get_capabilities(seat) & GDK_SEAT_CAPABILITY_TOUCH : true;
 }
-<<<<<<< HEAD
-||||||| parent of f37d5f587ce8 (chore(webkit): bootstrap build #2154)
-
-bool screenIsTouchPrimaryInputDevice()
-{
-    auto* display = gdk_display_get_default();
-    if (!display)
-        return true;
-
-    auto* seat = gdk_display_get_default_seat(display);
-    if (!seat)
-        return true;
-
-    auto* device = gdk_seat_get_pointer(seat);
-    return device ? gdk_device_get_source(device) == GDK_SOURCE_TOUCHSCREEN : true;
-}
-=======
-
-bool platformScreenIsTouchPrimaryInputDevice()
-{
-    auto* display = gdk_display_get_default();
-    if (!display)
-        return true;
-
-    auto* seat = gdk_display_get_default_seat(display);
-    if (!seat)
-        return true;
-
-    auto* device = gdk_seat_get_pointer(seat);
-    return device ? gdk_device_get_source(device) == GDK_SOURCE_TOUCHSCREEN : true;
-}
->>>>>>> f37d5f587ce8 (chore(webkit): bootstrap build #2154)
 #endif // ENABLE(TOUCH_EVENTS)
 
 } // namespace WebCore

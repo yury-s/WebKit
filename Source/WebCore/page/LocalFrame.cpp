@@ -41,13 +41,9 @@
 #include "CachedResourceLoader.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
-<<<<<<< HEAD
+#include "ComposedTreeIterator.h"
 #include "DiagnosticLoggingClient.h"
 #include "DiagnosticLoggingKeys.h"
-||||||| parent of 0228589afd55 (chore(webkit): bootstrap build #2154)
-=======
-#include "ComposedTreeIterator.h"
->>>>>>> 0228589afd55 (chore(webkit): bootstrap build #2154)
 #include "DocumentLoader.h"
 #include "DocumentType.h"
 #include "Editing.h"

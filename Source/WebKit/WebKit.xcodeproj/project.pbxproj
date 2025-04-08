@@ -14534,19 +14534,7 @@
 				4683569B21E81CC7006E27A3 /* ProvisionalPageProxy.cpp */,
 				4683569A21E81CC7006E27A3 /* ProvisionalPageProxy.h */,
 				411B89CB27B2B89600F9EBD3 /* QueryPermissionResultCallback.h */,
-<<<<<<< HEAD
-||||||| parent of 0228589afd55 (chore(webkit): bootstrap build #2154)
-				1A0C227C2451130A00ED614D /* QuickLookThumbnailingSoftLink.h */,
-				1A0C227D2451130A00ED614D /* QuickLookThumbnailingSoftLink.mm */,
-				1AEE57232409F142002005D6 /* QuickLookThumbnailLoader.h */,
-				1AEE57242409F142002005D6 /* QuickLookThumbnailLoader.mm */,
-=======
-				1A0C227C2451130A00ED614D /* QuickLookThumbnailingSoftLink.h */,
-				1A0C227D2451130A00ED614D /* QuickLookThumbnailingSoftLink.mm */,
-				1AEE57232409F142002005D6 /* QuickLookThumbnailLoader.h */,
-				1AEE57242409F142002005D6 /* QuickLookThumbnailLoader.mm */,
 				D71A94392370F060002C4D9E /* RemoteInspectorPipe.h */,
->>>>>>> 0228589afd55 (chore(webkit): bootstrap build #2154)
 				5CCB54DC2A4FEA6A0005FAA8 /* RemotePageDrawingAreaProxy.cpp */,
 				5CCB54DB2A4FEA6A0005FAA8 /* RemotePageDrawingAreaProxy.h */,
 				FABBBC802D35AC6800820017 /* RemotePageFullscreenManagerProxy.cpp */,

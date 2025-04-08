@@ -206,19 +206,11 @@ void PageClientImpl::makeFirstResponder()
     
 bool PageClientImpl::isViewVisible()
 {
-<<<<<<< HEAD
-    RetainPtr activeView = this->activeView();
-    RetainPtr activeViewWindow = activeWindow();
-||||||| parent of 5060aedfa99b (chore(webkit): bootstrap build #2154)
-    NSView *activeView = this->activeView();
-    NSWindow *activeViewWindow = activeWindow();
-=======
     if (_headless)
         return true;
 
-    NSView *activeView = this->activeView();
-    NSWindow *activeViewWindow = activeWindow();
->>>>>>> 5060aedfa99b (chore(webkit): bootstrap build #2154)
+    RetainPtr activeView = this->activeView();
+    RetainPtr activeViewWindow = activeWindow();
 
     auto windowIsOccluded = [&]()->bool {
         return m_impl && m_impl->windowOcclusionDetectionEnabled() && (activeViewWindow.get().occlusionState & NSWindowOcclusionStateVisible) != NSWindowOcclusionStateVisible;
