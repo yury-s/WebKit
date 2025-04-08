@@ -83,7 +83,7 @@ String WebPage::platformUserAgent(const URL&) const
 bool WebPage::hoverSupportedByPrimaryPointingDevice() const
 {
 #if ENABLE(TOUCH_EVENTS)
-    return !screenIsTouchPrimaryInputDevice();
+    return !screenHasTouchDevice();
 #else
     return true;
 #endif
@@ -101,7 +101,7 @@ bool WebPage::hoverSupportedByAnyAvailablePointingDevice() const
 std::optional<PointerCharacteristics> WebPage::pointerCharacteristicsOfPrimaryPointingDevice() const
 {
 #if ENABLE(TOUCH_EVENTS)
-    if (screenIsTouchPrimaryInputDevice())
+    if (screenHasTouchDevice())
         return PointerCharacteristics::Coarse;
 #endif
     return PointerCharacteristics::Fine;

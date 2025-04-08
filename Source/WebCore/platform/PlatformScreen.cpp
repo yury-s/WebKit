@@ -99,11 +99,6 @@ bool screenHasTouchDevice() {
         return screenHasTouchDeviceOverride.value();
     return platformScreenHasTouchDevice();
 }
-bool screenIsTouchPrimaryInputDevice() {
-    if (screenHasTouchDeviceOverride)
-        return screenHasTouchDeviceOverride.value();
-    return platformScreenIsTouchPrimaryInputDevice();
-}
 
 } // namespace WebCore
 #endif
