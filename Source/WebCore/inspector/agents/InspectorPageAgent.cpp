@@ -1613,8 +1613,6 @@ static String roleFromObject(RefPtr<AXCoreObject> axObject)
             return "Image"_s;
         case AccessibilityRole::ImageMap:
             return "ImageMap"_s;
-        case AccessibilityRole::ImageMapLink:
-            return "ImageMapLink"_s;
         case AccessibilityRole::Insertion:
             return "Insertion"_s;
         case AccessibilityRole::Label:
