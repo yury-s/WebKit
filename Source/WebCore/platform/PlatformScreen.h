@@ -160,17 +160,11 @@ WEBCORE_EXPORT float screenScaleFactor(UIScreen * = nullptr);
 #endif
 
 #if ENABLE(TOUCH_EVENTS)
-<<<<<<< HEAD
-#if PLATFORM(GTK)
-||||||| parent of 1a99f3254386 (chore(webkit): bootstrap build #2154)
-#if PLATFORM(GTK) || PLATFORM(WPE)
-=======
 WEBCORE_EXPORT void setScreenHasTouchDeviceOverride(bool);
 
->>>>>>> 1a99f3254386 (chore(webkit): bootstrap build #2154)
 WEBCORE_EXPORT bool screenHasTouchDevice();
 WEBCORE_EXPORT bool screenIsTouchPrimaryInputDevice();
-#if PLATFORM(GTK) || PLATFORM(WPE)
+#if PLATFORM(GTK)
 bool platformScreenHasTouchDevice();
 bool platformScreenIsTouchPrimaryInputDevice();
 #else

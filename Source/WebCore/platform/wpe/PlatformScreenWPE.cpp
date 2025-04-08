@@ -150,32 +150,4 @@ bool screenSupportsExtendedColor(Widget*)
     return false;
 }
 
-<<<<<<< HEAD
-||||||| parent of 1a99f3254386 (chore(webkit): bootstrap build #2154)
-#if ENABLE(TOUCH_EVENTS)
-bool screenHasTouchDevice()
-{
-    return true;
-}
-
-bool screenIsTouchPrimaryInputDevice()
-{
-    return true;
-}
-#endif
-
-=======
-#if ENABLE(TOUCH_EVENTS)
-bool platformScreenHasTouchDevice()
-{
-    return true;
-}
-
-bool platformScreenIsTouchPrimaryInputDevice()
-{
-    return true;
-}
-#endif
-
->>>>>>> 1a99f3254386 (chore(webkit): bootstrap build #2154)
 } // namespace WebCore
