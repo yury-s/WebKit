@@ -561,11 +561,11 @@ void NetworkStorageSession::setCookiesFromResponse(const URL& firstParty, const 
         NSString* cookieString = (NSString *)cookieValue;
         NSString* cookieKey = @"Set-Cookie";
         NSDictionary* headers = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObject:cookieString] forKeys:[NSArray arrayWithObject:cookieKey]];
-        NSArray<NSHTTPCookie*>* parsedCookies = [NSHTTPCookie cookiesWithResponseHeaderFields:headers forURL:(NSURL *)url];
+        NSArray<NSHTTPCookie*>* parsedCookies = [NSHTTPCookie cookiesWithResponseHeaderFields:headers forURL:(NSURL *)url.createNSURL().get()];
         [cookies addObject:parsedCookies[0]];
     }
-    NSURL *cookieURL = url;
-    setHTTPCookiesForURL(cookieStorage().get(), cookies, cookieURL, firstParty, sameSiteInfo);
+    NSURL *cookieURL = url.createNSURL().get();
+    setHTTPCookiesForURL(cookieStorage().get(), cookies, cookieURL, firstParty.createNSURL().get(), sameSiteInfo);
 }
 
 static NSHTTPCookieAcceptPolicy httpCookieAcceptPolicy(CFHTTPCookieStorageRef cookieStorage)
