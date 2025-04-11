@@ -226,8 +226,6 @@ std::optional<PointerCharacteristics> WebPage::pointerCharacteristicsOfPrimaryPo
 {
     if (screenHasTouchDeviceOverride() && screenHasTouchDeviceOverride().value())
         return PointerCharacteristics::Coarse;
-    else
-        return PointerCharacteristics::Fine;
 
     const auto& primaryPointingDevice = WebProcess::singleton().primaryPointingDevice();
     if (primaryPointingDevice == AvailableInputDevices::Mouse)
@@ -241,8 +239,6 @@ OptionSet<PointerCharacteristics> WebPage::pointerCharacteristicsOfAllAvailableP
 {
     if (screenHasTouchDeviceOverride() && screenHasTouchDeviceOverride().value())
         return PointerCharacteristics::Coarse;
-    else
-        return PointerCharacteristics::Fine;
 
     OptionSet<PointerCharacteristics> pointerCharacteristics;
     const auto& availableInputs = WebProcess::singleton().availableInputDevices();
