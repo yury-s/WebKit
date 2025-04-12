@@ -65,15 +65,7 @@ messages -> WebPage WantsAsyncDispatchMessage {
 #if PLATFORM(IOS_FAMILY)
     SetSceneIdentifier(String sceneIdentifier)
     SetViewportConfigurationViewLayoutSize(WebCore::FloatSize size, double scaleFactor, double minimumEffectiveDeviceWidth)
-<<<<<<< HEAD
-    SetDeviceOrientation(WebCore::IntDegrees deviceOrientation)
     SetOverrideViewportArguments(struct std::optional<WebCore::ViewportArguments> arguments)
-||||||| parent of 9b128d436796 (chore(webkit): bootstrap build #2155)
-    SetDeviceOrientation(WebCore::IntDegrees deviceOrientation)
-    SetOverrideViewportArguments(std::optional<WebCore::ViewportArguments> arguments)
-=======
-    SetOverrideViewportArguments(std::optional<WebCore::ViewportArguments> arguments)
->>>>>>> 9b128d436796 (chore(webkit): bootstrap build #2155)
     DynamicViewportSizeUpdate(struct WebKit::DynamicViewportSizeUpdate target)
     
     SetScreenIsBeingCaptured(bool captured)
@@ -174,14 +166,8 @@ messages -> WebPage WantsAsyncDispatchMessage {
     DidBeginTouchPoint(WebCore::FloatPoint locationInRootView)
 #endif
 #if !ENABLE(IOS_TOUCH_EVENTS) && ENABLE(TOUCH_EVENTS)
-<<<<<<< HEAD
     TouchEvent(WebKit::WebTouchEvent event) -> (enum:uint8_t std::optional<WebKit::WebEventType> eventType, bool handled)
-||||||| parent of 9b128d436796 (chore(webkit): bootstrap build #2155)
-    TouchEvent(WebKit::WebTouchEvent event) -> (std::optional<WebKit::WebEventType> eventType, bool handled)
-=======
-    TouchEvent(WebKit::WebTouchEvent event) -> (std::optional<WebKit::WebEventType> eventType, bool handled)
     FakeTouchTap(WebCore::IntPoint position, uint8_t modifiers) -> () Async
->>>>>>> 9b128d436796 (chore(webkit): bootstrap build #2155)
 #endif
 
     CancelPointer(WebCore::PointerID pointerId, WebCore::IntPoint documentPoint)
@@ -371,27 +357,11 @@ messages -> WebPage WantsAsyncDispatchMessage {
     RemoveLayerForFindOverlay() -> ()
 
     # Drag and drop.
-<<<<<<< HEAD
-#if PLATFORM(GTK) && ENABLE(DRAG_SUPPORT)
-    PerformDragControllerAction(enum:uint8_t WebKit::DragControllerAction action, WebCore::IntPoint clientPosition, WebCore::IntPoint globalPosition, OptionSet<WebCore::DragOperation> draggingSourceOperationMask, WebCore::SelectionData selection, OptionSet<WebCore::DragApplicationFlags> flags) -> (enum:uint8_t std::optional<WebCore::DragOperation> dragOperation, enum:uint8_t WebCore::DragHandlingMethod dragHandlingMethod, bool mouseIsOverFileInput, unsigned numberOfItemsToBeAccepted, WebCore::IntRect insertionRect, WebCore::IntRect editableElementRect, struct std::optional<WebCore::RemoteUserInputEventData> remoteUserInputEventData)
-||||||| parent of 9b128d436796 (chore(webkit): bootstrap build #2155)
-#if PLATFORM(GTK) && ENABLE(DRAG_SUPPORT)
-    PerformDragControllerAction(enum:uint8_t WebKit::DragControllerAction action, WebCore::IntPoint clientPosition, WebCore::IntPoint globalPosition, OptionSet<WebCore::DragOperation> draggingSourceOperationMask, WebCore::SelectionData selection, OptionSet<WebCore::DragApplicationFlags> flags) -> (std::optional<WebCore::DragOperation> dragOperation, enum:uint8_t WebCore::DragHandlingMethod dragHandlingMethod, bool mouseIsOverFileInput, unsigned numberOfItemsToBeAccepted, WebCore::IntRect insertionRect, WebCore::IntRect editableElementRect, struct std::optional<WebCore::RemoteUserInputEventData> remoteUserInputEventData)
-=======
 #if (PLATFORM(GTK) || PLATFORM(WPE)) && ENABLE(DRAG_SUPPORT)
-    PerformDragControllerAction(enum:uint8_t WebKit::DragControllerAction action, WebCore::IntPoint clientPosition, WebCore::IntPoint globalPosition, OptionSet<WebCore::DragOperation> draggingSourceOperationMask, WebCore::SelectionData selection, OptionSet<WebCore::DragApplicationFlags> flags) -> (std::optional<WebCore::DragOperation> dragOperation, enum:uint8_t WebCore::DragHandlingMethod dragHandlingMethod, bool mouseIsOverFileInput, unsigned numberOfItemsToBeAccepted, WebCore::IntRect insertionRect, WebCore::IntRect editableElementRect, struct std::optional<WebCore::RemoteUserInputEventData> remoteUserInputEventData)
->>>>>>> 9b128d436796 (chore(webkit): bootstrap build #2155)
+    PerformDragControllerAction(enum:uint8_t WebKit::DragControllerAction action, WebCore::IntPoint clientPosition, WebCore::IntPoint globalPosition, OptionSet<WebCore::DragOperation> draggingSourceOperationMask, WebCore::SelectionData selection, OptionSet<WebCore::DragApplicationFlags> flags) -> (enum:uint8_t std::optional<WebCore::DragOperation> dragOperation, enum:uint8_t WebCore::DragHandlingMethod dragHandlingMethod, bool mouseIsOverFileInput, unsigned numberOfItemsToBeAccepted, WebCore::IntRect insertionRect, WebCore::IntRect editableElementRect, struct std::optional<WebCore::RemoteUserInputEventData> remoteUserInputEventData)
 #endif
-<<<<<<< HEAD
-#if !PLATFORM(GTK) && ENABLE(DRAG_SUPPORT)
-    PerformDragControllerAction(std::optional<WebCore::FrameIdentifier> frameID, enum:uint8_t WebKit::DragControllerAction action, WebCore::DragData dragData) -> (enum:uint8_t std::optional<WebCore::DragOperation> dragOperation, enum:uint8_t WebCore::DragHandlingMethod dragHandlingMethod, bool mouseIsOverFileInput, unsigned numberOfItemsToBeAccepted, WebCore::IntRect insertionRect, WebCore::IntRect editableElementRect, struct std::optional<WebCore::RemoteUserInputEventData> remoteUserInputEventData)
-||||||| parent of 9b128d436796 (chore(webkit): bootstrap build #2155)
-#if !PLATFORM(GTK) && ENABLE(DRAG_SUPPORT)
-    PerformDragControllerAction(std::optional<WebCore::FrameIdentifier> frameID, enum:uint8_t WebKit::DragControllerAction action, WebCore::DragData dragData) -> (std::optional<WebCore::DragOperation> dragOperation, enum:uint8_t WebCore::DragHandlingMethod dragHandlingMethod, bool mouseIsOverFileInput, unsigned numberOfItemsToBeAccepted, WebCore::IntRect insertionRect, WebCore::IntRect editableElementRect, struct std::optional<WebCore::RemoteUserInputEventData> remoteUserInputEventData)
-=======
 #if !PLATFORM(GTK) && !PLATFORM(WPE) && ENABLE(DRAG_SUPPORT)
-    PerformDragControllerAction(std::optional<WebCore::FrameIdentifier> frameID, enum:uint8_t WebKit::DragControllerAction action, WebCore::DragData dragData) -> (std::optional<WebCore::DragOperation> dragOperation, enum:uint8_t WebCore::DragHandlingMethod dragHandlingMethod, bool mouseIsOverFileInput, unsigned numberOfItemsToBeAccepted, WebCore::IntRect insertionRect, WebCore::IntRect editableElementRect, struct std::optional<WebCore::RemoteUserInputEventData> remoteUserInputEventData)
->>>>>>> 9b128d436796 (chore(webkit): bootstrap build #2155)
+    PerformDragControllerAction(std::optional<WebCore::FrameIdentifier> frameID, enum:uint8_t WebKit::DragControllerAction action, WebCore::DragData dragData) -> (enum:uint8_t std::optional<WebCore::DragOperation> dragOperation, enum:uint8_t WebCore::DragHandlingMethod dragHandlingMethod, bool mouseIsOverFileInput, unsigned numberOfItemsToBeAccepted, WebCore::IntRect insertionRect, WebCore::IntRect editableElementRect, struct std::optional<WebCore::RemoteUserInputEventData> remoteUserInputEventData)
     PerformDragOperation(WebCore::DragData dragData, WebKit::SandboxExtensionHandle sandboxExtensionHandle, Vector<WebKit::SandboxExtensionHandle> sandboxExtensionsForUpload) -> (bool handled)
 #endif
 #if ENABLE(DRAG_SUPPORT)

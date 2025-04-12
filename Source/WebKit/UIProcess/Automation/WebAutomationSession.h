@@ -285,14 +285,9 @@ public:
 
     void didDestroyFrame(WebCore::FrameIdentifier);
 
-<<<<<<< HEAD
-||||||| parent of 9b128d436796 (chore(webkit): bootstrap build #2155)
-private:
-=======
     static std::optional<String> platformGetBase64EncodedPNGData(const ViewSnapshot&);
 
 private:
->>>>>>> 9b128d436796 (chore(webkit): bootstrap build #2155)
     RefPtr<WebPageProxy> webPageProxyForHandle(const String&);
     String handleForWebPageProxy(const WebPageProxy&);
 
