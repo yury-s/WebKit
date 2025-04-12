@@ -263,20 +263,16 @@ void DrawingAreaProxyCoordinatedGraphics::didChangeAcceleratedCompositingMode(bo
 }
 #endif
 
-#if !PLATFORM(WPE) && !PLATFORM(WIN)
+#if PLATFORM(GTK)
 void DrawingAreaProxyCoordinatedGraphics::captureFrame()
 {
     RefPtr<cairo_surface_t> surface;
     if (isInAcceleratedCompositingMode()) {
-#  if PLATFORM(GTK)
         AcceleratedBackingStore* backingStore = webkitWebViewBaseGetAcceleratedBackingStore(WEBKIT_WEB_VIEW_BASE(protectedWebPageProxy()->viewWidget()));
         if (!backingStore)
             return;
 
         surface = backingStore->surface();
-#  else // PLATFORM(GTK)
-        fprintf(stderr, "captureFrame() is not supported in accelerated compositing mode on this platform.\n");
-#  endif // PLATFORM(GTK)
     } else if (m_backingStore) {
         surface = m_backingStore->surface();
     }
@@ -286,7 +282,7 @@ void DrawingAreaProxyCoordinatedGraphics::captureFrame()
 
     protectedWebPageProxy()->inspectorController().didPaint(surface.get());
 }
-#endif // !PLATFORM(WPE)
+#endif // PLATFORM(GTK)
 
 #if PLATFORM(WIN)
 void DrawingAreaProxyCoordinatedGraphics::captureFrame()

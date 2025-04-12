@@ -99,7 +99,7 @@ void InspectorScreencastAgent::willDestroyFrontendAndBackend(DisconnectReason)
     m_encoder = nullptr;
 }
 
-#if USE(SKIA) && !PLATFORM(GTK) || PLATFORM(WIN)
+#if USE(SKIA) && !PLATFORM(GTK)
 void InspectorScreencastAgent::didPaint(sk_sp<SkImage>&& surface)
 {
     sk_sp<SkImage> image(surface);
@@ -376,7 +376,7 @@ void InspectorScreencastAgent::encodeFrame()
 }
 #endif
 
-#if (USE(CAIRO) && !PLATFORM(WPE)) || PLATFORM(GTK) || PLATFORM(WIN)
+#if PLATFORM(GTK) || PLATFORM(WIN)
 void InspectorScreencastAgent::encodeFrame()
 {
     if (!m_encoder && !m_screencast)
