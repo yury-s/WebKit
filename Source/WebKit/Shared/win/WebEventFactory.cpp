@@ -484,13 +484,7 @@ WebKeyboardEvent WebEventFactory::createWebKeyboardEvent(HWND hwnd, UINT message
 #if ENABLE(TOUCH_EVENTS)
 WebTouchEvent WebEventFactory::createWebTouchEvent()
 {
-<<<<<<< HEAD
     return WebTouchEvent({ WebEventType::TouchMove, OptionSet<WebEventModifier> { }, WallTime::now() }, { }, { }, { });
-||||||| parent of 75ef69bbfba2 (chore(webkit): bootstrap build #2156)
-    return WebTouchEvent();
-=======
-    return WebTouchEvent({ WebEventType::TouchMove, OptionSet<WebEventModifier> { }, WallTime::now()}, { }, { }, { });
->>>>>>> 75ef69bbfba2 (chore(webkit): bootstrap build #2156)
 }
 #endif // ENABLE(TOUCH_EVENTS)
 

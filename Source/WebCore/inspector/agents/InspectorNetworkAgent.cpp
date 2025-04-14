@@ -58,13 +58,7 @@
 #include "LocalFrame.h"
 #include "MIMETypeRegistry.h"
 #include "MemoryCache.h"
-<<<<<<< HEAD
-||||||| parent of 75ef69bbfba2 (chore(webkit): bootstrap build #2156)
-#include "NetworkResourcesData.h"
-=======
-#include "NetworkResourcesData.h"
 #include "NetworkStateNotifier.h"
->>>>>>> 75ef69bbfba2 (chore(webkit): bootstrap build #2156)
 #include "Page.h"
 #include "PlatformStrategies.h"
 #include "ProgressTracker.h"

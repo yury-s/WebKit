@@ -34,13 +34,9 @@
 #include "InspectorInstrumentation.h"
 #include "InspectorPageAgent.h"
 #include "InspectorWebAgentBase.h"
-<<<<<<< HEAD
 #include "NetworkResourcesData.h"
-||||||| parent of 75ef69bbfba2 (chore(webkit): bootstrap build #2156)
-=======
 #include "ResourceError.h"
 #include "SharedBuffer.h"
->>>>>>> 75ef69bbfba2 (chore(webkit): bootstrap build #2156)
 #include "WebSocket.h"
 #include <JavaScriptCore/ContentSearchUtilities.h>
 #include <JavaScriptCore/InspectorBackendDispatchers.h>
