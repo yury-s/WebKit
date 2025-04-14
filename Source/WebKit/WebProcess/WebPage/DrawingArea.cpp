@@ -116,13 +116,6 @@ void DrawingArea::tryMarkLayersVolatile(CompletionHandler<void(bool)>&& completi
     completionFunction(true);
 }
 
-#if PLATFORM(WIN)
-void DrawingArea::didChangeAcceleratedCompositingMode(bool enabled)
-{
-    send(Messages::DrawingAreaProxy::DidChangeAcceleratedCompositingMode(enabled));
-}
-#endif
-
 void DrawingArea::removeMessageReceiverIfNeeded()
 {
     if (m_hasRemovedMessageReceiver)

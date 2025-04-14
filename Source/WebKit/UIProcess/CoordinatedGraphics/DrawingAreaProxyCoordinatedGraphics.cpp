@@ -256,13 +256,6 @@ void DrawingAreaProxyCoordinatedGraphics::updateAcceleratedCompositingMode(uint6
     updateAcceleratedCompositingMode(layerTreeContext);
 }
 
-#if PLATFORM(WIN)
-void DrawingAreaProxyCoordinatedGraphics::didChangeAcceleratedCompositingMode(bool enabled)
-{
-    m_isInAcceleratedCompositingMode = enabled;
-}
-#endif
-
 #if PLATFORM(GTK)
 void DrawingAreaProxyCoordinatedGraphics::captureFrame()
 {

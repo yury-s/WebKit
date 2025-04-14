@@ -182,10 +182,6 @@ private:
     virtual void update(uint64_t /* backingStoreStateID */, UpdateInfo&&) { }
     virtual void exitAcceleratedCompositingMode(uint64_t /* backingStoreStateID */, UpdateInfo&&) { }
 #endif
-
-#if PLATFORM(WIN)
-    virtual void didChangeAcceleratedCompositingMode(bool) { }
-#endif
 };
 
 } // namespace WebKit

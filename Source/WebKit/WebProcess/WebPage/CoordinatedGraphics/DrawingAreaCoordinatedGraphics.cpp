@@ -563,11 +563,6 @@ void DrawingAreaCoordinatedGraphics::enterAcceleratedCompositingMode(GraphicsLay
     m_scrollOffset = IntSize();
     m_displayTimer.stop();
     m_isWaitingForDidUpdate = false;
-// Playwright begin
-#if PLATFORM(WIN)
-    didChangeAcceleratedCompositingMode(true);
-#endif
-// Playwright end
 }
 
 void DrawingAreaCoordinatedGraphics::sendEnterAcceleratedCompositingModeIfNeeded()
@@ -625,11 +620,6 @@ void DrawingAreaCoordinatedGraphics::exitAcceleratedCompositingMode()
         // UI process, we still need to let it know about the new contents, so send an Update message.
         send(Messages::DrawingAreaProxy::Update(0, WTFMove(updateInfo)));
     }
-// Playwright begin
-#if PLATFORM(WIN)
-    didChangeAcceleratedCompositingMode(false);
-#endif
-// Playwright end
 }
 
 void DrawingAreaCoordinatedGraphics::scheduleDisplay()
