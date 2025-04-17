@@ -372,13 +372,13 @@ static WebKitWebView* createWebViewImpl(WebKitWebView* webView, WebKitWebContext
 
     g_signal_connect(newWebView, "create", G_CALLBACK(createWebView), user_data);
     g_signal_connect(newWebView, "close", G_CALLBACK(webViewClose), user_data);
-
-    g_hash_table_add(openViews, newWebView);
-
+// Playwright begin
     g_signal_connect(newWebView, "load-failed", G_CALLBACK(webViewLoadFailed), nullptr);
     g_signal_connect(newWebView, "script-dialog", G_CALLBACK(scriptDialog), nullptr);
     g_signal_connect(newWebView, "script-dialog-handled", G_CALLBACK(scriptDialogHandled), nullptr);
     g_signal_connect(newWebView, "decide-policy", G_CALLBACK(webViewDecidePolicy), nullptr);
+// Playwright end
+    g_hash_table_add(openViews, newWebView);
     return newWebView;
 }
 
@@ -771,6 +771,12 @@ static void activate(GApplication* application, WPEToolingBackends::ViewBackend*
     g_signal_connect(webView, "permission-request", G_CALLBACK(decidePermissionRequest), nullptr);
     g_signal_connect(webView, "create", G_CALLBACK(createWebView), application);
     g_signal_connect(webView, "close", G_CALLBACK(webViewClose), application);
+// Playwright begin
+    g_signal_connect(webView, "load-failed", G_CALLBACK(webViewLoadFailed), nullptr);
+    g_signal_connect(webView, "script-dialog", G_CALLBACK(scriptDialog), nullptr);
+    g_signal_connect(webView, "script-dialog-handled", G_CALLBACK(scriptDialogHandled), nullptr);
+    g_signal_connect(webView, "decide-policy", G_CALLBACK(webViewDecidePolicy), nullptr);
+// Playwright end
     g_hash_table_add(openViews, webView);
 
     WebKitColor color;
