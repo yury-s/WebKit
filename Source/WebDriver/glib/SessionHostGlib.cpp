@@ -149,6 +149,7 @@ void SessionHost::launchBrowser(Function<void (std::optional<String> error)>&& c
     GUniquePtr<char> inspectorAddress(
         g_strdup_printf("%s:%u", targetIp.isEmpty() ? "127.0.0.1" : targetIp.latin1().data(), targetPort > 0 ? targetPort : freePort())
     );
+    fprintf(stderr, "SessionHost::launchBrowser: inspectorAddress: %s, targetIp = %s, targetPort = %u\n", inspectorAddress.get(), targetIp.utf8().data(), targetPort);
     if (!targetIp.isEmpty()) {
         m_isRemoteBrowser = true;
         connectToBrowser(makeUnique<ConnectToBrowserAsyncData>(this, WTFMove(inspectorAddress), m_cancellable.get(), WTFMove(completionHandler)));

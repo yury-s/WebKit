@@ -445,6 +445,8 @@ void WebDriverService::handleMessage(WebSocketMessageHandler::Message&& message,
 {
     // https://w3c.github.io/webdriver-bidi/#handle-an-incoming-message
 
+    fprintf(stderr, "WebDriverService::handleMessage: %s\n", message.payload.data());
+
     if (!message.connection) {
         RELEASE_LOG(WebDriverBiDi, "Incoming message without attached connection. Ignoring message.");
         completionHandler(WebSocketMessageHandler::Message::fail(CommandResult::ErrorCode::UnknownError, std::nullopt));

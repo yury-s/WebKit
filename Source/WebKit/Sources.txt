@@ -563,6 +563,7 @@ UIProcess/Authentication/WebProtectionSpace.cpp
 UIProcess/Automation/SimulatedInputDispatcher.cpp @no-unify
 UIProcess/Automation/WebAutomationSession.cpp @no-unify
 UIProcess/Automation/WebDriverBidiProcessor.cpp @no-unify
+UIProcess/Automation/BidiBrowserAgent.cpp @no-unify
 
 UIProcess/Downloads/DownloadProxy.cpp
 UIProcess/Downloads/DownloadProxyMap.cpp

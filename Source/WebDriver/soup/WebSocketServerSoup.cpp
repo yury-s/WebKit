@@ -118,6 +118,7 @@ static void handleWebSocketMessage(SoupWebsocketConnection* connection, SoupWebs
 
 static void handleWebSocketConnection(SoupServer*, SoupServerMessage*, const char* path, SoupWebsocketConnection* connection, gpointer userData)
 {
+    fprintf(stderr, "handleWebSocketConnection: %s\n", path);
     // Delayed steps from the end of the handshake, as now we have a connection object
     auto webSocketServer = static_cast<WebSocketServer*>(userData);
     if ("/session"_s == path)
