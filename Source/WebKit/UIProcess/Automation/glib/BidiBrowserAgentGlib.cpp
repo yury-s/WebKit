@@ -28,6 +28,7 @@
 
 #if ENABLE(WEBDRIVER_BIDI)
 
+#include "BidiUserContext.h"
 #include "WebKitNetworkSession.h"
 #include "WebKitWebContextPrivate.h"
 #include "WebKitWebsiteDataManagerPrivate.h"

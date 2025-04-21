@@ -39,7 +39,7 @@
             "description": "Creates a user context.",
             "spec": "https://w3c.github.io/webdriver-bidi/#command-browser-createUserContext",
             "returns": [
-                { "name": "userContext", "$ref": "BidiBrowser.UserContext", "description": "Id of created user context." }
+                { "name": "userContext", "$ref": "BidiBrowser.UserContext", "description": "Identifier of created user context." }
             ]
         },
         {

@@ -29,6 +29,7 @@
 #if ENABLE(WEBDRIVER_BIDI)
 
 #include "AutomationProtocolObjects.h"
+#include "BidiUserContext.h"
 #include "WebAutomationSession.h"
 #include "WebAutomationSessionMacros.h"
 #include "WebDriverBidiProtocolObjects.h"
@@ -59,14 +60,6 @@ const String& defaultUserContextID()
 }
 
 } // namespace
-
-BidiBrowserAgent::UserContext::UserContext(WebsiteDataStore& dataStore, WebProcessPool& processPool)
-    : dataStore(dataStore)
-    , processPool(processPool)
-{
-};
-
-BidiBrowserAgent::UserContext::~UserContext() = default;
 
 WTF_MAKE_TZONE_ALLOCATED_IMPL(BidiBrowserAgent);
 
@@ -103,7 +96,7 @@ Inspector::CommandResult<String> BidiBrowserAgent::createUserContext()
     return userContextID;
 }
 
-Inspector::CommandResult<Ref<JSON::ArrayOf<UserContextInfo>>>  BidiBrowserAgent::getUserContexts()
+Inspector::CommandResult<Ref<JSON::ArrayOf<UserContextInfo>>> BidiBrowserAgent::getUserContexts()
 {
     auto userContexts = JSON::ArrayOf<UserContextInfo>::create();
     userContexts->addItem(UserContextInfo::create()

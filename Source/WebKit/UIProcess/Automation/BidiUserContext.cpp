@@ -23,48 +23,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
+#include "config.h"
+#include "BidiUserContext.h"
 
 #if ENABLE(WEBDRIVER_BIDI)
 
-#include "WebDriverBidiBackendDispatchers.h"
-#include <JavaScriptCore/InspectorBackendDispatcher.h>
-#include <wtf/Forward.h>
-#include <wtf/FastMalloc.h>
-#include <wtf/WeakPtr.h>
-
-#if PLATFORM(GTK)
-#include <wtf/glib/GRefPtr.h>
-typedef struct _WebKitWebContext WebKitWebContext;
-#endif
+#include "WebProcessPool.h"
+#include "WebsiteDataStore.h"
 
 namespace WebKit {
 
-class BidiUserContext;
-class WebAutomationSession;
-class WebProcessPool;
-class WebsiteDataStore;
-
-class BidiBrowserAgent final : public Inspector::BidiBrowserBackendDispatcherHandler {
-    WTF_MAKE_TZONE_ALLOCATED(BidiBrowserAgent);
-public:
-    BidiBrowserAgent(WebAutomationSession&, Inspector::BackendDispatcher&);
-    ~BidiBrowserAgent() override;
-
-    // Inspector::BidiBrowserBackendDispatcherHandler methods.
-    Inspector::CommandResult<void> close() override;
-    Inspector::CommandResult<String> createUserContext() override;
-    Inspector::CommandResult<Ref<JSON::ArrayOf<Inspector::Protocol::BidiBrowser::UserContextInfo>>> getUserContexts() override;
-    Inspector::CommandResult<void> removeUserContext(const String& userContext) override;
-
-private:
-    std::unique_ptr<BidiUserContext> platformCreateBidiUserContext(String& error);
-
-    WeakPtr<WebAutomationSession> m_session;
-    Ref<Inspector::BidiBrowserBackendDispatcher> m_browserDomainDispatcher;
-    HashMap<String, std::unique_ptr<BidiUserContext>> m_userContexts;
+BidiUserContext::BidiUserContext(WebsiteDataStore& dataStore, WebProcessPool& processPool)
+    : dataStore(dataStore)
+    , processPool(processPool)
+{
 };
+
+BidiUserContext::~BidiUserContext() = default;
 
 } // namespace WebKit
 
 #endif // ENABLE(WEBDRIVER_BIDI)
+
