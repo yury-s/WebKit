@@ -40,6 +40,8 @@ namespace WebKit {
 using namespace Inspector;
 using BrowsingContext = Inspector::Protocol::BidiBrowsingContext::BrowsingContext;
 
+WTF_MAKE_TZONE_ALLOCATED_IMPL(BidiScriptAgent);
+
 BidiScriptAgent::BidiScriptAgent(WebAutomationSession& session, BackendDispatcher& backendDispatcher)
     : m_session(session)
     , m_scriptDomainDispatcher(BidiScriptBackendDispatcher::create(backendDispatcher, this))

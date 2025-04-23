@@ -48,6 +48,7 @@ using PageLoadStrategy = Inspector::Protocol::Automation::PageLoadStrategy;
 using UserPromptType = Inspector::Protocol::BidiBrowsingContext::UserPromptType;
 using UserPromptHandlerType = Inspector::Protocol::BidiSession::UserPromptHandlerType;
 
+WTF_MAKE_TZONE_ALLOCATED_IMPL(BidiBrowsingContextAgent);
 
 BidiBrowsingContextAgent::BidiBrowsingContextAgent(WebAutomationSession& session, BackendDispatcher& backendDispatcher)
     : m_session(session)
