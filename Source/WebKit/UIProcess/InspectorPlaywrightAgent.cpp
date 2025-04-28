@@ -657,7 +657,7 @@ void InspectorPlaywrightAgent::navigate(const String& url, const String& pagePro
         return;
     }
 
-    WebCore::ResourceRequest resourceRequest { url };
+    auto resourceRequest = WebCore::ResourceRequest(URL { url });
 
     if (!!referrer)
         resourceRequest.setHTTPReferrer(referrer);
