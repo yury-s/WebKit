@@ -122,8 +122,6 @@ list(APPEND WebKit_SERIALIZATION_IN_FILES
     Shared/glib/UserMessage.serialization.in
 
     Shared/soup/WebCoreArgumentCodersSoup.serialization.in
-
-    Shared/libwpe/ArgumentCodersWPE.serialization.in
 )
 
 list(APPEND WebKit_DERIVED_SOURCES

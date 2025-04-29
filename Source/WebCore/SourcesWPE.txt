@@ -103,8 +103,6 @@ platform/xdg/MIMETypeRegistryXdg.cpp
 platform/wpe/DragDataWPE.cpp
 platform/wpe/DragImageWPE.cpp
 
-platform/wpe/SelectionData.cpp
-
 JSSpeechSynthesisErrorCode.cpp
 JSSpeechSynthesisErrorEvent.cpp
 JSSpeechSynthesisErrorEventInit.cpp
