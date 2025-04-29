@@ -32,10 +32,6 @@
 #include "PasteboardStrategy.h"
 #include "PlatformStrategies.h"
 
-#if ENABLE(DRAG_SUPPORT)
-#include "DragData.h"
-#endif
-
 namespace WebCore {
 
 std::unique_ptr<Pasteboard> Pasteboard::createForCopyAndPaste(std::unique_ptr<PasteboardContext>&& context)
@@ -56,28 +52,9 @@ bool Pasteboard::hasData()
     return !types.isEmpty();
 }
 
-Vector<String> Pasteboard::typesSafeForBindings(const String& origin)
+Vector<String> Pasteboard::typesSafeForBindings(const String&)
 {
-    if (m_selectionData) {
-        ListHashSet<String> types;
-        if (auto& buffer = m_selectionData->customData()) {
-            auto customData = PasteboardCustomData::fromSharedBuffer(*buffer);
-            if (customData.origin() == origin) {
-                for (auto& type : customData.orderedTypes())
-                    types.add(type);
-            }
-        }
-
-        if (m_selectionData->hasText())
-            types.add("text/plain"_s);
-        if (m_selectionData->hasMarkup())
-            types.add("text/html"_s);
-        if (m_selectionData->hasURIList())
-            types.add("text/uri-list"_s);
-
-        return copyToVector(types);
-    }
-
+    notImplemented();
     return { };
 }
 
@@ -90,55 +67,23 @@ Vector<String> Pasteboard::typesForLegacyUnsafeBindings()
 
 String Pasteboard::readOrigin()
 {
-    if (m_selectionData) {
-        if (auto& buffer = m_selectionData->customData())
-            return PasteboardCustomData::fromSharedBuffer(*buffer).origin();
-
-        return { };
-    }
-
+    notImplemented(); // webkit.org/b/177633: [GTK] Move to new Pasteboard API
     return { };
 }
 
 String Pasteboard::readString(const String& type)
 {
-    if (m_selectionData) {
-        if (type == "text/plain"_s)
-            return m_selectionData->text();;
-        if (type == "text/html"_s)
-            return m_selectionData->markup();
-        if (type == "Files"_s || type == "text/uri-list"_s)
-            return m_selectionData->uriList();
-        return { };
-    }
-
     return platformStrategies()->pasteboardStrategy()->readStringFromPasteboard(0, type, name(), context());
 }
 
-String Pasteboard::readStringInCustomData(const String& type)
+String Pasteboard::readStringInCustomData(const String&)
 {
-    if (m_selectionData) {
-        if (auto& buffer = m_selectionData->customData())
-            return PasteboardCustomData::fromSharedBuffer(*buffer).readStringInCustomData(type);
-
-        return { };
-    }
-
     notImplemented();
     return { };
 }
 
 void Pasteboard::writeString(const String& type, const String& text)
 {
-   if (m_selectionData) {
-        if (type == "Files"_s || type == "text/uri-list"_s)
-            m_selectionData->setURIList(text);
-        else if (type == "text/html"_s)
-            m_selectionData->setMarkup(text);
-        else if (type == "text/plain"_s)
-            m_selectionData->setText(text);
-        return;
-    }
     platformStrategies()->pasteboardStrategy()->writeToPasteboard(type, text);
 }
 
@@ -166,12 +111,7 @@ void Pasteboard::read(PasteboardFileReader&, std::optional<size_t>)
 
 void Pasteboard::write(const PasteboardURL& url)
 {
-    if (m_selectionData) {
-        m_selectionData->clearAll();
-        m_selectionData->setURL(url.url, url.title);
-    } else {
-        platformStrategies()->pasteboardStrategy()->writeToPasteboard("text/plain;charset=utf-8"_s, url.url.string());
-    }
+    platformStrategies()->pasteboardStrategy()->writeToPasteboard("text/plain;charset=utf-8"_s, url.url.string());
 }
 
 void Pasteboard::writeTrustworthyWebURLsPboardType(const PasteboardURL&)
@@ -179,16 +119,8 @@ void Pasteboard::writeTrustworthyWebURLsPboardType(const PasteboardURL&)
     notImplemented();
 }
 
-void Pasteboard::write(const PasteboardImage& pasteboardImage)
+void Pasteboard::write(const PasteboardImage&)
 {
-    if (m_selectionData) {
-        m_selectionData->clearAll();
-        if (!pasteboardImage.url.url.isEmpty()) {
-            m_selectionData->setURL(pasteboardImage.url.url, pasteboardImage.url.title);
-            m_selectionData->setMarkup(pasteboardImage.url.markup);
-        }
-        m_selectionData->setImage(pasteboardImage.image.get());
-    }
 }
 
 void Pasteboard::write(const PasteboardBuffer&)
@@ -197,13 +129,7 @@ void Pasteboard::write(const PasteboardBuffer&)
 
 void Pasteboard::write(const PasteboardWebContent& content)
 {
-    if (m_selectionData) {
-        m_selectionData->clearAll();
-        m_selectionData->setText(content.text);
-        m_selectionData->setMarkup(content.markup);
-    } else {
-        platformStrategies()->pasteboardStrategy()->writeToPasteboard(content);
-    }
+    platformStrategies()->pasteboardStrategy()->writeToPasteboard(content);
 }
 
 Pasteboard::FileContentState Pasteboard::fileContentState()
@@ -226,53 +152,13 @@ void Pasteboard::writePlainText(const String& text, SmartReplaceOption)
     writeString("text/plain;charset=utf-8"_s, text);
 }
 
-void Pasteboard::writeCustomData(const Vector<PasteboardCustomData>& data)
+void Pasteboard::writeCustomData(const Vector<PasteboardCustomData>&)
 {
-    if (m_selectionData) {
-        if (!data.isEmpty()) {
-            const auto& customData = data[0];
-            customData.forEachPlatformString([this] (auto& type, auto& string) {
-                writeString(type, string);
-            });
-            if (customData.hasSameOriginCustomData() || !customData.origin().isEmpty())
-                m_selectionData->setCustomData(customData.createSharedBuffer());
-        }
-        return;
-    }
 }
 
 void Pasteboard::write(const Color&)
 {
 }
-
-#if ENABLE(DRAG_SUPPORT)
-
-Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context, SelectionData&& selectionData)
-    : m_context(WTFMove(context))
-    , m_selectionData(WTFMove(selectionData))
-{
-}
-
-Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context, SelectionData& selectionData)
-    : m_context(WTFMove(context))
-    , m_selectionData(selectionData)
-{
-}
-
-std::unique_ptr<Pasteboard> Pasteboard::createForDragAndDrop(std::unique_ptr<PasteboardContext>&& context)
-{
-    return makeUnique<Pasteboard>(WTFMove(context), SelectionData());
-}
-
-std::unique_ptr<Pasteboard> Pasteboard::create(const DragData& dragData)
-{
-    RELEASE_ASSERT(dragData.platformData());
-    return makeUnique<Pasteboard>(dragData.createPasteboardContext(), *dragData.platformData());
-}
-void Pasteboard::setDragImage(DragImage, const IntPoint&)
-{
-}
-#endif
 
 } // namespace WebCore
 
