@@ -2104,7 +2104,7 @@ void WebPage::loadRequestInFrameForInspector(LoadParameters&& loadParameters, We
     // FIXME: use m_pendingNavigationID instead?
     m_pendingFrameNavigationID = loadParameters.navigationID;
 
-    FrameLoadRequest frameLoadRequest { *frame->coreLocalFrame(), loadParameters.request };
+    FrameLoadRequest frameLoadRequest { *frame->coreLocalFrame(), WTFMove(loadParameters.request) };
     frame->coreLocalFrame()->loader().load(WTFMove(frameLoadRequest));
     ASSERT(!m_pendingFrameNavigationID);
 }
