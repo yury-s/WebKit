@@ -78,97 +78,15 @@ String PlatformPasteboard::readString(size_t, const String& type) const
 
 void PlatformPasteboard::write(const PasteboardWebContent& content)
 {
-<<<<<<< HEAD
-    static constexpr auto plainText = "text/plain;charset=utf-8"_s;
-    static constexpr auto htmlText = "text/html"_s;
-
-    CString textString = content.text.utf8();
-    CString markupString = content.markup.utf8();
-
-    std::array<struct wpe_pasteboard_string_pair, 2> pairs = { {
-        { { nullptr, 0 }, { nullptr, 0 } },
-        { { nullptr, 0 }, { nullptr, 0 } },
-    } };
-    wpe_pasteboard_string_initialize(&pairs[0].type, plainText, strlen(plainText));
-    wpe_pasteboard_string_initialize(&pairs[0].string, textString.data(), textString.length());
-    wpe_pasteboard_string_initialize(&pairs[1].type, htmlText, strlen(htmlText));
-    wpe_pasteboard_string_initialize(&pairs[1].string, markupString.data(), markupString.length());
-    struct wpe_pasteboard_string_map map = { pairs.data(), pairs.size() };
-
-    wpe_pasteboard_write(m_pasteboard, &map);
-    m_changeCount++;
-
-    wpe_pasteboard_string_free(&pairs[0].type);
-    wpe_pasteboard_string_free(&pairs[0].string);
-    wpe_pasteboard_string_free(&pairs[1].type);
-    wpe_pasteboard_string_free(&pairs[1].string);
-||||||| parent of 752361e65ddc (chore(webkit): bootstrap build #2164)
-    static constexpr auto plainText = "text/plain;charset=utf-8"_s;
-    static constexpr auto htmlText = "text/html;charset=utf-8"_s;
-
-    CString textString = content.text.utf8();
-    CString markupString = content.markup.utf8();
-
-    std::array<struct wpe_pasteboard_string_pair, 2> pairs = { {
-        { { nullptr, 0 }, { nullptr, 0 } },
-        { { nullptr, 0 }, { nullptr, 0 } },
-    } };
-    wpe_pasteboard_string_initialize(&pairs[0].type, plainText, strlen(plainText));
-    wpe_pasteboard_string_initialize(&pairs[0].string, textString.data(), textString.length());
-    wpe_pasteboard_string_initialize(&pairs[1].type, htmlText, strlen(htmlText));
-    wpe_pasteboard_string_initialize(&pairs[1].string, markupString.data(), markupString.length());
-    struct wpe_pasteboard_string_map map = { pairs.data(), pairs.size() };
-
-    wpe_pasteboard_write(m_pasteboard, &map);
-
-    wpe_pasteboard_string_free(&pairs[0].type);
-    wpe_pasteboard_string_free(&pairs[0].string);
-    wpe_pasteboard_string_free(&pairs[1].type);
-    wpe_pasteboard_string_free(&pairs[1].string);
-=======
     String plainText = "text/plain;charset=utf-8"_s;
     String htmlText = "text/html;charset=utf-8"_s;
     sharedPasteboard().set(plainText, content.text);
     sharedPasteboard().set(htmlText, content.markup);
->>>>>>> 752361e65ddc (chore(webkit): bootstrap build #2164)
 }
 
 void PlatformPasteboard::write(const String& type, const String& string)
 {
-<<<<<<< HEAD
-    struct wpe_pasteboard_string_pair pairs[] = {
-        { { nullptr, 0 }, { nullptr, 0 } },
-    };
-
-    auto typeUTF8 = type.utf8();
-    auto stringUTF8 = string.utf8();
-    wpe_pasteboard_string_initialize(&pairs[0].type, typeUTF8.data(), typeUTF8.length());
-    wpe_pasteboard_string_initialize(&pairs[0].string, stringUTF8.data(), stringUTF8.length());
-    struct wpe_pasteboard_string_map map = { pairs, 1 };
-
-    wpe_pasteboard_write(m_pasteboard, &map);
-    m_changeCount++;
-
-    wpe_pasteboard_string_free(&pairs[0].type);
-    wpe_pasteboard_string_free(&pairs[0].string);
-||||||| parent of 752361e65ddc (chore(webkit): bootstrap build #2164)
-    struct wpe_pasteboard_string_pair pairs[] = {
-        { { nullptr, 0 }, { nullptr, 0 } },
-    };
-
-    auto typeUTF8 = type.utf8();
-    auto stringUTF8 = string.utf8();
-    wpe_pasteboard_string_initialize(&pairs[0].type, typeUTF8.data(), typeUTF8.length());
-    wpe_pasteboard_string_initialize(&pairs[0].string, stringUTF8.data(), stringUTF8.length());
-    struct wpe_pasteboard_string_map map = { pairs, 1 };
-
-    wpe_pasteboard_write(m_pasteboard, &map);
-
-    wpe_pasteboard_string_free(&pairs[0].type);
-    wpe_pasteboard_string_free(&pairs[0].string);
-=======
     sharedPasteboard().set(type, string);
->>>>>>> 752361e65ddc (chore(webkit): bootstrap build #2164)
 }
 
 Vector<String> PlatformPasteboard::typesSafeForDOMToReadAndWrite(const String&) const

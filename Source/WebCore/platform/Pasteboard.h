@@ -196,19 +196,15 @@ public:
 #endif
 #endif
 
-<<<<<<< HEAD
 #if PLATFORM(WPE)
     explicit Pasteboard(std::unique_ptr<PasteboardContext>&&, const String& name);
 #endif
 
-||||||| parent of 752361e65ddc (chore(webkit): bootstrap build #2164)
-=======
 #if PLATFORM(WPE) && ENABLE(DRAG_SUPPORT)
     explicit Pasteboard(std::unique_ptr<PasteboardContext>&&, SelectionData&);
     explicit Pasteboard(std::unique_ptr<PasteboardContext>&&, SelectionData&&);
 #endif
 
->>>>>>> 752361e65ddc (chore(webkit): bootstrap build #2164)
 #if PLATFORM(WIN)
     explicit Pasteboard(std::unique_ptr<PasteboardContext>&&, IDataObject*);
     explicit Pasteboard(std::unique_ptr<PasteboardContext>&&, WCDataObject*);

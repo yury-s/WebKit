@@ -612,16 +612,8 @@ AsyncClipboardAPIEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-<<<<<<< HEAD
       "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)" : true
-      default: false
-||||||| parent of 752361e65ddc (chore(webkit): bootstrap build #2164)
-      "PLATFORM(COCOA) || PLATFORM(GTK)" : true
-      default: false
-=======
-      "PLATFORM(COCOA) || PLATFORM(GTK)" : true
       default: true
->>>>>>> 752361e65ddc (chore(webkit): bootstrap build #2164)
     WebCore:
       default: false
 
@@ -2417,16 +2409,8 @@ DOMPasteAccessRequestsEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-<<<<<<< HEAD
       "PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(VISION)": true
-      default: false
-||||||| parent of 752361e65ddc (chore(webkit): bootstrap build #2164)
-      "PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(VISION)": true
-      default: false
-=======
-      "PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(VISION)": true
       default: true
->>>>>>> 752361e65ddc (chore(webkit): bootstrap build #2164)
     WebCore:
       default: false
 

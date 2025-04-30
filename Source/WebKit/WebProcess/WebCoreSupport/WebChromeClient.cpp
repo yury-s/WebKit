@@ -527,18 +527,13 @@ void WebChromeClient::setResizable(bool resizable)
 void WebChromeClient::addMessageToConsole(MessageSource source, MessageLevel level, const String& message, unsigned lineNumber, unsigned columnNumber, const String& sourceID)
 {
     // Notify the bundle client.
-<<<<<<< HEAD
     RefPtr page = m_page.get();
     if (!page)
         return;
 
-||||||| parent of 752361e65ddc (chore(webkit): bootstrap build #2164)
-    auto page = protectedPage();
-=======
-    auto page = protectedPage();
     if (level == MessageLevel::Error)
         page->send(Messages::WebPageProxy::LogToStderr(message));
->>>>>>> 752361e65ddc (chore(webkit): bootstrap build #2164)
+
     // FIXME: Remove this after rdar://143399667 is fixed.
     page->injectedBundleUIClient().willAddMessageToConsole(page.get(), source, level, message, lineNumber, columnNumber, sourceID);
 

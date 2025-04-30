@@ -94,18 +94,15 @@ platform/android/SharedMemoryAndroid.cpp
 platform/unix/LoggingUnix.cpp
 platform/unix/SharedMemoryUnix.cpp
 
-<<<<<<< HEAD
 platform/wpe/PasteboardWPE.cpp
-||||||| parent of 752361e65ddc (chore(webkit): bootstrap build #2164)
-=======
-platform/wpe/DragDataWPE.cpp
-platform/wpe/DragImageWPE.cpp
->>>>>>> 752361e65ddc (chore(webkit): bootstrap build #2164)
 platform/wpe/PlatformScreenWPE.cpp
 
 platform/xdg/MIMETypeRegistryXdg.cpp
 
 // Playwright: begin.
+platform/wpe/DragDataWPE.cpp
+platform/wpe/DragImageWPE.cpp
+
 platform/wpe/SelectionData.cpp
 
 JSSpeechSynthesisErrorCode.cpp
