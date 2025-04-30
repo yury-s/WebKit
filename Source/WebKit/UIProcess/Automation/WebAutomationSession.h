@@ -286,7 +286,6 @@ public:
 
     static std::optional<String> platformGetBase64EncodedPNGData(const ViewSnapshot&);
 
-private:
     RefPtr<WebPageProxy> webPageProxyForHandle(const String&);
     String handleForWebPageProxy(const WebPageProxy&);
 
