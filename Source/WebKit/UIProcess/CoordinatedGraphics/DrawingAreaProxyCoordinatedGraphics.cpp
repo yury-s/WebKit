@@ -33,6 +33,7 @@
 #include "LayerTreeContext.h"
 #include "MessageSenderInlines.h"
 #include "UpdateInfo.h"
+#include "WebPageInspectorController.h"
 #include "WebPageProxy.h"
 #include "WebPreferences.h"
 #include "WebProcessPool.h"
@@ -40,13 +41,20 @@
 #include <WebCore/Region.h>
 #include <optional>
 #include <wtf/TZoneMallocInlines.h>
+#include <wtf/Vector.h>
 
 #if PLATFORM(GTK)
+#include "WebKitWebViewBasePrivate.h"
 #include <gtk/gtk.h>
 #endif
 
 #if USE(GLIB_EVENT_LOOP)
 #include <wtf/glib/RunLoopSourcePriority.h>
+#endif
+
+#if PLATFORM(WIN)
+#include <windows.h>
+#include <WebCore/HWndDC.h>
 #endif
 
 namespace WebKit {
@@ -182,6 +190,11 @@ void DrawingAreaProxyCoordinatedGraphics::deviceScaleFactorDidChange(CompletionH
     sendWithAsyncReply(Messages::DrawingArea::SetDeviceScaleFactor(m_webPageProxy->deviceScaleFactor()), WTFMove(completionHandler));
 }
 
+void DrawingAreaProxyCoordinatedGraphics::waitForSizeUpdate(Function<void (const DrawingAreaProxyCoordinatedGraphics&)>&& callback)
+{
+    m_callbacks.append(WTFMove(callback));
+}
+
 void DrawingAreaProxyCoordinatedGraphics::setBackingStoreIsDiscardable(bool isBackingStoreDiscardable)
 {
 #if !PLATFORM(WPE)
@@ -242,6 +255,42 @@ void DrawingAreaProxyCoordinatedGraphics::updateAcceleratedCompositingMode(uint6
 {
     updateAcceleratedCompositingMode(layerTreeContext);
 }
+
+#if PLATFORM(GTK)
+void DrawingAreaProxyCoordinatedGraphics::captureFrame()
+{
+    RefPtr<cairo_surface_t> surface;
+    if (isInAcceleratedCompositingMode()) {
+        AcceleratedBackingStore* backingStore = webkitWebViewBaseGetAcceleratedBackingStore(WEBKIT_WEB_VIEW_BASE(protectedWebPageProxy()->viewWidget()));
+        if (!backingStore)
+            return;
+
+        surface = backingStore->surface();
+    } else if (m_backingStore) {
+        surface = m_backingStore->surface();
+    }
+
+    if (!surface)
+        return;
+
+    protectedWebPageProxy()->inspectorController().didPaint(surface.get());
+}
+#endif // PLATFORM(GTK)
+
+#if PLATFORM(WIN)
+void DrawingAreaProxyCoordinatedGraphics::captureFrame()
+{
+    if (!m_backingStore)
+        return;
+    auto surface = m_backingStore->surface();
+    if (!surface)
+        return;
+    auto image = surface->makeImageSnapshot();
+    if (!image)
+        return;
+    protectedWebPageProxy()->inspectorController().didPaint(WTFMove(image));
+}
+#endif // PLATFORM(WIN)
 
 bool DrawingAreaProxyCoordinatedGraphics::alwaysUseCompositing() const
 {
@@ -310,6 +359,12 @@ void DrawingAreaProxyCoordinatedGraphics::didUpdateGeometry()
     // we need to resend the new size here.
     if (m_lastSentSize != m_size)
         sendUpdateGeometry();
+    else {
+        Vector<Function<void (const DrawingAreaProxyCoordinatedGraphics&)>> callbacks;
+        callbacks.swap(m_callbacks);
+        for (auto& cb : callbacks)
+            cb(*this);
+    }
 }
 
 #if !PLATFORM(WPE)
