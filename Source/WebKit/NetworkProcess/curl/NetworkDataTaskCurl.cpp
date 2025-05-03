@@ -80,19 +80,13 @@ NetworkDataTaskCurl::NetworkDataTaskCurl(NetworkSession& session, NetworkDataTas
         blockCookies();
     restrictRequestReferrerToOriginIfNeeded(request);
 
-    if (request.url().protocolIsData()) {
-        DataURLDecoder::decode(request.url(), { }, DataURLDecoder::ShouldValidatePadding::Yes, [this, protectedThis = Ref { *this }](auto decodeResult) mutable {
-            didReadDataURL(WTFMove(decodeResult));
-        });
-    } else {
-        m_curlRequest = createCurlRequest(WTFMove(request));
-        if (!m_initialCredential.isEmpty()) {
-            m_curlRequest->setUserPass(m_initialCredential.user(), m_initialCredential.password());
-            m_curlRequest->setAuthenticationScheme(ProtectionSpace::AuthenticationScheme::HTTPBasic);
-        }
-        if (m_session->ignoreCertificateErrors())
-            m_curlRequest->disableServerTrustEvaluation();
+    m_curlRequest = createCurlRequest(WTFMove(request));
+    if (!m_initialCredential.isEmpty()) {
+        m_curlRequest->setUserPass(m_initialCredential.user(), m_initialCredential.password());
+        m_curlRequest->setAuthenticationScheme(ProtectionSpace::AuthenticationScheme::HTTPBasic);
     }
+    if (m_session->ignoreCertificateErrors())
+        m_curlRequest->disableServerTrustEvaluation();
 }
 
 NetworkDataTaskCurl::~NetworkDataTaskCurl()
@@ -302,35 +296,6 @@ bool NetworkDataTaskCurl::shouldRedirectAsGET(const ResourceRequest& request, bo
     return false;
 }
 
-void NetworkDataTaskCurl::didReadDataURL(std::optional<DataURLDecoder::Result>&& result)
-{
-    if (state() == State::Canceling || state() == State::Completed)
-        return;
-
-    m_dataURLResult = WTFMove(result);
-    m_response = ResourceResponse::dataURLResponse(firstRequest().url(), m_dataURLResult.value());
-    invokeDidReceiveResponse();
-}
-
-void NetworkDataTaskCurl::downloadDataURL(Download& download)
-{
-    if (!m_dataURLResult) {
-        deleteDownloadFile();
-        download.didFail(internalError(firstRequest().url()), std::span<const uint8_t>());
-        return;
-    }
-
-    if (!m_downloadDestinationFile.write(std::span<const uint8_t>(m_dataURLResult.value().data.data(), m_dataURLResult.value().data.size()))) {
-        deleteDownloadFile();
-        download.didFail(ResourceError(CURLE_WRITE_ERROR, m_response.url()), std::span<const uint8_t>());
-        return;
-    }
-
-    download.didReceiveData(m_dataURLResult.value().data.size(), 0, 0);
-    m_downloadDestinationFile = { };
-    download.didFinish();
-}
-
 void NetworkDataTaskCurl::invokeDidReceiveResponse()
 {
     didReceiveResponse(ResourceResponse(m_response), NegotiatedLegacyTLS::No, PrivateRelayed::No, std::nullopt, [this, protectedThis = Ref { *this }](PolicyAction policyAction) {
@@ -360,8 +325,6 @@ void NetworkDataTaskCurl::invokeDidReceiveResponse()
             download->didCreateDestination(m_pendingDownloadLocation);
             if (m_curlRequest)
                 m_curlRequest->completeDidReceiveResponse();
-            else if (firstRequest().url().protocolIsData())
-                downloadDataURL(download);
             break;
         }
         default:
