@@ -747,9 +747,7 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPlaywrightAgent::setIgnoreCert
     if (!errorString.isEmpty())
         return makeUnexpected(errorString);
 
-    PAL::SessionID sessionID = browserContext->dataStore->sessionID();
-    NetworkProcessProxy& networkProcess = browserContext->dataStore->networkProcess();
-    networkProcess.send(Messages::NetworkProcess::SetIgnoreCertificateErrors(sessionID, ignore), 0);
+    browserContext->dataStore->setIgnoreTLSErrors(ignore);
     return { };
 }
 

@@ -805,7 +805,7 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 
     if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
         sessionCocoa->setClientAuditToken(challenge);
-        if (sessionCocoa->ignoreCertificateErrors())
+        if (sessionCocoa->ignoreTLSErrors())
             return completionHandler(NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]);
 
         negotiatedLegacyTLS = checkForLegacyTLS(task._incompleteTaskMetrics.transactionMetrics.lastObject);

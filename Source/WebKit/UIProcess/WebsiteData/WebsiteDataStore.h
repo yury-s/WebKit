@@ -328,12 +328,12 @@ public:
     const WebCore::CurlProxySettings& networkProxySettings() const { return m_proxySettings; }
 #endif
 
-#if USE(SOUP) || PLATFORM(COCOA) || PLATFORM(WIN)
+#if USE(SOUP)
     void setPersistentCredentialStorageEnabled(bool);
     bool persistentCredentialStorageEnabled() const { return m_persistentCredentialStorageEnabled && isPersistent(); }
+#endif
     void setIgnoreTLSErrors(bool);
     bool ignoreTLSErrors() const { return m_ignoreTLSErrors; }
-#endif
 #if USE(SOUP)
     void setNetworkProxySettings(WebCore::SoupNetworkProxySettings&&);
     const WebCore::SoupNetworkProxySettings& networkProxySettings() const { return m_networkProxySettings; }
@@ -634,10 +634,10 @@ private:
     WebCore::CurlProxySettings m_proxySettings;
 #endif
 
-#if USE(SOUP) || PLATFORM(COCOA) || PLATFORM(WIN)
+#if USE(SOUP)
     bool m_persistentCredentialStorageEnabled { true };
-    bool m_ignoreTLSErrors { true };
 #endif
+    bool m_ignoreTLSErrors { false };
 #if USE(SOUP)
     WebCore::SoupNetworkProxySettings m_networkProxySettings;
     String m_cookiePersistentStoragePath;
