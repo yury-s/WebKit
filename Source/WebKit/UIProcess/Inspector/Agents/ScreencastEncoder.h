@@ -32,8 +32,8 @@
 #include <wtf/ThreadSafeRefCounted.h>
 #include <wtf/WeakPtr.h>
 
-#if USE(CAIRO) || PLATFORM(GTK)
-#include <cairo.h>
+#if USE(SKIA)
+#include <skia/core/SkImage.h>
 #endif
 
 namespace WebKit {
@@ -52,10 +52,8 @@ public:
     ScreencastEncoder(std::unique_ptr<VPXCodec>&&, WebCore::IntSize);
     ~ScreencastEncoder();
 
-#if USE(SKIA) && !PLATFORM(GTK)
+#if USE(SKIA)
     void encodeFrame(sk_sp<SkImage>&&, WebCore::IntSize);
-#elif USE(CAIRO) || PLATFORM(GTK)
-    void encodeFrame(cairo_surface_t*, WebCore::IntSize);
 #elif PLATFORM(MAC)
     void encodeFrame(RetainPtr<CGImageRef>&&);
     void setOffsetTop(int offset) { m_offsetTop = offset;}

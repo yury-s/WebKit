@@ -43,10 +43,6 @@
 #include <skia/core/SkImage.h>
 #endif
 
-#if USE(CAIRO) || PLATFORM(GTK)
-#include <cairo.h>
-#endif
-
 namespace Inspector {
 class BackendDispatcher;
 class FrontendChannel;
@@ -122,11 +118,8 @@ public:
 #if ENABLE(REMOTE_INSPECTOR)
     void setIndicating(bool);
 #endif
-#if USE(SKIA) && !PLATFORM(GTK)
+#if USE(SKIA)
     void didPaint(sk_sp<SkImage>&&);
-#endif
-#if USE(CAIRO) || PLATFORM(GTK)
-    void didPaint(cairo_surface_t*);
 #endif
     using NavigationHandler = Function<void(const String&, Markable<WebCore::NavigationIdentifier>)>;
     void navigate(WebCore::ResourceRequest&&, WebFrameProxy*, NavigationHandler&&);

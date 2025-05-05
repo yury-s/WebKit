@@ -270,22 +270,13 @@ void WebPageInspectorController::setIndicating(bool indicating)
 }
 #endif
 
-#if USE(SKIA) && !PLATFORM(GTK)
+#if USE(SKIA)
 void WebPageInspectorController::didPaint(sk_sp<SkImage>&& surface)
 {
     if (!m_frontendRouter->hasFrontends())
         return;
 
     m_screecastAgent->didPaint(WTFMove(surface));
-}
-#endif
-#if USE(CAIRO) || PLATFORM(GTK)
-void WebPageInspectorController::didPaint(cairo_surface_t* surface)
-{
-    if (!m_frontendRouter->hasFrontends())
-        return;
-
-    m_screecastAgent->didPaint(surface);
 }
 #endif
 

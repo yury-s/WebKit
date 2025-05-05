@@ -29,10 +29,6 @@
 #include <JavaScriptCore/InspectorBackendDispatchers.h>
 #include <JavaScriptCore/InspectorFrontendDispatchers.h>
 
-#if USE(CAIRO) || PLATFORM(GTK)
-#include <cairo.h>
-#endif
-
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/WeakPtr.h>
@@ -68,11 +64,8 @@ public:
     void didCreateFrontendAndBackend(Inspector::FrontendRouter*, Inspector::BackendDispatcher*) override;
     void willDestroyFrontendAndBackend(Inspector::DisconnectReason) override;
 
-#if USE(SKIA) && !PLATFORM(GTK)
+#if USE(SKIA)
     void didPaint(sk_sp<SkImage>&& surface);
-#endif
-#if USE(CAIRO) || PLATFORM(GTK)
-    void didPaint(cairo_surface_t*);
 #endif
 
     Inspector::Protocol::ErrorStringOr<String /* screencastID */> startVideo(const String& file, int width, int height, int toolbarHeight) override;

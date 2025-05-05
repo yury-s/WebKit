@@ -527,9 +527,6 @@ void WebKitWebViewClient::frameDisplayed(WKWPE::View&)
     sk_sp<SkImage> surface(webkitWebViewBackendTakeScreenshot(m_webView->priv->backend.get()));
     if (surface)
         getPage(m_webView).inspectorController().didPaint(WTFMove(surface));
-#elif USE(CAIRO)
-    if (RefPtr<cairo_surface_t> surface = adoptRef(webkitWebViewBackendTakeScreenshot(m_webView->priv->backend.get())))
-        getPage(m_webView).inspectorController().didPaint(surface.get());
 #endif
 
     {
@@ -552,11 +549,6 @@ void WebKitWebViewClient::frameDisplayed(WKWPE::View&)
 sk_sp<SkImage> WebKitWebViewClient::takeViewScreenshot()
 {
     return sk_sp<SkImage>(webkitWebViewBackendTakeScreenshot(m_webView->priv->backend.get()));
-}
-#elif USE(CAIRO)
-cairo_surface_t* WebKitWebViewClient::takeViewScreenshot()
-{
-    return webkitWebViewBackendTakeScreenshot(m_webView->priv->backend.get());
 }
 #endif
 

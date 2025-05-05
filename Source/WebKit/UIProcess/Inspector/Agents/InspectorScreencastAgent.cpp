@@ -51,12 +51,6 @@
 #include <skia/encode/SkJpegEncoder.h>
 #endif
 
-#if USE(CAIRO) || PLATFORM(GTK)
-#include "CairoJpegEncoder.h"
-#include "DrawingAreaProxyCoordinatedGraphics.h"
-#include "DrawingAreaProxy.h"
-#endif
-
 #if PLATFORM(MAC)
 #include <WebCore/ImageBufferUtilitiesCG.h>
 #endif
@@ -99,7 +93,7 @@ void InspectorScreencastAgent::willDestroyFrontendAndBackend(DisconnectReason)
     m_encoder = nullptr;
 }
 
-#if USE(SKIA) && !PLATFORM(GTK)
+#if USE(SKIA)
 void InspectorScreencastAgent::didPaint(sk_sp<SkImage>&& surface)
 {
     sk_sp<SkImage> image(surface);
@@ -163,66 +157,6 @@ void InspectorScreencastAgent::didPaint(sk_sp<SkImage>&& surface)
         }
         sk_sp<SkData> jpegData = stream.detachAsData();
         String result = base64EncodeToString(std::span(reinterpret_cast<const unsigned char*>(jpegData->data()), jpegData->size()));
-        ++m_screencastFramesInFlight;
-        m_frontendDispatcher->screencastFrame(result, displaySize.width(), displaySize.height());
-    }
-}
-#endif
-
-#if USE(CAIRO) || PLATFORM(GTK)
-void InspectorScreencastAgent::didPaint(cairo_surface_t* surface)
-{
-#if PLATFORM(WPE)
-    // Get actual image size (in device pixels).
-    WebCore::IntSize displaySize(cairo_image_surface_get_width(surface), cairo_image_surface_get_height(surface));
-
-    WebCore::IntSize drawingAreaSize = m_page.drawingArea()->size();
-    drawingAreaSize.scale(m_page.deviceScaleFactor());
-    if (drawingAreaSize != displaySize) {
-        return;
-    }
-
-#else
-    WebCore::IntSize displaySize = m_page.drawingArea()->size();
-#endif
-    if (m_encoder)
-        m_encoder->encodeFrame(surface, displaySize);
-    if (m_screencast) {
-
-        {
-            // Do not send the same frame over and over.
-            unsigned char *data = cairo_image_surface_get_data(surface);
-            int stride = cairo_image_surface_get_stride(surface);
-            int height = cairo_image_surface_get_height(surface);
-            auto cryptoDigest = PAL::CryptoDigest::create(PAL::CryptoDigest::Algorithm::SHA_1);
-            cryptoDigest->addBytes(std::span(data, stride * height));
-            auto digest = cryptoDigest->computeHash();
-            if (m_lastFrameDigest == digest)
-                return;
-            m_lastFrameDigest = digest;
-        }
-
-        if (m_screencastFramesInFlight > kMaxFramesInFlight)
-            return;
-        // Scale image to fit width / height
-        double scale = std::min(m_screencastWidth / displaySize.width(), m_screencastHeight / displaySize.height());
-        RefPtr<cairo_surface_t> scaledSurface;
-        if (scale < 1) {
-            WebCore::IntSize scaledSize = displaySize;
-            scaledSize.scale(scale);
-            cairo_matrix_t transform;
-            cairo_matrix_init_scale(&transform, scale, scale);
-            scaledSurface = adoptRef(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, scaledSize.width(), scaledSize.height()));
-            RefPtr<cairo_t> cr = adoptRef(cairo_create(scaledSurface.get()));
-            cairo_transform(cr.get(), &transform);
-            cairo_set_source_surface(cr.get(), surface, 0, 0);
-            cairo_paint(cr.get());
-            surface = scaledSurface.get();
-        }
-        unsigned char *data = nullptr;
-        size_t len = 0;
-        cairo_image_surface_write_to_jpeg_mem(surface, &data, &len, m_screencastQuality);
-        String result = base64EncodeToString(std::span(data, len));
         ++m_screencastFramesInFlight;
         m_frontendDispatcher->screencastFrame(result, displaySize.width(), displaySize.height());
     }

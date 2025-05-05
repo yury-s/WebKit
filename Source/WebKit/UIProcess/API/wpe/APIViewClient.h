@@ -26,9 +26,6 @@
 #pragma once
 
 #include "UserMessage.h"
-#if USE(CAIRO)
-#include <cairo.h>
-#endif
 #if USE(SKIA)
 #include <skia/core/SkImage.h>
 #endif
@@ -57,9 +54,7 @@ public:
 
     virtual void frameDisplayed(WKWPE::View&) { }
 // Playwright begin
-#if USE(CAIRO)
-    virtual cairo_surface_t* takeViewScreenshot() { return nullptr; }
-#elif USE(SKIA)
+#if USE(SKIA)
     virtual sk_sp<SkImage> takeViewScreenshot() { return nullptr; }
 #endif
 // Playwright end

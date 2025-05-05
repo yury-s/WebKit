@@ -67,7 +67,7 @@ public:
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
 
     void paint(PlatformPaintContextPtr, const WebCore::IntRect&);
-#if PLATFORM(GTK) || USE(CAIRO)
+#if PLATFORM(GTK)
     RefPtr<cairo_surface_t> surface() const { return m_surface; }
 #elif USE(SKIA)
     sk_sp<SkSurface> surface() const { return m_surface; }

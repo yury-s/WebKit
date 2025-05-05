@@ -46,6 +46,10 @@
 #if PLATFORM(GTK)
 #include "WebKitWebViewBasePrivate.h"
 #include <gtk/gtk.h>
+#include <cairo.h>
+#include <skia/core/SkImage.h>
+#include <skia/core/SkSurface.h>
+#include <skia/core/SkCanvas.h>
 #endif
 
 #if USE(GLIB_EVENT_LOOP)
@@ -273,7 +277,26 @@ void DrawingAreaProxyCoordinatedGraphics::captureFrame()
     if (!surface)
         return;
 
-    protectedWebPageProxy()->inspectorController().didPaint(surface.get());
+    if (cairo_surface_get_type(surface.get()) != CAIRO_SURFACE_TYPE_IMAGE)
+        return;
+
+    unsigned char* data   = cairo_image_surface_get_data(surface.get());
+    int width             = cairo_image_surface_get_width(surface.get());
+    int height            = cairo_image_surface_get_height(surface.get());
+    int stride            = cairo_image_surface_get_stride(surface.get());
+
+    SkImageInfo info = SkImageInfo::Make(
+        width, height,
+        kBGRA_8888_SkColorType,  // matches CAIRO_FORMAT_ARGB32 on LE
+        kPremul_SkAlphaType
+    );
+    sk_sp<SkSurface> skSurface = SkSurfaces::WrapPixels(info, data, stride);
+    if (!skSurface)
+        return;
+
+    sk_sp<SkImage> skImage = skSurface->makeImageSnapshot();
+
+    protectedWebPageProxy()->inspectorController().didPaint(WTFMove(skImage));
 }
 #endif // PLATFORM(GTK)
 

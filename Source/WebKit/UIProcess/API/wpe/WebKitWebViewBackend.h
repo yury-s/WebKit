@@ -28,10 +28,6 @@
 #include <wpe/WebKitDefines.h>
 #include <wpe/wpe.h>
 
-#if defined(USE_CAIRO) && USE_CAIRO
-#include <cairo.h>
-using PlatformImage = cairo_surface_t*;
-#endif
 #if defined(USE_SKIA) && USE_SKIA
 #include <skia/core/SkImage.h>
 using PlatformImage = SkImage*;
