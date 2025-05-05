@@ -207,6 +207,12 @@ public:
 
     void lowMemoryHandler(WTF::Critical);
 
+// Playwright begin
+// Should be non-virtual once each platform supports it.
+    virtual void setIgnoreTLSErrors(bool ignore) { m_ignoreTLSErrors = ignore; }
+    bool ignoreTLSErrors() { return m_ignoreTLSErrors; }
+// Playwright end
+
     void removeSoftUpdateLoader(ServiceWorkerSoftUpdateLoader* loader) { m_softUpdateLoaders.remove(loader); }
     void addNavigationPreloaderTask(ServiceWorkerFetchTask&);
     ServiceWorkerFetchTask* navigationPreloaderTaskFromFetchIdentifier(WebCore::FetchIdentifier);
@@ -349,6 +355,7 @@ protected:
     bool m_privateClickMeasurementDebugModeEnabled { false };
     std::optional<WebCore::PrivateClickMeasurement> m_ephemeralMeasurement;
     bool m_isRunningEphemeralMeasurementTest { false };
+    bool m_ignoreTLSErrors { false };
 
     HashSet<Ref<NetworkResourceLoader>> m_keptAliveLoads;
 
