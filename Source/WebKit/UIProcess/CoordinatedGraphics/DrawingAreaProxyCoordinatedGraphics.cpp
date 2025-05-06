@@ -290,11 +290,9 @@ void DrawingAreaProxyCoordinatedGraphics::captureFrame()
         kBGRA_8888_SkColorType,  // matches CAIRO_FORMAT_ARGB32 on LE
         kPremul_SkAlphaType
     );
-    sk_sp<SkSurface> skSurface = SkSurfaces::WrapPixels(info, data, stride);
-    if (!skSurface)
+    sk_sp<SkImage> skImage = SkImages::RasterFromData(info, SkData::MakeWithoutCopy(data, height * stride), stride);
+    if (!skImage)
         return;
-
-    sk_sp<SkImage> skImage = skSurface->makeImageSnapshot();
 
     protectedWebPageProxy()->inspectorController().didPaint(WTFMove(skImage));
 }
