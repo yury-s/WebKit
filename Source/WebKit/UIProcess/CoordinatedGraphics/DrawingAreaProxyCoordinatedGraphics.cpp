@@ -290,7 +290,7 @@ void DrawingAreaProxyCoordinatedGraphics::captureFrame()
         kBGRA_8888_SkColorType,  // matches CAIRO_FORMAT_ARGB32 on LE
         kPremul_SkAlphaType
     );
-    sk_sp<SkImage> skImage = SkImages::RasterFromData(info, SkData::MakeWithoutCopy(data, height * stride), stride);
+    sk_sp<SkImage> skImage = SkImages::RasterFromData(info, SkData::MakeWithCopy(data, height * stride), stride);
     if (!skImage)
         return;
 
