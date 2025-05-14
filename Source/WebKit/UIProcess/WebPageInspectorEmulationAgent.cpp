@@ -102,10 +102,10 @@ Inspector::Protocol::ErrorStringOr<void> WebPageInspectorEmulationAgent::setJava
 
 Inspector::Protocol::ErrorStringOr<void> WebPageInspectorEmulationAgent::setAuthCredentials(const String& username, const String& password, const String& origin)
 {
-    if (!username.isEmpty() && !password.isEmpty())
-        m_page.setAuthCredentialsForAutomation(WebCore::Credential(username, password, WebCore::CredentialPersistence::Permanent), URL(origin));
-    else
+    if (username.isEmpty() && password.isEmpty())
         m_page.setAuthCredentialsForAutomation(std::nullopt, std::nullopt);
+    else
+        m_page.setAuthCredentialsForAutomation(WebCore::Credential(username, password, WebCore::CredentialPersistence::Permanent), URL(origin));
     return { };
 }
 
