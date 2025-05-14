@@ -84,7 +84,6 @@ class SessionID;
 
 namespace WebCore {
 class CertificateInfo;
-struct Cookie;
 class CurlProxySettings;
 class ProtectionSpace;
 class NetworkStorageSession;
@@ -236,7 +235,6 @@ public:
 
     void registrableDomainsWithLastAccessedTime(PAL::SessionID, CompletionHandler<void(std::optional<HashMap<RegistrableDomain, WallTime>>&&)>&&);
     void registrableDomainsExemptFromWebsiteDataDeletion(PAL::SessionID, CompletionHandler<void(HashSet<RegistrableDomain>)>&&);
-
     void clearPrevalentResource(PAL::SessionID, RegistrableDomain&&, CompletionHandler<void()>&&);
     void clearUserInteraction(PAL::SessionID, RegistrableDomain&&, CompletionHandler<void()>&&);
     void deleteAndRestrictWebsiteDataForRegistrableDomains(PAL::SessionID, OptionSet<WebsiteDataType>, RegistrableDomainsToDeleteOrRestrictWebsiteDataFor&&, CompletionHandler<void(HashSet<RegistrableDomain>&&)>&&);
@@ -544,8 +542,8 @@ private:
     void setProxyConfigData(PAL::SessionID, Vector<std::pair<Vector<uint8_t>, std::optional<WTF::UUID>>>&& proxyConfigurations);
 #endif
     
-    void setIgnoreTLSErrors(PAL::SessionID, bool);
 #if USE(SOUP)
+    void setIgnoreTLSErrors(PAL::SessionID, bool);
     void userPreferredLanguagesChanged(const Vector<String>&);
     void setNetworkProxySettings(PAL::SessionID, WebCore::SoupNetworkProxySettings&&);
     void setPersistentCredentialStorageEnabled(PAL::SessionID, bool);
