@@ -12334,6 +12334,11 @@ bool WebPageProxy::shouldSendAutomationCredentialsForProtectionSpace(const WebPr
 
 void WebPageProxy::didReceiveAuthenticationChallengeProxy(Ref<AuthenticationChallengeProxy>&& authenticationChallenge, NegotiatedLegacyTLS negotiatedLegacyTLS)
 {
+    if (authenticationChallenge->core().protectionSpace().authenticationScheme() == WebCore::ProtectionSpaceBaseAuthenticationScheme::ServerTrustEvaluationRequested && websiteDataStore().ignoreTLSErrors()) {
+        authenticationChallenge->listener().completeChallenge(AuthenticationChallengeDisposition::UseCredential, WebCore::Credential("accept server trust"_s, ""_s, WebCore::CredentialPersistence::None));
+        return;
+    }
+
     if (m_credentialsForAutomation.has_value()) {
         if (m_credentialsForAutomation->isEmpty() || authenticationChallenge->core().previousFailureCount() ||
             !shouldSendAutomationCredentialsForProtectionSpace(*authenticationChallenge->protectionSpace())) {

@@ -2062,15 +2062,10 @@ void WebsiteDataStore::setCacheModelSynchronouslyForTesting(CacheModel cacheMode
 }
 
 // Playwright begin
-// Copy of Soup implementation.
 #if !USE(SOUP)
 void WebsiteDataStore::setIgnoreTLSErrors(bool ignoreTLSErrors)
 {
-    if (m_ignoreTLSErrors == ignoreTLSErrors)
-        return;
-
     m_ignoreTLSErrors = ignoreTLSErrors;
-    networkProcess().send(Messages::NetworkProcess::SetIgnoreTLSErrors(m_sessionID, m_ignoreTLSErrors), 0);
 }
 #endif
 // Playwright begin
@@ -2228,9 +2223,6 @@ WebsiteDataStoreParameters WebsiteDataStore::parameters()
 
     parameters.networkSessionParameters = WTFMove(networkSessionParameters);
     parameters.networkSessionParameters.resourceLoadStatisticsParameters.enabled = trackingPreventionEnabled();
-// Playwright begin
-    parameters.networkSessionParameters.ignoreTLSErrors = m_ignoreTLSErrors;
-// Playwright end
     platformSetNetworkParameters(parameters);
 #if PLATFORM(COCOA)
     parameters.networkSessionParameters.useNetworkLoader = useNetworkLoader();
