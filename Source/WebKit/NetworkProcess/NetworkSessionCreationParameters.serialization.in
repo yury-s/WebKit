@@ -45,10 +45,10 @@ enum class WebKit::AllowsCellularAccess : bool;
     String cookiePersistentStoragePath;
     WebKit::SoupCookiePersistentStorageType cookiePersistentStorageType;
     bool persistentCredentialStorageEnabled;
-    bool ignoreTLSErrors;
     WebCore::SoupNetworkProxySettings proxySettings;
     WebCore::HTTPCookieAcceptPolicy cookieAcceptPolicy;
 #endif
+    bool ignoreTLSErrors;
 #if USE(CURL)
     String cookiePersistentStorageFile;
     WebCore::CurlProxySettings proxySettings;

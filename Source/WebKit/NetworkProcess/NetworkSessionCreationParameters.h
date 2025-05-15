@@ -71,10 +71,10 @@ struct NetworkSessionCreationParameters {
     String cookiePersistentStoragePath;
     SoupCookiePersistentStorageType cookiePersistentStorageType { SoupCookiePersistentStorageType::Text };
     bool persistentCredentialStorageEnabled { true };
-    bool ignoreTLSErrors { false };
     WebCore::SoupNetworkProxySettings proxySettings;
     WebCore::HTTPCookieAcceptPolicy cookieAcceptPolicy { WebCore::HTTPCookieAcceptPolicy::ExclusivelyFromMainDocumentDomain };
 #endif
+    bool ignoreTLSErrors { false };
 #if USE(CURL)
     String cookiePersistentStorageFile;
     WebCore::CurlProxySettings proxySettings;

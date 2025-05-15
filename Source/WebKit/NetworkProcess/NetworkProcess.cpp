@@ -672,6 +672,16 @@ void NetworkProcess::registrableDomainsExemptFromWebsiteDataDeletion(PAL::Sessio
     completionHandler({ });
 }
 
+// Playwright begin
+#if !USE(SOUP)
+void NetworkProcess::setIgnoreTLSErrors(PAL::SessionID sessionID, bool ignoreTLSErrors)
+{
+    if (auto* session = networkSession(sessionID))
+        session->setIgnoreTLSErrors(ignoreTLSErrors);
+}
+#endif
+// Playwright end
+
 void NetworkProcess::dumpResourceLoadStatistics(PAL::SessionID sessionID, CompletionHandler<void(String)>&& completionHandler)
 {
     if (auto* session = networkSession(sessionID)) {
