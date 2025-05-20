@@ -2874,6 +2874,11 @@ void webkitWebViewBaseResetClickCounter(WebKitWebViewBase* webkitWebViewBase)
 #endif
 }
 
+WebKit::AcceleratedBackingStore* webkitWebViewBaseGetAcceleratedBackingStore(WebKitWebViewBase* webkitWebViewBase)
+{
+    return webkitWebViewBase->priv->acceleratedBackingStore.get();
+}
+
 void webkitWebViewBaseEnterAcceleratedCompositingMode(WebKitWebViewBase* webkitWebViewBase, const LayerTreeContext& layerTreeContext)
 {
     ASSERT(webkitWebViewBase->priv->acceleratedBackingStore);
@@ -2930,12 +2935,12 @@ void webkitWebViewBasePageClosed(WebKitWebViewBase* webkitWebViewBase)
         webkitWebViewBase->priv->acceleratedBackingStore->update({ });
 }
 
-RefPtr<WebKit::ViewSnapshot> webkitWebViewBaseTakeViewSnapshot(WebKitWebViewBase* webkitWebViewBase, std::optional<IntRect>&& clipRect)
+RefPtr<WebKit::ViewSnapshot> webkitWebViewBaseTakeViewSnapshot(WebKitWebViewBase* webkitWebViewBase, std::optional<IntRect>&& clipRect, bool nominalResolution)
 {
     WebPageProxy* page = webkitWebViewBase->priv->pageProxy.get();
 
     IntSize size = clipRect ? clipRect->size() : page->viewSize();
-    float deviceScale = page->deviceScaleFactor();
+    float deviceScale = nominalResolution ? 1 : page->deviceScaleFactor();
     size.scale(deviceScale);
 
 #if !USE(GTK4)
