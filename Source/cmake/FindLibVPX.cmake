@@ -1,7 +1,9 @@
 # Find LibVPX
 
 find_package(PkgConfig QUIET)
-pkg_check_modules(PC_LIBVPX REQUIRED vpx)
+if (PkgConfig_FOUND)
+    pkg_check_modules(PC_LIBVPX REQUIRED vpx)
+endif ()
 
 find_path(LIBVPX_INCLUDE_DIRS
     NAMES vpx/vp8.h
