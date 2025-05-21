@@ -101,7 +101,7 @@
   "overrides": [
     {
       "name": "libvpx",
-      "version": "1.13.1#4"
+      "version": "1.13.1#3"
     }
   ]
 }
