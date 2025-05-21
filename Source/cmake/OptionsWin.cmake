@@ -56,24 +56,7 @@ find_package(LibPSL 0.20.2 REQUIRED)
 find_package(WebP REQUIRED COMPONENTS demux)
 
 # Playwright begin
-set(LIBVPX_PACKAGE_PATH "C:\\vcpkg\\packages\\libvpx_x64-windows")
-file(TO_CMAKE_PATH "${LIBVPX_PACKAGE_PATH}" LIBVPX_PACKAGE_PATH)
-message(STATUS "Using LIBVPX_PACKAGE_PATH = ${LIBVPX_PACKAGE_PATH}")
-
-find_library(LIBVPX_CUSTOM_LIBRARY vpx.lib
-    HINTS ${LIBVPX_PACKAGE_PATH}/lib
-    REQUIRED
-    NO_DEFAULT_PATH
-)
-message(STATUS "Found LIBVPX_CUSTOM_LIBRARY = ${LIBVPX_CUSTOM_LIBRARY}")
-
-find_path(LIBVPX_CUSTOM_INCLUDE_DIR
-    NAMES vpx/vp8.h
-    HINTS ${LIBVPX_PACKAGE_PATH}/include
-    REQUIRED
-    NO_DEFAULT_PATH
-)
-message(STATUS "Found LIBVPX_CUSTOM_INCLUDE_DIR = ${LIBVPX_CUSTOM_INCLUDE_DIR}")
+find_package(LibVPX REQUIRED)
 # Playwright end
 
 WEBKIT_OPTION_BEGIN()
