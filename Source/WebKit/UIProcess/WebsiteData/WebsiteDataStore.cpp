@@ -2061,6 +2061,15 @@ void WebsiteDataStore::setCacheModelSynchronouslyForTesting(CacheModel cacheMode
         processPool->setCacheModelSynchronouslyForTesting(cacheModel);
 }
 
+// Playwright begin
+#if !USE(SOUP)
+void WebsiteDataStore::setIgnoreTLSErrors(bool ignoreTLSErrors)
+{
+    m_ignoreTLSErrors = ignoreTLSErrors;
+}
+#endif
+// Playwright begin
+
 Vector<WebsiteDataStoreParameters> WebsiteDataStore::parametersFromEachWebsiteDataStore()
 {
     return WTF::map(allDataStores(), [](auto& entry) {
@@ -2507,6 +2516,12 @@ void WebsiteDataStore::renameOriginInWebsiteData(WebCore::SecurityOriginData&& o
 void WebsiteDataStore::originDirectoryForTesting(WebCore::ClientOrigin&& origin, OptionSet<WebsiteDataType> type, CompletionHandler<void(const String&)>&& completionHandler)
 {
     protectedNetworkProcess()->websiteDataOriginDirectoryForTesting(m_sessionID, WTFMove(origin), type, WTFMove(completionHandler));
+}
+
+void WebsiteDataStore::setDownloadForAutomation(std::optional<bool> allow, const String& downloadPath)
+{
+    m_allowDownloadForAutomation = allow;
+    m_downloadPathForAutomation = downloadPath;
 }
 
 #if ENABLE(APP_BOUND_DOMAINS)

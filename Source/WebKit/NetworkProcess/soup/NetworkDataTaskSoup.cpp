@@ -461,6 +461,8 @@ void NetworkDataTaskSoup::didSendRequest(GRefPtr<GInputStream>&& inputStream)
     m_networkLoadMetrics.responseStart = MonotonicTime::now();
 #endif
 
+    auto& additionalMetrics = additionalNetworkLoadMetricsForWebInspector();
+    m_response.m_httpRequestHeaderFields = additionalMetrics.requestHeaders;
     dispatchDidReceiveResponse();
 }
 
