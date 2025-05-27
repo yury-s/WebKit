@@ -102,7 +102,6 @@ platform/xdg/MIMETypeRegistryXdg.cpp
 
 // Playwright: begin.
 platform/wpe/DragDataWPE.cpp
-platform/wpe/DragImageWPE.cpp
 
 JSSpeechSynthesisErrorCode.cpp
 JSSpeechSynthesisErrorEvent.cpp

@@ -33,6 +33,7 @@
 #include "FontSelector.h"
 #include "HWndDC.h"
 #include "Image.h"
+#include "NativeImage.h"
 #include "StringTruncator.h"
 #include "TextIndicator.h"
 #include "TextRun.h"
@@ -62,22 +63,16 @@ IntSize dragImageSize(DragImageRef image)
 {
     if (!image)
         return IntSize();
-    return { image->width(), image->height() };
+    BITMAP b;
+    GetObject(image, sizeof(BITMAP), &b);
+    return IntSize(b.bmWidth, b.bmHeight);
 }
 
-#if USE(CAIRO)
 void deleteDragImage(DragImageRef image)
 {
     if (image)
         ::DeleteObject(image);
 }
-#else
-void deleteDragImage(DragImageRef)
-{
-    // Since this is a RefPtr, there's nothing additional we need to do to
-    // delete it. It will be released when it falls out of scope.
-}
-#endif
 
 DragImageRef dissolveDragImageToFraction(DragImageRef image, float)
 {
@@ -85,9 +80,8 @@ DragImageRef dissolveDragImageToFraction(DragImageRef image, float)
     return image;
 }
         
-DragImageRef createDragImageIconForCachedImageFilename(const String&)
+DragImageRef createDragImageIconForCachedImageFilename(const String& filename)
 {
-#if USE(CAIRO)
     SHFILEINFO shfi { };
     auto fname = filename.wideCharacters();
     if (FAILED(SHGetFileInfo(fname.data(), FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi), SHGFI_ICON | SHGFI_USEFILEATTRIBUTES)))
@@ -103,9 +97,6 @@ DragImageRef createDragImageIconForCachedImageFilename(const String&)
     DeleteObject(iconInfo.hbmMask);
 
     return iconInfo.hbmColor;
-#else
-    return nullptr;
-#endif
 }
 
 #if USE(CAIRO)
