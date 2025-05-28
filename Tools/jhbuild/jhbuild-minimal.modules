@@ -5,17 +5,17 @@
 
   <metamodule id="webkitgtk-minimal-dependencies">
     <dependencies>
-      <dep package="icu"/>
-      <dep package="harfbuzz"/>
-      <dep package="libxml2"/>
       <dep package="glib"/>
       <dep package="glib-networking"/>
+      <dep package="harfbuzz"/>
+      <dep package="icu"/>
       <dep package="libavif"/>
       <dep package="libdrm"/>
       <dep package="libjxl"/>
       <dep package="libsoup"/>
       <dep package="libvpx"/>
-      <dep package="wpebackend-fdo"/>
+      <dep package="libxml2"/>
+      <dep package="mesa"/>
     </dependencies>
   </metamodule>
 
@@ -31,6 +31,7 @@
       <dep package="libjxl"/>
       <dep package="libsoup"/>
       <dep package="libvpx"/>
+      <dep package="mesa"/>
       <dep package="wpebackend-fdo"/>
     </dependencies>
   </metamodule>
@@ -45,17 +46,19 @@
       href="https://gitlab.freedesktop.org"/>
   <repository type="git" name="github.com"
       href="https://github.com"/>
+  <repository type="git" name="gitlab.freedesktop.org"
+      href="https://gitlab.freedesktop.org"/>
   <!-- Tarball repositories. -->
   <repository type="tarball" name="github-tarball"
       href="https://github.com"/>
   <repository type="tarball" name="ftp.gnome.org"
       href="http://ftp.gnome.org"/>
 
-  <!-- meson 0.62.2 required to build gstreamer-1.22.7 -->
+  <!-- meson 1.1.0 required to build mesa 24.2.8 -->
   <if condition-set="require-meson">
     <distutils id="meson" python3="1">
       <branch module="mesonbuild/meson"
-              tag="0.62.2"
+              tag="1.1.0"
               repo="github.com"/>
     </distutils>
   </if>
@@ -63,6 +66,26 @@
 <!-- This moduleset is used when the environment variable WEBKIT_JHBUILD_MODULESET=minimal is set -->
 <!-- Its intended to allow building WebKit using as much as libraries from your distribution as possible -->
 <!-- In order to ensure its minimal, all the modules should have a pkg-config declaration line -->
+
+  <meson id="libglvnd">
+    <branch module="glvnd/libglvnd"
+            repo="gitlab.freedesktop.org"
+            tag="v1.7.0"
+            version="1.7.0"
+            checkoutdir="libglvnd-${version}" />
+  </meson>
+
+  <meson id="mesa" mesonargs="-Db_ndebug=true -Dbuild-tests=false -Ddri3=enabled -Degl=enabled -Dgallium-drivers=softpipe,llvmpipe,nouveau,zink -Dgallium-nine=true -Dgbm=enabled -Dgles1=disabled -Dgles2=enabled -Dglvnd=enabled -Dglx=auto -Dllvm=enabled -Dosmesa=true -Dplatforms=x11,wayland -Dselinux=false -Dshared-glapi=enabled -Dvulkan-layers=device-select,intel-nullhw,overlay -Dvulkan-drivers=swrast -Dxlib-lease=enabled">
+    <dependencies>
+      <dep package="libglvnd"/>
+    </dependencies>
+    <pkg-config>mesa.pc</pkg-config>
+    <branch module="mesa/mesa.git"
+            repo="gitlab.freedesktop.org"
+            tag="mesa-24.2.8"
+            version="24.2.8"
+            checkoutdir="mesa-${version}" />
+  </meson>
 
   <cmake id="libwpe">
     <branch repo="github-tarball"
