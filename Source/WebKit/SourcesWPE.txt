@@ -262,16 +262,12 @@ UIProcess/wpe/AcceleratedBackingStoreDMABuf.cpp
 UIProcess/wpe/InspectorTargetProxyWPE.cpp
 UIProcess/wpe/ScreenManagerWPE.cpp
 UIProcess/wpe/SystemSettingsManagerProxyWPE.cpp
-<<<<<<< HEAD
 UIProcess/wpe/WPEUtilities.cpp
-||||||| parent of 09b8cdabcbf7 (chore(webkit): bootstrap build #2180)
-=======
 UIProcess/wpe/WebColorPickerWPE.cpp
 UIProcess/wpe/WebDataListSuggestionsDropdownWPE.cpp
 UIProcess/wpe/WebDateTimePickerWPE.cpp
 UIProcess/wpe/WebPageInspectorEmulationAgentWPE.cpp
 UIProcess/wpe/WebPageInspectorInputAgentWPE.cpp
->>>>>>> 09b8cdabcbf7 (chore(webkit): bootstrap build #2180)
 UIProcess/wpe/WebPageProxyWPE.cpp
 UIProcess/wpe/WebPasteboardProxyWPE.cpp
 UIProcess/wpe/WebPreferencesWPE.cpp

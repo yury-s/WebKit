@@ -7841,7 +7841,6 @@ UseCGDisplayListsForDOMRendering:
       default: true
   sharedPreferenceForWebProcess: true
 
-<<<<<<< HEAD
 UseDamagingInformationForCompositing:
   type: bool
   status: testable
@@ -7857,10 +7856,7 @@ UseDamagingInformationForCompositing:
     WebCore:
       default: false
 
-||||||| parent of 09b8cdabcbf7 (chore(webkit): bootstrap build #2180)
-=======
 # Playwright: force-disable on Windows.
->>>>>>> 09b8cdabcbf7 (chore(webkit): bootstrap build #2180)
 UseGPUProcessForCanvasRenderingEnabled:
   type: bool
   status: stable
