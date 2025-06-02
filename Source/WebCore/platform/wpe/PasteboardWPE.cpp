@@ -27,6 +27,7 @@
 #include "Pasteboard.h"
 
 #if PLATFORM(WPE)
+#include "DragData.h"
 #include "Image.h"
 #include "MIMETypeRegistry.h"
 #include "NotImplemented.h"
@@ -43,6 +44,31 @@ std::unique_ptr<Pasteboard> Pasteboard::createForCopyAndPaste(std::unique_ptr<Pa
     return makeUnique<Pasteboard>(WTFMove(context), "CLIPBOARD"_s);
 }
 
+#if ENABLE(DRAG_SUPPORT)
+std::unique_ptr<Pasteboard> Pasteboard::createForDragAndDrop(std::unique_ptr<PasteboardContext>&& context)
+{
+    return makeUnique<Pasteboard>(WTFMove(context), SelectionData());
+}
+
+std::unique_ptr<Pasteboard> Pasteboard::create(const DragData& dragData)
+{
+    ASSERT(dragData.platformData());
+    return makeUnique<Pasteboard>(dragData.createPasteboardContext(), *dragData.platformData());
+}
+
+Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context, SelectionData&& selectionData)
+    : m_context(WTFMove(context))
+    , m_selectionData(WTFMove(selectionData))
+{
+}
+
+Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context, SelectionData& selectionData)
+    : m_context(WTFMove(context))
+    , m_selectionData(selectionData)
+{
+}
+#endif
+
 Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context, const String& name)
     : m_context(WTFMove(context))
     , m_name(name)
@@ -54,6 +80,17 @@ Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context)
     : m_context(WTFMove(context))
 {
 }
+
+Pasteboard::~Pasteboard() = default;
+
+#if ENABLE(DRAG_SUPPORT)
+const SelectionData& Pasteboard::selectionData() const
+{
+    ASSERT(m_selectionData);
+    return *m_selectionData;
+}
+#endif
+
 
 void Pasteboard::writeString(const String&, const String&)
 {
@@ -121,6 +158,12 @@ bool Pasteboard::canSmartReplace()
 {
     return false;
 }
+
+#if ENABLE(DRAG_SUPPORT)
+void Pasteboard::setDragImage(DragImage, const IntPoint&)
+{
+}
+#endif
 
 void Pasteboard::read(PasteboardPlainText& text, PlainTextURLReadingPolicy, std::optional<size_t>)
 {

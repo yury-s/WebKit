@@ -28,8 +28,8 @@
 #include "NotImplemented.h"
 #include "PasteboardStrategy.h"
 #include "PlatformStrategies.h"
+#include "SelectionData.h"
 #include "SharedBuffer.h"
-#include <wtf/NeverDestroyed.h>
 #include <wtf/URL.h>
 
 namespace WebCore {
@@ -70,13 +70,13 @@ Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context, SelectionDa
     , m_selectionData(WTFMove(selectionData))
 {
 }
-#endif
 
 Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context, SelectionData& selectionData)
     : m_context(WTFMove(context))
     , m_selectionData(selectionData)
 {
 }
+#endif
 
 Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context, const String& name)
     : m_context(WTFMove(context))
@@ -92,11 +92,13 @@ Pasteboard::Pasteboard(std::unique_ptr<PasteboardContext>&& context)
 
 Pasteboard::~Pasteboard() = default;
 
+#if ENABLE(DRAG_SUPPORT)
 const SelectionData& Pasteboard::selectionData() const
 {
     ASSERT(m_selectionData);
     return *m_selectionData;
 }
+#endif
 
 static ClipboardDataType selectionDataTypeFromHTMLClipboardType(const String& type)
 {

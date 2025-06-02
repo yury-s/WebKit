@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2010-2020 Apple Inc. All rights reserved.
+ * Copyright (C) 2011 Igalia S.L.
+ * Copyright (C) 2025 Microsoft Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,40 +30,31 @@
 #if ENABLE(DRAG_SUPPORT)
 
 #include "WebPage.h"
-#include <wtf/TZoneMallocInlines.h>
+#include "WebPageProxyMessages.h"
+#include <WebCore/DataTransfer.h>
+#include <WebCore/DragData.h>
+#include <WebCore/ElementIdentifier.h>
+#include <WebCore/Pasteboard.h>
+#include <WebCore/SelectionData.h>
+#include <WebCore/ShareableBitmap.h>
+
+#include <optional>
 
 namespace WebKit {
 using namespace WebCore;
 
-WTF_MAKE_TZONE_ALLOCATED_IMPL(WebDragClient);
-
-void WebDragClient::willPerformDragDestinationAction(DragDestinationAction action, const DragData&)
-{
-    if (action == DragDestinationAction::Load)
-        m_page->willPerformLoadDragDestinationAction();
-    else
-        m_page->mayPerformUploadDragDestinationAction(); // Upload can happen from a drop event handler, so we should prepare early.
-}
-
-void WebDragClient::willPerformDragSourceAction(DragSourceAction, const IntPoint&, DataTransfer&)
-{
-}
-
-OptionSet<DragSourceAction> WebDragClient::dragSourceActionMaskForPoint(const IntPoint&)
-{
-    return m_page->allowedDragSourceActions();
-}
-
-#if !PLATFORM(COCOA) && !PLATFORM(GTK) && !PLATFORM(WPE)
-void WebDragClient::startDrag(DragItem, DataTransfer&, Frame&, const std::optional<ElementIdentifier>&)
-{
-}
-
 void WebDragClient::didConcludeEditDrag()
 {
 }
-#endif
 
-} // namespace WebKit
+void WebDragClient::startDrag(DragItem, DataTransfer& dataTransfer, Frame&, const std::optional<ElementIdentifier>&)
+{
+    m_page->willStartDrag();
+
+    std::optional<ShareableBitmap::Handle> handle;
+    m_page->send(Messages::WebPageProxy::StartDrag(dataTransfer.pasteboard().selectionData(), dataTransfer.sourceOperationMask(), WTFMove(handle), dataTransfer.dragLocation()));
+}
+
+}; // namespace WebKit.
 
 #endif // ENABLE(DRAG_SUPPORT)
