@@ -61,11 +61,12 @@ typedef struct HBITMAP__ *HBITMAP;
 #include <wtf/RetainPtr.h>
 #endif
 
+#include "NativeImage.h"
+
 namespace WebCore {
 
 class Image;
 class IntSize;
-class NativeImage;
 
 class ImageAdapter {
     WTF_MAKE_TZONE_ALLOCATED(ImageAdapter);
