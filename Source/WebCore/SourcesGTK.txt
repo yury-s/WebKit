@@ -89,7 +89,6 @@ platform/graphics/x11/XErrorTrapper.cpp @no-unify
 
 platform/gtk/CursorGtk.cpp
 platform/gtk/DragDataGtk.cpp
-platform/gtk/DragImageGtk.cpp
 platform/gtk/GRefPtrGtk.cpp
 platform/gtk/GtkUtilities.cpp @no-unify
 platform/gtk/LocalizedStringsGtk.cpp
@@ -112,3 +111,10 @@ platform/unix/LoggingUnix.cpp
 platform/unix/SharedMemoryUnix.cpp
 
 platform/xdg/MIMETypeRegistryXdg.cpp
+
+// Playwright: begin.
+JSSpeechSynthesisErrorCode.cpp
+JSSpeechSynthesisErrorEvent.cpp
+JSSpeechSynthesisErrorEventInit.cpp
+JSSpeechSynthesisEventInit.cpp
+// Playwright: end.

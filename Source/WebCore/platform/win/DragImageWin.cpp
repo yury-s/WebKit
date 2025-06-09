@@ -33,6 +33,7 @@
 #include "FontSelector.h"
 #include "HWndDC.h"
 #include "Image.h"
+#include "NativeImage.h"
 #include "StringTruncator.h"
 #include "TextIndicator.h"
 #include "TextRun.h"
@@ -221,9 +222,9 @@ DragImageRef createDragImageForColor(const Color&, const FloatRect&, float, Path
 }
 
 #if USE(SKIA)
-DragImageRef createDragImageFromImage(Image*, ImageOrientation, GraphicsClient*, float)
+DragImageRef createDragImageFromImage(Image* image, ImageOrientation, GraphicsClient*, float)
 {
-    return nullptr;
+    return image->currentNativeImage()->platformImage();
 }
 
 DragImageRef scaleDragImage(DragImageRef, FloatSize)
