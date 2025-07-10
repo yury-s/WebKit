@@ -50,6 +50,7 @@
 #include "WebPageInspectorTarget.h"
 #include "WebPageMessages.h"
 #include "WebPageProxy.h"
+#include "WebPreferences.h"
 #include "WebProcessPool.h"
 #include "WebProcessProxy.h"
 #include "WebsiteDataRecord.h"
@@ -59,6 +60,7 @@
 #include <WebCore/ProcessIdentifier.h>
 #include <WebCore/ResourceRequest.h>
 #include <WebCore/SecurityOriginData.h>
+#include <WebCore/StorageBlockingPolicy.h>
 #include <WebCore/WindowFeatures.h>
 #include <JavaScriptCore/InspectorBackendDispatcher.h>
 #include <JavaScriptCore/InspectorFrontendChannel.h>
@@ -242,6 +244,33 @@ Ref<Inspector::Protocol::Playwright::Cookie> buildObjectForCookie(const WebCore:
         .release();
 }
 
+void adjustInspectedPagePreferences(WebPreferences& preferences, std::optional<bool> enableStoragePartitioning)
+{
+    // Set this to true as otherwise updating any preferences will override its
+    // value in the Web Process to false (and InspectorController sets it locally
+    // to true when frontend is connected).
+    preferences.setDeveloperExtrasEnabled(true);
+
+    // Navigation to cached pages doesn't fire some of the events (e.g. execution context created)
+    // that inspector depends on. So we disable the cache when front-end connects.
+    preferences.setUsesBackForwardCache(false);
+
+    // Enable popup debugging.
+    // TODO: allow to set preferences over the inspector protocol or find a better place for this.
+    preferences.setJavaScriptCanOpenWindowsAutomatically(true);
+
+    // Enable media stream.
+    if (!preferences.mediaDevicesEnabled()) {
+        preferences.setMediaDevicesEnabled(true);
+        preferences.setPeerConnectionEnabled(true);
+    }
+
+    if (!enableStoragePartitioning || !*enableStoragePartitioning) {
+        // Disable local storage partitioning. See https://github.com/microsoft/playwright/issues/32230
+        preferences.setStorageBlockingPolicy(static_cast<uint32_t>(WebCore::StorageBlockingPolicy::AllowAll));
+    }
+}
+
 }  // namespace
 
 BrowserContext::BrowserContext() = default;
@@ -389,6 +418,7 @@ void InspectorPlaywrightAgent::didCreateInspectorController(WebPageProxy& page)
 
     // Auto-connect to all new pages.
     auto pageProxyChannel = makeUnique<PageProxyChannel>(*m_frontendChannel, browserContextID, pageProxyID, page);
+    adjustInspectedPagePreferences(page.preferences(), browserContext->enableStoragePartitioning);
     page.inspectorController().connectFrontend(*pageProxyChannel);
     // Always pause new targets if controlled remotely.
     page.inspectorController().setPauseOnStart(true);
@@ -574,13 +604,14 @@ void InspectorPlaywrightAgent::closeImpl(Function<void(String)>&& callback)
 
 }
 
-Inspector::Protocol::ErrorStringOr<String /* browserContextID */> InspectorPlaywrightAgent::createContext(const String& proxyServer, const String& proxyBypassList)
+Inspector::Protocol::ErrorStringOr<String /* browserContextID */> InspectorPlaywrightAgent::createContext(const String& proxyServer, const String& proxyBypassList, std::optional<bool>&& enableStoragePartitioning)
 {
     String errorString;
     std::unique_ptr<BrowserContext> browserContext = m_client->createBrowserContext(errorString, proxyServer, proxyBypassList);
     if (!browserContext)
         return makeUnexpected(errorString);
 
+    browserContext->enableStoragePartitioning = WTFMove(enableStoragePartitioning);
     // Ensure network process.
     browserContext->dataStore->networkProcess();
     browserContext->dataStore->setDownloadInstrumentation(this);

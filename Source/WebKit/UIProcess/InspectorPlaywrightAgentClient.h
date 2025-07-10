@@ -54,6 +54,7 @@ public:
     RefPtr<WebProcessPool> processPool;
     HashSet<WebPageProxy*> pages;
     WeakPtr<OverridenGeolocationProvider> geolocationProvider;
+    std::optional<bool> enableStoragePartitioning;
 };
 
 class InspectorPlaywrightAgentClient {
