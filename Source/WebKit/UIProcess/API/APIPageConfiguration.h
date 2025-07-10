@@ -160,6 +160,10 @@ public:
     void setRelatedPage(WeakPtr<WebKit::WebPageProxy>&& relatedPage) { m_data.relatedPage = WTFMove(relatedPage); }
     RefPtr<WebKit::WebPageProxy> protectedRelatedPage() const;
 
+    // This is similar to relatedPage(), but it is also set for noopener links.
+    WebKit::WebPageProxy* openerPageForInspector() const;
+    void setOpenerPageForInspector(WeakPtr<WebKit::WebPageProxy>&& openerPageForInspector) { m_data.openerPageForInspector = WTFMove(openerPageForInspector); }
+
     WebKit::WebPageProxy* pageToCloneSessionStorageFrom() const;
     void setPageToCloneSessionStorageFrom(WeakPtr<WebKit::WebPageProxy>&&);
 
@@ -516,6 +520,7 @@ private:
 #endif
         RefPtr<WebKit::WebPageGroup> pageGroup;
         WeakPtr<WebKit::WebPageProxy> relatedPage;
+        WeakPtr<WebKit::WebPageProxy> openerPageForInspector;
         Box<std::optional<OpenerInfo>> openerInfo;
         WebCore::Site openedSite;
         WTF::String openedMainFrameName;

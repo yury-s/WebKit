@@ -273,6 +273,11 @@ RefPtr<WebPageProxy> PageConfiguration::protectedRelatedPage() const
     return relatedPage();
 }
 
+WebKit::WebPageProxy* PageConfiguration::openerPageForInspector() const
+{
+    return m_data.openerPageForInspector.get();
+}
+
 WebPageProxy* PageConfiguration::pageToCloneSessionStorageFrom() const
 {
     return m_data.pageToCloneSessionStorageFrom.get();

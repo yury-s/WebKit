@@ -145,6 +145,7 @@ public:
 #if PLATFORM(WPE) && USE(GBM) && ENABLE(WPE_PLATFORM)
     void preferredBufferFormatsDidChange();
 #endif
+
 private:
     void updateRootLayer();
     WebCore::FloatRect visibleContentsRect() const;
