@@ -93,7 +93,7 @@ private:
     Inspector::Protocol::ErrorStringOr<void> disable() override;
     Inspector::Protocol::ErrorStringOr<String> getInfo() override;
     void close(Ref<CloseCallback>&&) override;
-    Inspector::Protocol::ErrorStringOr<String /* browserContextID */> createContext(const String& proxyServer, const String& proxyBypassList) override;
+    Inspector::Protocol::ErrorStringOr<String /* browserContextID */> createContext(const String& proxyServer, const String& proxyBypassList, std::optional<bool>&& enableStoragePartitioning) override;
     void deleteContext(const String& browserContextID, Ref<DeleteContextCallback>&& callback) override;
     Inspector::Protocol::ErrorStringOr<String /* pageProxyID */> createPage(const String& browserContextID) override;
     void navigate(const String& url, const String& pageProxyID, const String& frameId, const String& referrer, Ref<NavigateCallback>&&) override;

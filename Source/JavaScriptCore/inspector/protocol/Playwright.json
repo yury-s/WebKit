@@ -103,7 +103,8 @@
             "description": "Creates new ephemeral browser context.",
             "parameters": [
                 { "name": "proxyServer", "type": "string", "optional": true, "description": "Proxy server, similar to the one passed to --proxy-server" },
-                { "name": "proxyBypassList", "type": "string", "optional": true, "description": "Proxy bypass list, similar to the one passed to --proxy-bypass-list" }
+                { "name": "proxyBypassList", "type": "string", "optional": true, "description": "Proxy bypass list, similar to the one passed to --proxy-bypass-list" },
+                { "name": "enableStoragePartitioning", "type": "boolean", "optional": true, "description": "Wether to use storage partitioning. Be default Playwright disables the partitioning." }
             ],
             "returns": [
                 { "name": "browserContextId", "$ref": "ContextID", "description": "Unique identifier of the context." }

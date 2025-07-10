@@ -39,9 +39,7 @@
 #include "WebPageInspectorInputAgent.h"
 #include "WebPageInspectorTarget.h"
 #include "WebPageProxy.h"
-#include "WebPreferences.h"
 #include <WebCore/ResourceError.h>
-#include <WebCore/StorageBlockingPolicy.h>
 #include <WebCore/WindowFeatures.h>
 #include <JavaScriptCore/InspectorAgentBase.h>
 #include <JavaScriptCore/InspectorBackendDispatcher.h>
@@ -191,9 +189,6 @@ void WebPageInspectorController::connectFrontend(Inspector::FrontendChannel& fro
         disconnectAllFrontends();
         connectingFirstFrontend = true;
     }
-
-    if (connectingFirstFrontend)
-        adjustPageSettings();
 
     m_frontendRouter->connectFrontend(frontendChannel);
 
@@ -498,31 +493,6 @@ void WebPageInspectorController::browserExtensionsDisabled(HashSet<String>&& ext
 {
     if (CheckedPtr enabledBrowserAgent = m_enabledBrowserAgent)
         enabledBrowserAgent->extensionsDisabled(WTFMove(extensionIDs));
-}
-
-void WebPageInspectorController::adjustPageSettings()
-{
-    // Set this to true as otherwise updating any preferences will override its
-    // value in the Web Process to false (and InspectorController sets it locally
-    // to true when frontend is connected).
-    m_inspectedPage->preferences().setDeveloperExtrasEnabled(true);
-
-    // Navigation to cached pages doesn't fire some of the events (e.g. execution context created)
-    // that inspector depends on. So we disable the cache when front-end connects.
-    m_inspectedPage->preferences().setUsesBackForwardCache(false);
-
-    // Enable popup debugging.
-    // TODO: allow to set preferences over the inspector protocol or find a better place for this.
-    m_inspectedPage->preferences().setJavaScriptCanOpenWindowsAutomatically(true);
-
-    // Enable media stream.
-    if (!m_inspectedPage->preferences().mediaDevicesEnabled()) {
-        m_inspectedPage->preferences().setMediaDevicesEnabled(true);
-        m_inspectedPage->preferences().setPeerConnectionEnabled(true);
-    }
-
-    // Disable local storage partitioning. See https://github.com/microsoft/playwright/issues/32230
-    m_inspectedPage->preferences().setStorageBlockingPolicy(static_cast<uint32_t>(WebCore::StorageBlockingPolicy::AllowAll));
 }
 
 } // namespace WebKit
