@@ -23,6 +23,8 @@
 
 #include <gst/video/video-format.h>
 #include <gst/video/video-info.h>
+#include <wtf/glib/GUniquePtr.h>
+#include <wtf/MediaTime.h>
 #include <thread>
 #include <wtf/MediaTime.h>
 #include <wtf/glib/GUniquePtr.h>

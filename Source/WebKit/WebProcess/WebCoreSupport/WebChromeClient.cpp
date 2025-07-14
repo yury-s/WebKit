@@ -534,6 +534,9 @@ void WebChromeClient::addMessageToConsole(MessageSource source, MessageLevel lev
     if (!page)
         return;
 
+    if (level == MessageLevel::Error)
+        page->send(Messages::WebPageProxy::LogToStderr(message));
+
     // FIXME: Remove this after rdar://143399667 is fixed.
     page->injectedBundleUIClient().willAddMessageToConsole(page.get(), source, level, message, lineNumber, columnNumber, sourceID);
 

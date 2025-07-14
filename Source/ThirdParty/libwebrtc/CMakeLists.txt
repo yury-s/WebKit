@@ -1807,6 +1807,14 @@ list(APPEND webrtc_SOURCES
     Source/third_party/boringssl/src/util/fipstools/acvp/modulewrapper/modulewrapper.cc
 )
 
+# Playwright begin
+list(APPEND webrtc_SOURCES
+    Source/third_party/libwebm/mkvmuxer/mkvmuxer.cc
+    Source/third_party/libwebm/mkvmuxer/mkvmuxerutil.cc
+    Source/third_party/libwebm/mkvmuxer/mkvwriter.cc
+)
+# Playwright end
+
 if (WTF_CPU_X86_64 OR WTF_CPU_X86)
     list(APPEND webrtc_SOURCES
         Source/webrtc/common_audio/fir_filter_sse.cc
@@ -2398,6 +2406,14 @@ set(webrtc_INCLUDE_DIRECTORIES PRIVATE
     Source/webrtc/modules/audio_coding/codecs/isac/main/include
     Source/webrtc/modules/video_coding/include
 )
+
+# Playwright begin
+list(APPEND webrtc_INCLUDE_DIRECTORIES
+    Source/third_party/libwebm
+    Source/third_party/libvpx/source/libvpx
+    Source/third_party/libvpx/source/libvpx/third_party/googletest/src/include
+)
+# Playwright end
 
 if (APPLE)
     list(APPEND webrtc_INCLUDE_DIRECTORIES PRIVATE

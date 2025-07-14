@@ -25,7 +25,7 @@
 
 #pragma once
 
-#if PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)
+#if PLATFORM(COCOA)
 
 // MPark.Variant
 //

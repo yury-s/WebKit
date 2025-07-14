@@ -38,8 +38,8 @@ public:
     WEBCORE_EXPORT HTMLTextFormControlElement& textFormControlElement() const;
     WEBCORE_EXPORT Ref<HTMLTextFormControlElement> protectedTextFormControlElement() const;
 
-#if PLATFORM(IOS_FAMILY)
     bool canScroll() const;
+#if PLATFORM(IOS_FAMILY)
     WEBCORE_EXPORT int innerLineHeight() const;
 #endif
 
