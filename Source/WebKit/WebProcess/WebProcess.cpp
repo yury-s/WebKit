@@ -94,6 +94,7 @@
 #include "WebsiteData.h"
 #include "WebsiteDataStoreParameters.h"
 #include "WebsiteDataType.h"
+#include <JavaScriptCore/IdentifiersFactory.h>
 #include <JavaScriptCore/JSLock.h>
 #include <JavaScriptCore/MemoryStatistics.h>
 #include <JavaScriptCore/WasmFaultSignalHandler.h>
@@ -392,6 +393,14 @@ void WebProcess::initializeProcess(const AuxiliaryProcessInitializationParameter
     {
         JSC::Options::AllowUnfinalizedAccessScope scope;
         JSC::Options::allowNonSPTagging() = false;
+        // Playwright begin
+        // SharedBufferArray is enabled only on Mac via XPC sercvice "enable-shared-array-buffer" option.
+        // For other platforms, enable it here.
+#if !PLATFORM(COCOA)
+        if (parameters.shouldEnableSharedArrayBuffer)
+            JSC::Options::useSharedArrayBuffer() = true;
+#endif
+        // Playwright end
         JSC::Options::notifyOptionsChanged();
     }
 
@@ -399,6 +408,8 @@ void WebProcess::initializeProcess(const AuxiliaryProcessInitializationParameter
     
     platformInitializeProcess(parameters);
     updateCPULimit();
+
+    Inspector::IdentifiersFactory::initializeWithProcessID(parameters.processIdentifier->toUInt64());
 }
 
 void WebProcess::initializeConnection(IPC::Connection* connection)
@@ -1003,11 +1014,19 @@ void WebProcess::createWebPage(PageIdentifier pageID, WebPageCreationParameters&
         m_hasPendingAccessibilityUnsuspension = false;
         accessibilityRelayProcessSuspended(false);
     }
+<<<<<<< HEAD
 }
 
 Awaitable<unsigned> WebProcess::countWebPagesForTesting()
 {
     co_return m_pageMap.size();
+||||||| parent of ea3c43c2a12a (chore(webkit): bootstrap build #2216)
+    ASSERT(result.iterator->value);
+=======
+    ASSERT(result.iterator->value);
+
+    result.iterator->value->didAddWebPageToWebProcess();
+>>>>>>> ea3c43c2a12a (chore(webkit): bootstrap build #2216)
 }
 
 void WebProcess::removeWebPage(PageIdentifier pageID)

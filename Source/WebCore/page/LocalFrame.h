@@ -29,6 +29,7 @@
 
 #include <WebCore/DOMPasteAccess.h>
 #include <WebCore/Frame.h>
+#include <WebCore/IntDegrees.h>
 #include <WebCore/ScrollbarMode.h>
 #include <wtf/CheckedRef.h>
 #include <wtf/HashSet.h>
@@ -125,8 +126,8 @@ enum {
 };
 
 enum OverflowScrollAction { DoNotPerformOverflowScroll, PerformOverflowScroll };
-using NodeQualifier = Function<Node* (const HitTestResult&, Node* terminationNode, IntRect* nodeBounds)>;
 #endif
+using NodeQualifier = Function<Node* (const HitTestResult&, Node* terminationNode, IntRect* nodeBounds)>;
 
 class LocalFrame final : public Frame {
 public:
@@ -235,16 +236,16 @@ public:
     WEBCORE_EXPORT DataDetectionResultsStorage& dataDetectionResults();
 #endif
 
-#if PLATFORM(IOS_FAMILY)
-    const ViewportArguments& viewportArguments() const;
-    WEBCORE_EXPORT void setViewportArguments(const ViewportArguments&);
-
     WEBCORE_EXPORT Node* deepestNodeAtLocation(const FloatPoint& viewportLocation);
     WEBCORE_EXPORT Node* nodeRespondingToClickEvents(const FloatPoint& viewportLocation, FloatPoint& adjustedViewportLocation, SecurityOrigin* = nullptr);
     WEBCORE_EXPORT Node* nodeRespondingToDoubleClickEvent(const FloatPoint& viewportLocation, FloatPoint& adjustedViewportLocation);
     WEBCORE_EXPORT Node* nodeRespondingToInteraction(const FloatPoint& viewportLocation, FloatPoint& adjustedViewportLocation);
     WEBCORE_EXPORT Node* nodeRespondingToScrollWheelEvents(const FloatPoint& viewportLocation);
     WEBCORE_EXPORT Node* approximateNodeAtViewportLocationLegacy(const FloatPoint& viewportLocation, FloatPoint& adjustedViewportLocation);
+
+#if PLATFORM(IOS_FAMILY)
+    const ViewportArguments& viewportArguments() const;
+    WEBCORE_EXPORT void setViewportArguments(const ViewportArguments&);
 
     WEBCORE_EXPORT NSArray *wordsInCurrentParagraph() const;
     WEBCORE_EXPORT CGRect renderRectForPoint(CGPoint, bool* isReplaced, float* fontSize) const;
@@ -313,6 +314,7 @@ public:
 
     WEBCORE_EXPORT FloatSize screenSize() const;
     void setOverrideScreenSize(FloatSize&&);
+    bool hasScreenSizeOverride() const { return !!m_overrideScreenSize; }
 
     void selfOnlyRef();
     void selfOnlyDeref();
@@ -393,7 +395,6 @@ private:
 #if ENABLE(DATA_DETECTION)
     std::unique_ptr<DataDetectionResultsStorage> m_dataDetectionResults;
 #endif
-#if PLATFORM(IOS_FAMILY)
     void betterApproximateNode(const IntPoint& testPoint, const NodeQualifier&, Node*& best, Node* failedNode, IntPoint& bestPoint, IntRect& bestRect, const IntRect& testRect);
     bool hitTestResultAtViewportLocation(const FloatPoint& viewportLocation, HitTestResult&, IntPoint& center);
 
@@ -401,6 +402,7 @@ private:
     enum class ShouldFindRootEditableElement : bool { No, Yes };
     Node* qualifyingNodeAtViewportLocation(const FloatPoint& viewportLocation, FloatPoint& adjustedViewportLocation, const NodeQualifier&, ShouldApproximate, ShouldFindRootEditableElement = ShouldFindRootEditableElement::Yes);
 
+#if PLATFORM(IOS_FAMILY)
     void setTimersPausedInternal(bool);
 
     const UniqueRef<ViewportArguments> m_viewportArguments;

@@ -130,6 +130,7 @@ UIProcess/API/glib/WebKitAuthenticationRequest.cpp @no-unify
 UIProcess/API/glib/WebKitAutomationSession.cpp @no-unify
 UIProcess/API/glib/WebKitBackForwardList.cpp @no-unify
 UIProcess/API/glib/WebKitBackForwardListItem.cpp @no-unify
+UIProcess/API/glib/WebKitBrowserInspector.cpp @no-unify
 UIProcess/API/glib/WebKitContextMenuClient.cpp @no-unify
 UIProcess/API/glib/WebKitCookieManager.cpp @no-unify
 UIProcess/API/glib/WebKitCredential.cpp @no-unify
@@ -163,6 +164,7 @@ UIProcess/API/glib/WebKitOptionMenu.cpp @no-unify
 UIProcess/API/glib/WebKitOptionMenuItem.cpp @no-unify
 UIProcess/API/glib/WebKitPermissionRequest.cpp @no-unify
 UIProcess/API/glib/WebKitPermissionStateQuery.cpp @no-unify
+UIProcess/API/glib/WebKitPointerLockPermissionRequest.cpp @no-unify
 UIProcess/API/glib/WebKitPolicyDecision.cpp @no-unify
 UIProcess/API/glib/WebKitPrivate.cpp @no-unify
 UIProcess/API/glib/WebKitProtocolHandler.cpp @no-unify
@@ -233,6 +235,7 @@ UIProcess/glib/DisplayVBlankMonitorDRM.cpp
 UIProcess/glib/DisplayVBlankMonitorThreaded.cpp
 UIProcess/glib/DisplayVBlankMonitorTimer.cpp
 UIProcess/glib/FenceMonitor.cpp
+UIProcess/glib/InspectorPlaywrightAgentClientGLib.cpp
 UIProcess/glib/ScreenManager.cpp
 UIProcess/glib/SystemSettingsManagerProxy.cpp
 UIProcess/glib/WebPageProxyGLib.cpp
@@ -268,6 +271,12 @@ UIProcess/wpe/DisplayVBlankMonitorWPE.cpp
 UIProcess/wpe/ScreenManagerWPE.cpp
 UIProcess/wpe/SystemSettingsManagerProxyWPE.cpp
 UIProcess/wpe/WPEUtilities.cpp
+UIProcess/wpe/WebColorPickerWPE.cpp
+UIProcess/wpe/WebDataListSuggestionsDropdownWPE.cpp
+UIProcess/wpe/WebDateTimePickerWPE.cpp
+UIProcess/wpe/WebPageInspectorEmulationAgentWPE.cpp
+UIProcess/wpe/WebPageInspectorInputAgentWPE.cpp
+UIProcess/wpe/WebPageInspectorTargetProxyWPE.cpp
 UIProcess/wpe/WebPageProxyWPE.cpp
 UIProcess/wpe/WebPasteboardProxyWPE.cpp
 UIProcess/wpe/WebPreferencesWPE.cpp

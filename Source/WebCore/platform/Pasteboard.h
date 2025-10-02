@@ -313,6 +313,7 @@ public:
     COMPtr<IDataObject> dataObject() const { return m_dataObject; }
     WEBCORE_EXPORT void setExternalDataObject(IDataObject*);
     const DragDataMap& dragDataMap() const { return m_dragDataMap; }
+    WEBCORE_EXPORT DragDataMap createDragDataMap();
     void writeURLToWritableDataObject(const URL&, const String&);
     COMPtr<WCDataObject> writableDataObject() const { return m_writableDataObject; }
     void writeImageToDataObject(Element&, const URL&); // FIXME: Layering violation.
@@ -383,6 +384,7 @@ private:
     COMPtr<IDataObject> m_dataObject;
     COMPtr<WCDataObject> m_writableDataObject;
     DragDataMap m_dragDataMap;
+    bool m_forDrag = false;
 #endif
 };
 
