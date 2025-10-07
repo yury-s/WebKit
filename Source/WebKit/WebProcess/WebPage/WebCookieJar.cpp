@@ -44,6 +44,7 @@
 #include <WebCore/LocalFrame.h>
 #include <WebCore/LocalFrameLoaderClient.h>
 #include <WebCore/Page.h>
+#include <WebCore/ResourceLoader.h>
 #include <WebCore/ScriptTrackingPrivacyCategory.h>
 #include <WebCore/Settings.h>
 #include <WebCore/StorageSessionProvider.h>
@@ -446,6 +447,12 @@ void WebCookieJar::setOptInCookiePartitioningEnabled(bool enabled)
     m_cache->setOptInCookiePartitioningEnabled(enabled);
 }
 #endif
+
+void WebCookieJar::setCookieFromResponse(ResourceLoader& loader, const String& setCookieValue)
+{
+    const auto& request = loader.request();
+    WebProcess::singleton().ensureNetworkProcessConnection().connection().send(Messages::NetworkConnectionToWebProcess::SetCookieFromResponse(request.firstPartyForCookies(), SameSiteInfo::create(request), request.url(), setCookieValue), 0);
+}
 
 #if !PLATFORM(COCOA)
 

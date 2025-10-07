@@ -117,3 +117,10 @@ platform/unix/SharedMemoryUnix.cpp
 platform/xdg/MIMETypeRegistryXdg.cpp
 
 platform/xr/openxr/PlatformXROpenXR.cpp
+
+// Playwright: begin.
+JSSpeechSynthesisErrorCode.cpp
+JSSpeechSynthesisErrorEvent.cpp
+JSSpeechSynthesisErrorEventInit.cpp
+JSSpeechSynthesisEventInit.cpp
+// Playwright: end.

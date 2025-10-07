@@ -43,6 +43,7 @@ class WebPageInspectorTargetProxy final : public InspectorTargetProxy {
 public:
     static std::unique_ptr<WebPageInspectorTargetProxy> create(WebPageProxy&, const String& targetId, Inspector::InspectorTargetType);
     static std::unique_ptr<WebPageInspectorTargetProxy> create(ProvisionalPageProxy&, const String& targetId, Inspector::InspectorTargetType);
+    static std::unique_ptr<WebPageInspectorTargetProxy> create(ProvisionalPageProxy&, const String& targetId);
     WebPageInspectorTargetProxy(WebPageProxy&, const String& targetId, Inspector::InspectorTargetType);
     ~WebPageInspectorTargetProxy() = default;
 
@@ -52,8 +53,13 @@ public:
     void connect(Inspector::FrontendChannel::ConnectionType) override;
     void disconnect() override;
     void sendMessageToTargetBackend(const String&) override;
+    void activate(String& error) override;
+    void close(String& error, bool runBeforeUnload) override;
 
 private:
+    void willResume() override;
+    void platformActivate(String& error) const;
+
     WeakRef<WebPageProxy> m_page;
     WeakPtr<ProvisionalPageProxy> m_provisionalPage;
 };

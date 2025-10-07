@@ -404,6 +404,7 @@ UIProcess/AboutSchemeHandler.cpp
 UIProcess/AuxiliaryProcessProxy.cpp
 UIProcess/BackgroundProcessResponsivenessTimer.cpp
 UIProcess/BrowsingContextGroup.cpp
+UIProcess/BrowserInspectorPipe.cpp
 UIProcess/DeviceIdHashSaltStorage.cpp
 UIProcess/DisplayLink.cpp
 UIProcess/DisplayLinkProcessProxyClient.cpp
@@ -413,6 +414,8 @@ UIProcess/FrameLoadState.cpp
 UIProcess/FrameProcess.cpp
 UIProcess/GeolocationPermissionRequestManagerProxy.cpp
 UIProcess/GeolocationPermissionRequestProxy.cpp
+UIProcess/InspectorDialogAgent.cpp
+UIProcess/InspectorPlaywrightAgent.cpp
 UIProcess/LegacyGlobalSettings.cpp
 UIProcess/MediaKeySystemPermissionRequestManagerProxy.cpp
 UIProcess/MediaKeySystemPermissionRequestProxy.cpp
@@ -420,10 +423,12 @@ UIProcess/ModelElementController.cpp
 UIProcess/OverrideLanguages.cpp
 UIProcess/PageClient.cpp
 UIProcess/PageLoadState.cpp
+UIProcess/PlaywrightFullScreenManagerProxyClient.cpp
 UIProcess/ProcessAssertion.cpp
 UIProcess/ProcessThrottler.cpp
 UIProcess/ProvisionalFrameProxy.cpp
 UIProcess/ProvisionalPageProxy.cpp
+UIProcess/RemoteInspectorPipe.cpp
 UIProcess/RemotePageDrawingAreaProxy.cpp
 UIProcess/RemotePageFullscreenManagerProxy.cpp
 UIProcess/RemotePagePlaybackSessionManagerProxy.cpp
@@ -468,6 +473,8 @@ UIProcess/WebOpenPanelResultListenerProxy.cpp
 UIProcess/WebPageDiagnosticLoggingClient.cpp
 UIProcess/WebPageGroup.cpp
 UIProcess/WebPageInjectedBundleClient.cpp
+UIProcess/WebPageInspectorEmulationAgent.cpp
+UIProcess/WebPageInspectorInputAgent.cpp
 UIProcess/WebPageProxy.cpp
 UIProcess/WebPageProxyMessageReceiverRegistration.cpp
 UIProcess/WebPageProxyTesting.cpp
@@ -632,6 +639,9 @@ UIProcess/Inspector/WebPageInspectorController.cpp
 UIProcess/Inspector/WebPageInspectorTargetProxy.cpp
 
 UIProcess/Inspector/Agents/InspectorBrowserAgent.cpp
+UIProcess/Inspector/Agents/InspectorScreencastAgent.cpp
+UIProcess/Inspector/Agents/ScreencastEncoder.cpp
+UIProcess/Inspector/Agents/WebMFileWriter.cpp
 
 UIProcess/Media/AudioSessionRoutingArbitratorProxy.cpp
 UIProcess/Media/MediaUsageManager.cpp

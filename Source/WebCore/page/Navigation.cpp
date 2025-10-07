@@ -161,8 +161,10 @@ void Navigation::initializeForNewWindow(std::optional<NavigationNavigationType> 
 
                 m_currentEntryIndex = getEntryIndexOfHistoryItem(m_entries, *currentItem);
 
-                ASSERT(navigationType);
-                m_activation = NavigationActivation::create(*navigationType, *currentEntry(), WTFMove(previousEntry));
+                if (m_currentEntryIndex) {
+                    ASSERT(navigationType);
+                    m_activation = NavigationActivation::create(*navigationType, *currentEntry(), WTFMove(previousEntry));
+                }
 
                 return;
             }

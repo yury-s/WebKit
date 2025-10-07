@@ -27,6 +27,7 @@
 #include <gst/audio/audio.h>
 #include <wtf/CheckedRef.h>
 #include <wtf/Lock.h>
+#include <wtf/MediaTime.h>
 #include <wtf/TZoneMalloc.h>
 #include <wtf/glib/GUniquePtr.h>
 
