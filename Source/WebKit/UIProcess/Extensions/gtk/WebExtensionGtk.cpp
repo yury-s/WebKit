@@ -139,7 +139,7 @@ Expected<Ref<API::Data>, RefPtr<API::Error>> WebExtension::resourceDataForPath(c
 
 void WebExtension::recordError(Ref<API::Error> error)
 {
-    RELEASE_LOG_ERROR(Extensions, "Error recorded: %s", error->platformError());
+    RELEASE_LOG_ERROR(Extensions, "Error recorded: %s", error->localizedDescription().utf8().data());
 
     // Only the first occurrence of each error is recorded in the array. This prevents duplicate errors,
     // such as repeated "resource not found" errors, from being included multiple times.
@@ -203,7 +203,7 @@ Expected<Ref<WebCore::Icon>, RefPtr<API::Error>> WebExtension::iconForPath(const
     return makeUnexpected(nullptr);
 }
 
-RefPtr<WebCore::Icon> WebExtension::bestIcon(RefPtr<JSON::Object> icons, WebCore::FloatSize idealSize, const Function<void(Ref<API::Error>)>& reportError)
+RefPtr<WebCore::Icon> WebExtension::bestIcon(RefPtr<JSON::Object> icons, WebCore::FloatSize idealSize, NOESCAPE const Function<void(Ref<API::Error>)>& reportError)
 {
     if (!icons)
         return nullptr;
