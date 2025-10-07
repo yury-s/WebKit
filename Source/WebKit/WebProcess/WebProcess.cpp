@@ -1014,19 +1014,12 @@ void WebProcess::createWebPage(PageIdentifier pageID, WebPageCreationParameters&
         m_hasPendingAccessibilityUnsuspension = false;
         accessibilityRelayProcessSuspended(false);
     }
-<<<<<<< HEAD
+    page->didAddWebPageToWebProcess();
 }
 
 Awaitable<unsigned> WebProcess::countWebPagesForTesting()
 {
     co_return m_pageMap.size();
-||||||| parent of a6e02ef30739 (chore(webkit): bootstrap build #2216)
-    ASSERT(result.iterator->value);
-=======
-    ASSERT(result.iterator->value);
-
-    result.iterator->value->didAddWebPageToWebProcess();
->>>>>>> a6e02ef30739 (chore(webkit): bootstrap build #2216)
 }
 
 void WebProcess::removeWebPage(PageIdentifier pageID)
