@@ -249,6 +249,7 @@
 #include <WebCore/ImageAnalysisQueue.h>
 #include <WebCore/ImageOverlay.h>
 #include <WebCore/InspectorController.h>
+#include <WebCore/InspectorInstrumentationWebKit.h>
 #include <WebCore/JSDOMExceptionHandling.h>
 #include <WebCore/JSNode.h>
 #include <WebCore/KeyboardEvent.h>
@@ -1185,6 +1186,12 @@ WebPage::WebPage(PageIdentifier pageID, WebPageCreationParameters&& parameters)
     setLinkDecorationFilteringData(WTFMove(parameters.linkDecorationFilteringData));
     setAllowedQueryParametersForAdvancedPrivacyProtections(WTFMove(parameters.allowedQueryParametersForAdvancedPrivacyProtections));
 #endif
+    // For popup windows WebPage::Show() maybe called in the next lines from the constructor,
+    // at which point the page is not in the WebProcess's map yet and it is not safe to
+    // dispatch nested message loop and receive IPC messages. To mitigate that, the actual
+    // pause is postponed until the page is added to the map.
+    if (parameters.shouldPauseInInspectorWhenShown)
+        m_page->inspectorController().pauseOnStart(parameters.windowFeatures ? InspectorController::PauseCondition::WHEN_CREATION_FINISHED : InspectorController::PauseCondition::WHEN_SHOWN);
     if (parameters.windowFeatures) {
         page->applyWindowFeatures(*parameters.windowFeatures);
         page->chrome().show();
@@ -2115,6 +2122,22 @@ void WebPage::loadDidCommitInAnotherProcess(WebCore::FrameIdentifier frameID, st
     frame->loadDidCommitInAnotherProcess(layerHostingContextIdentifier);
 }
 
+void WebPage::loadRequestInFrameForInspector(LoadParameters&& loadParameters, WebCore::FrameIdentifier frameID)
+{
+    WebFrame* frame = WebProcess::singleton().webFrame(frameID);
+    if (!frame) {
+        send(Messages::WebPageProxy::DidDestroyNavigation(*loadParameters.navigationID));
+        return;
+    }
+
+    // FIXME: use m_pendingNavigationID instead?
+    m_pendingFrameNavigationID = loadParameters.navigationID;
+
+    FrameLoadRequest frameLoadRequest { *frame->coreLocalFrame(), WTFMove(loadParameters.request) };
+    frame->coreLocalFrame()->loader().load(WTFMove(frameLoadRequest));
+    ASSERT(!m_pendingFrameNavigationID);
+}
+
 void WebPage::loadRequest(LoadParameters&& loadParameters)
 {
     WEBPAGE_RELEASE_LOG_FORWARDABLE(Loading, WEBPAGE_LOADREQUEST, loadParameters.navigationID ? loadParameters.navigationID->toUInt64() : 0, static_cast<unsigned>(loadParameters.shouldTreatAsContinuingLoad), loadParameters.request.isAppInitiated(), loadParameters.existingNetworkResourceLoadIdentifierToResume ? loadParameters.existingNetworkResourceLoadIdentifierToResume->toUInt64() : 0);
@@ -2315,7 +2338,9 @@ void WebPage::stopLoading()
 void WebPage::stopLoadingDueToProcessSwap()
 {
     SetForScope isStoppingLoadingDueToProcessSwap(m_isStoppingLoadingDueToProcessSwap, true);
+    InspectorInstrumentationWebKit::setStoppingLoadingDueToProcessSwap(m_page.get(), true);
     stopLoading();
+    InspectorInstrumentationWebKit::setStoppingLoadingDueToProcessSwap(m_page.get(), false);
 }
 
 bool WebPage::defersLoading() const
@@ -2891,7 +2916,7 @@ void WebPage::viewportPropertiesDidChange(const ViewportArguments& viewportArgum
 #if PLATFORM(IOS_FAMILY)
     if (m_viewportConfiguration.setViewportArguments(viewportArguments))
         viewportConfigurationChanged();
-#elif PLATFORM(GTK) || PLATFORM(WPE)
+#elif PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN) || PLATFORM(MAC)
     // Adjust view dimensions when using fixed layout.
     RefPtr localMainFrame = this->localMainFrame();
     RefPtr view = localMainFrame ? localMainFrame->view() : nullptr;
@@ -3689,6 +3714,13 @@ void WebPage::flushDeferredScrollEvents()
     protectedCorePage()->flushDeferredScrollEvents();
 }
 
+#if ENABLE(ORIENTATION_EVENTS)
+void WebPage::setDeviceOrientation(WebCore::IntDegrees deviceOrientation)
+{
+    m_page->setOverrideOrientation(deviceOrientation);
+}
+#endif
+
 void WebPage::flushDeferredDidReceiveMouseEvent()
 {
     if (auto info = std::exchange(m_deferredDidReceiveMouseEvent, std::nullopt))
@@ -3959,6 +3991,97 @@ void WebPage::touchEvent(const WebTouchEvent& touchEvent, CompletionHandler<void
 
     completionHandler(touchEvent.type(), handled);
 }
+
+void WebPage::fakeTouchTap(const WebCore::IntPoint& position, uint8_t modifiers, CompletionHandler<void()>&& completionHandler)
+{
+    SetForScope<bool> userIsInteractingChange { m_userIsInteracting, true };
+
+    bool handled = false;
+
+    uint32_t id = 0;
+    float radiusX = 1.0;
+    float radiusY = 1.0;
+    float rotationAngle = 0.0;
+    float force = 1.0;
+    const WebCore::DoubleSize radius(radiusX,radiusY);
+    const WebCore::DoublePoint screenPosition = position;
+    OptionSet<WebEventModifier> eventModifiers;
+    eventModifiers = eventModifiers.fromRaw(modifiers);
+
+    {
+        Vector<WebPlatformTouchPoint> touchPoints;
+        WebPlatformTouchPoint::State state = WebPlatformTouchPoint::State::Pressed;
+        touchPoints.append(WebPlatformTouchPoint(id, state, screenPosition, position, radius, rotationAngle, force));
+
+        WebTouchEvent touchEvent({WebEventType::TouchStart, eventModifiers, MonotonicTime::now()}, WTFMove(touchPoints), {}, {});
+
+        CurrentEvent currentEvent(touchEvent);
+        handled = handleTouchEvent(m_page->mainFrame().frameID(), touchEvent, m_page.get()).value_or(false);
+    }
+    {
+        Vector<WebPlatformTouchPoint> touchPoints;
+        WebPlatformTouchPoint::State state = WebPlatformTouchPoint::State::Released;
+        touchPoints.append(WebPlatformTouchPoint(id, state, screenPosition, position, radius, rotationAngle, force));
+
+        WebTouchEvent touchEvent({WebEventType::TouchEnd, eventModifiers, MonotonicTime::now()}, WTFMove(touchPoints), {}, {});
+
+        CurrentEvent currentEvent(touchEvent);
+        handled = handleTouchEvent(m_page->mainFrame().frameID(), touchEvent, m_page.get()).value_or(false) || handled;
+    }
+    if (!handled) {
+        FloatPoint adjustedPoint;
+
+        auto* localMainFrame = dynamicDowncast<LocalFrame>(m_page->mainFrame());
+        if (!localMainFrame)
+            return;
+
+        Node* nodeRespondingToClick = localMainFrame->nodeRespondingToClickEvents(position, adjustedPoint);
+        Frame* frameRespondingToClick = nodeRespondingToClick ? nodeRespondingToClick->document().frame() : nullptr;
+        IntPoint adjustedIntPoint = roundedIntPoint(adjustedPoint);
+        if (!frameRespondingToClick) {
+            completionHandler();
+            return;
+        }
+        double force = 0.0;
+        SyntheticClickType syntheticClickType = SyntheticClickType::OneFingerTap;
+
+        auto modifiers = PlatformKeyboardEvent::currentStateOfModifierKeys();
+        localMainFrame->eventHandler().mouseMoved(PlatformMouseEvent(
+            adjustedIntPoint,
+            adjustedIntPoint,
+            MouseButton::None,
+            PlatformEvent::Type::MouseMoved,
+            0,
+            modifiers,
+            MonotonicTime::now(),
+            force,
+            syntheticClickType
+        ));
+        localMainFrame->eventHandler().handleMousePressEvent(PlatformMouseEvent(
+            adjustedIntPoint,
+            adjustedIntPoint,
+            MouseButton::Left,
+            PlatformEvent::Type::MousePressed,
+            1,
+            modifiers,
+            MonotonicTime::now(),
+            force,
+            syntheticClickType
+        ));
+        localMainFrame->eventHandler().handleMouseReleaseEvent(PlatformMouseEvent(
+            adjustedIntPoint,
+            adjustedIntPoint,
+            MouseButton::Left,
+            PlatformEvent::Type::MouseReleased,
+            1,
+            modifiers,
+            MonotonicTime::now(),
+            force,
+            syntheticClickType
+        ));
+    }
+    completionHandler();
+}
 #endif
 
 void WebPage::cancelPointer(WebCore::PointerID pointerId, const WebCore::IntPoint& documentPoint)
@@ -4045,6 +4168,16 @@ void WebPage::disconnectInspector(const String& targetId)
 void WebPage::sendMessageToTargetBackend(const String& targetId, const String& message)
 {
     m_inspectorTargetController->sendMessageToTargetBackend(targetId, message);
+}
+
+void WebPage::resumeInspectorIfPausedInNewWindow()
+{
+    m_page->inspectorController().resumeIfPausedInNewWindow();
+}
+
+void WebPage::didAddWebPageToWebProcess()
+{
+    m_page->inspectorController().didFinishPageCreation();
 }
 
 void WebPage::insertNewlineInQuotedContent()
@@ -4290,6 +4423,7 @@ void WebPage::setMainFrameDocumentVisualUpdatesAllowed(bool allowed)
 void WebPage::show()
 {
     send(Messages::WebPageProxy::ShowPage());
+    m_page->inspectorController().didShowPage();
 }
 
 void WebPage::setIsTakingSnapshotsForApplicationSuspension(bool isTakingSnapshotsForApplicationSuspension)
@@ -5489,7 +5623,7 @@ RefPtr<NotificationPermissionRequestManager> WebPage::protectedNotificationPermi
 
 #if ENABLE(DRAG_SUPPORT)
 
-#if PLATFORM(GTK)
+#if PLATFORM(GTK) || PLATFORM(WPE)
 void WebPage::performDragControllerAction(DragControllerAction action, const IntPoint& clientPosition, const IntPoint& globalPosition, OptionSet<DragOperation> draggingSourceOperationMask, SelectionData&& selectionData, OptionSet<DragApplicationFlags> flags, CompletionHandler<void(std::optional<DragOperation>, DragHandlingMethod, bool, unsigned, IntRect, IntRect, std::optional<RemoteUserInputEventData>)>&& completionHandler)
 {
     if (!m_page)
@@ -8217,6 +8351,10 @@ void WebPage::didCommitLoad(WebFrame* frame)
 
     if (frame && frame->isMainFrame())
         m_networkResourceRequestIdentifiersForPageLoadTiming.clear();
+// Playwright begin
+    if (frame->isMainFrame())
+        send(Messages::WebPageProxy::ViewScaleFactorDidChange(viewScaleFactor()));
+// Playwright end
 }
 
 void WebPage::didFinishDocumentLoad(WebFrame& frame)
@@ -8526,6 +8664,9 @@ Ref<DocumentLoader> WebPage::createDocumentLoader(LocalFrame& frame, ResourceReq
             m_allowsContentJavaScriptFromMostRecentNavigation = m_internals->pendingWebsitePolicies->allowsContentJavaScript;
             WebsitePoliciesData::applyToDocumentLoader(*std::exchange(m_internals->pendingWebsitePolicies, std::nullopt), documentLoader);
         }
+    } else if (m_pendingFrameNavigationID) {
+        documentLoader->setNavigationID(*m_pendingFrameNavigationID);
+        m_pendingFrameNavigationID = std::nullopt;
     }
 
     return documentLoader;

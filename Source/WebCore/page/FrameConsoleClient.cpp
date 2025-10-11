@@ -476,4 +476,12 @@ void FrameConsoleClient::screenshot(JSC::JSGlobalObject* lexicalGlobalObject, Re
     addMessage(makeUnique<Inspector::ConsoleMessage>(MessageSource::ConsoleAPI, MessageType::Image, MessageLevel::Log, dataURL, WTFMove(arguments), lexicalGlobalObject, 0, timestamp));
 }
 
+void FrameConsoleClient::bindingCalled(JSC::JSGlobalObject* globalObject, const String& name, const String& arg)
+{
+    RefPtr frame = m_frame.get();
+    if (!frame)
+        return;
+    InspectorInstrumentation::bindingCalled(*frame->page(), globalObject, name, arg);
+}
+
 } // namespace WebCore

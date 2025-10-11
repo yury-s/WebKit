@@ -51,7 +51,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(const String& text, std::optional
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(WebEventType type, const String& text, const String& key, const String& code, const String& keyIdentifier, int windowsVirtualKeyCode, int nativeVirtualKeyCode, Vector<String>&& commands, bool isAutoRepeat, bool isKeypad, OptionSet<WebEventModifier> modifiers)
-    : WebKeyboardEvent(WebEvent(type, modifiers, MonotonicTime::now()), text, key, code, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, false, std::nullopt, std::nullopt, WTFMove(commands), isAutoRepeat, isKeypad)
+    : WebKeyboardEvent(WebEvent(type, modifiers, MonotonicTime::now()), text, key, code, keyIdentifier, windowsVirtualKeyCode, nativeVirtualKeyCode, false, std::nullopt, std::nullopt, WTFMove(commands), false, isKeypad)
 {
 }
 
