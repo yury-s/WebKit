@@ -117,30 +117,15 @@ void InspectorPlaywrightAgentClientGlib::closeBrowser()
 
 std::unique_ptr<BrowserContext> InspectorPlaywrightAgentClientGlib::createBrowserContext(WTF::String& error, const WTF::String& proxyServer, const WTF::String& proxyBypassList)
 {
-#if !ENABLE(2022_GLIB_API)
-    GRefPtr<WebKitWebsiteDataManager> data_manager = adoptGRef(webkit_website_data_manager_new_ephemeral());
-#endif
-    GRefPtr<WebKitWebContext> context = adoptGRef(WEBKIT_WEB_CONTEXT(g_object_new(WEBKIT_TYPE_WEB_CONTEXT,
-#if !ENABLE(2022_GLIB_API)
-    "website-data-manager", data_manager.get(),
-#endif
-    // WPE has PSON enabled by default and doesn't have such parameter.
-#if PLATFORM(GTK)
-#if !ENABLE(2022_GLIB_API)
-        "process-swap-on-cross-site-navigation-enabled", true,
-#endif
-#endif
-        nullptr)));
+    GRefPtr<WebKitWebContext> context = adoptGRef(WEBKIT_WEB_CONTEXT(g_object_new(WEBKIT_TYPE_WEB_CONTEXT, nullptr)));
     if (!context) {
         error = "Failed to create GLib ephemeral context"_s;
         return nullptr;
     }
 
-#if ENABLE(2022_GLIB_API)
     GRefPtr<WebKitNetworkSession> networkSession = adoptGRef(webkit_network_session_new_ephemeral());
     webkit_web_context_set_network_session_for_automation(context.get(), networkSession.get());
     GRefPtr<WebKitWebsiteDataManager> data_manager = webkit_network_session_get_website_data_manager(networkSession.get());
-#endif
 
     auto browserContext = std::make_unique<BrowserContext>();
     browserContext->processPool = &webkitWebContextGetProcessPool(context.get());

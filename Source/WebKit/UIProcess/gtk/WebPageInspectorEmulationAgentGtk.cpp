@@ -34,8 +34,7 @@
 
 namespace WebKit {
 
-#if USE(GTK4)
-bool windowHasManyTabs(GtkWidget* widget) {
+static bool windowHasManyTabs(GtkWidget* widget) {
     for (GtkWidget* parent = gtk_widget_get_parent(widget); parent; parent = gtk_widget_get_parent(parent)) {
         if (GTK_IS_NOTEBOOK(parent)) {
             int pages = gtk_notebook_get_n_pages(GTK_NOTEBOOK(parent));
@@ -44,7 +43,6 @@ bool windowHasManyTabs(GtkWidget* widget) {
     }
     return false;
 }
-#endif
 
 void WebPageInspectorEmulationAgent::platformSetSize(int width, int height, Function<void (const String& error)>&& callback)
 {
@@ -61,14 +59,14 @@ void WebPageInspectorEmulationAgent::platformSetSize(int width, int height, Func
     }
     GtkAllocation viewAllocation;
     gtk_widget_get_allocation(viewWidget, &viewAllocation);
-#if USE(GTK4)
+
     // In GTK4 newly added tabs will have allocation size of 0x0, before the tab is shown.
-    // This is a Ctrl+click scenario. We invoke callback righ await to not stall.
+    // This is a Ctrl+click scenario. We invoke callback right away to not stall.
     if (!viewAllocation.width && !viewAllocation.height && windowHasManyTabs(viewWidget)) {
         callback(String());
         return;
     }
-#endif
+
     if (viewAllocation.width == width && viewAllocation.height == height) {
         callback(String());
         return;
@@ -86,7 +84,6 @@ void WebPageInspectorEmulationAgent::platformSetSize(int width, int height, Func
             (windowAllocation.width == 1024 && windowAllocation.height == 768);
         // The callback can only be called if the page is still alive, so we can safely capture `this`.
         drawingArea->waitForSizeUpdate([this, callback = WTFMove(callback), didNotHaveInitialAllocation, viewSize](const DrawingAreaProxyCoordinatedGraphics& drawingArea) mutable {
-#if USE(GTK4)
             if (viewSize == drawingArea.size()) {
                 callback(String());
                 return;
@@ -98,24 +95,14 @@ void WebPageInspectorEmulationAgent::platformSetSize(int width, int height, Func
                 return;
             }
             callback("Failed to resize window"_s);
-#else
-            UNUSED_PARAM(this);
-            UNUSED_PARAM(didNotHaveInitialAllocation);
-            UNUSED_PARAM(drawingArea);
-            callback(String());
-#endif
         });
     } else {
         callback("No backing store for window"_s);
     }
-#if USE(GTK4)
     // Depending on whether default size has been applied or not, we need to
     // do one of the calls, so we just do both.
     gtk_window_set_default_size(GTK_WINDOW(window), width, height);
     gtk_widget_set_size_request(window, width, height);
-#else
-    gtk_window_resize(GTK_WINDOW(window), width, height);
-#endif
 }
 
 } // namespace WebKit
