@@ -450,27 +450,16 @@ list(APPEND WebKit_PRIVATE_INCLUDE_DIRECTORIES
     "${JavaScriptCoreGLib_DERIVED_SOURCES_DIR}/jsc"
 )
 
-<<<<<<< HEAD
-||||||| parent of 5900ccb2a680 (chore(webkit): bootstrap build #2219)
-list(APPEND WebKit_SYSTEM_INCLUDE_DIRECTORIES
-    ${LIBSOUP_INCLUDE_DIRS}
-)
-
-=======
-list(APPEND WebKit_SYSTEM_INCLUDE_DIRECTORIES
-    ${LIBSOUP_INCLUDE_DIRS}
 # Playwright begin
+list(APPEND WebKit_SYSTEM_INCLUDE_DIRECTORIES
     "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libyuv/include"
-# Playwright end
 )
 
-# Playwright begin
 list(APPEND WebKit_PRIVATE_INCLUDE_DIRECTORIES
     "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libwebm"
 )
 # Playwright end
 
->>>>>>> 5900ccb2a680 (chore(webkit): bootstrap build #2219)
 list(APPEND WebKit_LIBRARIES
     GLib::Module
     Soup3::Soup3

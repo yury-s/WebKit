@@ -518,15 +518,9 @@ IntRect PageClientImpl::rootViewToAccessibilityScreen(const IntRect& rect)
 
 void PageClientImpl::doneWithKeyEvent(const NativeWebKeyboardEvent& event, bool eventWasHandled)
 {
-<<<<<<< HEAD
-    checkedImpl()->doneWithKeyEvent(RetainPtr { event.nativeEvent() }.get(), eventWasHandled);
-||||||| parent of 5900ccb2a680 (chore(webkit): bootstrap build #2219)
-    checkedImpl()->doneWithKeyEvent(event.nativeEvent(), eventWasHandled);
-=======
     if (!event.nativeEvent())
         return;
-    checkedImpl()->doneWithKeyEvent(event.nativeEvent(), eventWasHandled);
->>>>>>> 5900ccb2a680 (chore(webkit): bootstrap build #2219)
+    checkedImpl()->doneWithKeyEvent(RetainPtr { event.nativeEvent() }.get(), eventWasHandled);
 }
 
 #if ENABLE(IMAGE_ANALYSIS)
@@ -1079,16 +1073,10 @@ void PageClientImpl::requestScrollToRect(const WebCore::FloatRect& targetRect, c
 
 bool PageClientImpl::windowIsFrontWindowUnderMouse(const NativeWebMouseEvent& event)
 {
-<<<<<<< HEAD
-    return checkedImpl()->windowIsFrontWindowUnderMouse(RetainPtr { event.nativeEvent() }.get());
-||||||| parent of 5900ccb2a680 (chore(webkit): bootstrap build #2219)
-    return checkedImpl()->windowIsFrontWindowUnderMouse(event.nativeEvent());
-=======
     // Simulated event.
     if (!event.nativeEvent())
         return false;
-    return checkedImpl()->windowIsFrontWindowUnderMouse(event.nativeEvent());
->>>>>>> 5900ccb2a680 (chore(webkit): bootstrap build #2219)
+    return checkedImpl()->windowIsFrontWindowUnderMouse(RetainPtr { event.nativeEvent() }.get());
 }
 
 std::optional<float> PageClientImpl::computeAutomaticTopObscuredInset()

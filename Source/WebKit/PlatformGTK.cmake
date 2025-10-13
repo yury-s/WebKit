@@ -334,15 +334,9 @@ list(APPEND WebKit_SYSTEM_INCLUDE_DIRECTORIES
     ${ENCHANT_INCLUDE_DIRS}
     ${GSTREAMER_INCLUDE_DIRS}
     ${GSTREAMER_PBUTILS_INCLUDE_DIRS}
-<<<<<<< HEAD
-||||||| parent of 5900ccb2a680 (chore(webkit): bootstrap build #2219)
-    ${LIBSOUP_INCLUDE_DIRS}
-=======
-    ${LIBSOUP_INCLUDE_DIRS}
 # Playwright begin
     ${LIBVPX_INCLUDE_DIRS}
 # Playwright end
->>>>>>> 5900ccb2a680 (chore(webkit): bootstrap build #2219)
 )
 
 list(APPEND WebKit_INTERFACE_INCLUDE_DIRECTORIES

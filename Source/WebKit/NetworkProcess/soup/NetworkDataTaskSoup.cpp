@@ -396,20 +396,8 @@ void NetworkDataTaskSoup::didSendRequest(GRefPtr<GInputStream>&& inputStream)
     else
         m_inputStream = WTFMove(inputStream);
 
-<<<<<<< HEAD
-||||||| parent of 5900ccb2a680 (chore(webkit): bootstrap build #2219)
-#if USE(SOUP2)
-    m_networkLoadMetrics.responseStart = MonotonicTime::now();
-#endif
-
-=======
-#if USE(SOUP2)
-    m_networkLoadMetrics.responseStart = MonotonicTime::now();
-#endif
-
     auto& additionalMetrics = additionalNetworkLoadMetricsForWebInspector();
     m_response.m_httpRequestHeaderFields = additionalMetrics.requestHeaders;
->>>>>>> 5900ccb2a680 (chore(webkit): bootstrap build #2219)
     dispatchDidReceiveResponse();
 }
 
