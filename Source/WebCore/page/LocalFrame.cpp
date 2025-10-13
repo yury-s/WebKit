@@ -1675,7 +1675,6 @@ Ref<FrameInspectorController> LocalFrame::protectedInspectorController()
     return m_inspectorController.get();
 }
 
-<<<<<<< HEAD
 String LocalFrame::frameURLProtocol() const
 {
     if (RefPtr document = this->document())
@@ -1684,8 +1683,6 @@ String LocalFrame::frameURLProtocol() const
     return ""_s;
 }
 
-||||||| parent of ea5f46950d55 (chore(webkit): bootstrap build #2218)
-=======
 #if !PLATFORM(IOS_FAMILY)
 
 void LocalFrame::betterApproximateNode(const IntPoint& testPoint, const NodeQualifier& nodeQualifierFunction, Node*& best, Node* failedNode, IntPoint& bestPoint, IntRect& bestRect, const IntRect& testRect)
@@ -2044,7 +2041,6 @@ Node* LocalFrame::nodeRespondingToScrollWheelEvents(const FloatPoint& viewportLo
 
 #endif // !PLATFORM(IOS_FAMILY)
 
->>>>>>> ea5f46950d55 (chore(webkit): bootstrap build #2218)
 } // namespace WebCore
 
 #undef FRAME_RELEASE_LOG_ERROR

@@ -68,15 +68,11 @@
 #include "Event.h"
 #include "EventListener.h"
 #include "EventNames.h"
-<<<<<<< HEAD
-#include "FrameInlines.h"
-||||||| parent of ea5f46950d55 (chore(webkit): bootstrap build #2218)
-=======
-#include "File.h"
 #include <FileChooser.h>
+#include "File.h"
 #include "FileList.h"
 #include "FloatQuad.h"
->>>>>>> ea5f46950d55 (chore(webkit): bootstrap build #2218)
+#include "FrameInlines.h"
 #include "FrameTree.h"
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"

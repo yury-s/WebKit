@@ -42,13 +42,9 @@
 #include "CustomHeaderFields.h"
 #include "DOMWrapperWorld.h"
 #include "DocumentLoader.h"
-<<<<<<< HEAD
 #include "DocumentResourceLoader.h"
 #include "DocumentView.h"
-||||||| parent of ea5f46950d55 (chore(webkit): bootstrap build #2218)
-=======
 #include "Editor.h"
->>>>>>> ea5f46950d55 (chore(webkit): bootstrap build #2218)
 #include "ElementInlines.h"
 #include "EventTargetInlines.h"
 #include "FocusController.h"

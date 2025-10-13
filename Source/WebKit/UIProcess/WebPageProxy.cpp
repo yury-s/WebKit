@@ -264,13 +264,8 @@
 #include <WebCore/RenderEmbeddedObject.h>
 #include <WebCore/ResourceLoadStatistics.h>
 #include <WebCore/RunJavaScriptParameters.h>
-<<<<<<< HEAD
-#include <WebCore/SecurityOrigin.h>
-||||||| parent of ea5f46950d55 (chore(webkit): bootstrap build #2218)
-=======
 #include <WebCore/ScreenOrientationType.h>
-#include <WebCore/SecurityOriginData.h>
->>>>>>> ea5f46950d55 (chore(webkit): bootstrap build #2218)
+#include <WebCore/SecurityOrigin.h>
 #include <WebCore/SerializedCryptoKeyWrap.h>
 #include <WebCore/SerializedScriptValue.h>
 #include <WebCore/ShareData.h>

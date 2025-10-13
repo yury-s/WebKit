@@ -16128,6 +16128,7 @@
 				7AFA6F682A9F57C50055322A /* DisplayLinkMac.cpp */,
 				D71A94302370E025002C4D9E /* InspectorPlaywrightAgentClientMac.h */,
 				D7EB04E62372A73B00F744CE /* InspectorPlaywrightAgentClientMac.mm */,
+				D79902AF236E9404005D6F7E /* WebPageInspectorTargetProxyMac.mm */,
 				1AFDE65B1954E8D500C48FFA /* LegacySessionStateCoding.cpp */,
 				0FCB4E5818BBE3D9000FCFC9 /* PageClientImplMac.h */,
 				0FCB4E5918BBE3D9000FCFC9 /* PageClientImplMac.mm */,
@@ -16153,7 +16154,6 @@
 				E55CD20224D09F1F0042DB9C /* WebDateTimePickerMac.mm */,
 				D79902AE236E9404005D6F7E /* WebPageInspectorEmulationAgentMac.mm */,
 				D79902B0236E9404005D6F7E /* WebPageInspectorInputAgentMac.mm */,
-				D79902AF236E9404005D6F7E /* WebPageInspectorTargetProxyMac.mm */,
 				BC857E8512B71EBB00EDEB2E /* WebPageProxyMac.mm */,
 				BC5750951268F3C6006F0F12 /* WebPopupMenuProxyMac.h */,
 				BC5750961268F3C6006F0F12 /* WebPopupMenuProxyMac.mm */,
@@ -18042,13 +18042,7 @@
 				CDAC20C923FC2F750021DEE3 /* RemoteCDMInstanceSessionIdentifier.h in Headers */,
 				0F6E7C532C4C386800F1DB85 /* RemoteGraphicsContextMessages.h in Headers */,
 				F451C0FE2703B263002BA03B /* RemoteGraphicsContextProxy.h in Headers */,
-<<<<<<< HEAD
-||||||| parent of ea5f46950d55 (chore(webkit): bootstrap build #2218)
-				A78A5FE42B0EB39E005036D3 /* RemoteImageBufferSetIdentifier.h in Headers */,
-=======
-				A78A5FE42B0EB39E005036D3 /* RemoteImageBufferSetIdentifier.h in Headers */,
 				D71A943A2370F061002C4D9E /* RemoteInspectorPipe.h in Headers */,
->>>>>>> ea5f46950d55 (chore(webkit): bootstrap build #2218)
 				2D47B56D1810714E003A3AEE /* RemoteLayerBackingStore.h in Headers */,
 				2DDF731518E95060004F5A66 /* RemoteLayerBackingStoreCollection.h in Headers */,
 				1AB16AEA164B3A8800290D62 /* RemoteLayerTreeContext.h in Headers */,
@@ -21309,6 +21303,7 @@
 				2749F6442146561B008380BF /* InjectedBundleNodeHandle.cpp in Sources */,
 				2749F6452146561E008380BF /* InjectedBundleRangeHandle.cpp in Sources */,
 				D7EB04E72372A73B00F744CE /* InspectorPlaywrightAgentClientMac.mm in Sources */,
+				D79902B2236E9404005D6F7E /* WebPageInspectorTargetProxyMac.mm in Sources */,
 				1CC94E532AC92F190045F269 /* JSWebExtensionAPIAction.mm in Sources */,
 				1C2B4D4B2A819D0D00C528A1 /* JSWebExtensionAPIAlarms.mm in Sources */,
 				1C8ECFEA2AFC7DCB007BAA62 /* JSWebExtensionAPICommands.mm in Sources */,
@@ -21336,11 +21331,8 @@
 				1C5ACFAB2A96F8D500C041C0 /* JSWebExtensionAPITabs.mm in Sources */,
 				1C15497F2926C073001B9E5B /* JSWebExtensionAPITest.mm in Sources */,
 				1C0F05BE2CFA5D2E007D1F62 /* JSWebExtensionAPIUnified.mm in Sources */,
-<<<<<<< HEAD
 				1C5DC45F2909B05A0061EC62 /* JSWebExtensionWrapperCocoa.mm in Sources */,
 				E385F3672E86D6C900461B0C /* LaunchLogHook.mm in Sources */,
-||||||| parent of ea5f46950d55 (chore(webkit): bootstrap build #2218)
-=======
 				3375A3772942A19D0028536D /* JSWebExtensionAPIWebNavigation.mm in Sources */,
 				33F68338293FF6F5005C63C0 /* JSWebExtensionAPIWebNavigationEvent.mm in Sources */,
 				B63A99772B7EA002004611FD /* JSWebExtensionAPIWebPageNamespace.mm in Sources */,
@@ -21349,7 +21341,6 @@
 				337042022B58A0B70077FF78 /* JSWebExtensionAPIWebRequestEvent.mm in Sources */,
 				1C5ACFA62A96F8C400C041C0 /* JSWebExtensionAPIWindows.mm in Sources */,
 				1C5ACFA72A96F8C400C041C0 /* JSWebExtensionAPIWindowsEvent.mm in Sources */,
->>>>>>> ea5f46950d55 (chore(webkit): bootstrap build #2218)
 				C14D37FE24ACE086007FF014 /* LaunchServicesDatabaseManager.mm in Sources */,
 				C1710CF724AA643200D7C112 /* LaunchServicesDatabaseObserver.mm in Sources */,
 				41A0EB142641714900794471 /* LibWebRTCCodecsProxy.mm in Sources */,
@@ -21699,7 +21690,6 @@
 				07CB79962CE9435700199C49 /* WebPage.swift in Sources */,
 				D79902B1236E9404005D6F7E /* WebPageInspectorEmulationAgentMac.mm in Sources */,
 				D79902B3236E9404005D6F7E /* WebPageInspectorInputAgentMac.mm in Sources */,
-				D79902B2236E9404005D6F7E /* WebPageInspectorTargetProxyMac.mm in Sources */,
 				7CE9CE101FA0767A000177DE /* WebPageUpdatePreferences.cpp in Sources */,
 				079A4DA12D72CC0D00CA387F /* WebPageWebView.swift in Sources */,
 				7CEB00DD1FA69ABE0065473B /* WebPreferencesFeatures.cpp in Sources */,
