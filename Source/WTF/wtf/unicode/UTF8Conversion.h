@@ -27,6 +27,11 @@
 
 #include <wtf/text/Latin1Character.h>
 
+// Can be probably removed when we drop Debian 11.
+#ifdef Success
+#undef Success
+#endif
+
 namespace WTF {
 namespace Unicode {
 

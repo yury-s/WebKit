@@ -108,6 +108,13 @@ namespace WebKit {
 
 using namespace WebCore;
 
+static bool _headless = false;
+
+// static
+void PageClientImpl::setHeadless(bool headless) {
+    _headless = headless;
+}
+
 PageClientImpl::PageClientImpl(NSView *view, WKWebView *webView)
     : PageClientImplCocoa(webView)
     , m_view(view)
@@ -163,6 +170,9 @@ NSWindow *PageClientImpl::activeWindow() const
 
 bool PageClientImpl::isViewWindowActive()
 {
+    if (_headless)
+        return true;
+
     ASSERT(hasProcessPrivilege(ProcessPrivilege::CanCommunicateWithWindowServer));
     RetainPtr activeViewWindow = activeWindow();
     return activeViewWindow.get().isKeyWindow || (activeViewWindow && [NSApp keyWindow] == activeViewWindow.get());
@@ -170,6 +180,9 @@ bool PageClientImpl::isViewWindowActive()
 
 bool PageClientImpl::isViewFocused()
 {
+    if (_headless)
+        return true;
+
     // FIXME: This is called from the WebPageProxy constructor before we have a WebViewImpl.
     // Once WebViewImpl and PageClient merge, this won't be a problem.
     if (CheckedPtr impl = m_impl.get())
@@ -193,6 +206,9 @@ void PageClientImpl::makeFirstResponder()
     
 bool PageClientImpl::isViewVisible(NSView *view, NSWindow *viewWindow)
 {
+    if (_headless)
+        return true;
+
     auto windowIsOccluded = [&]()->bool {
         return m_impl && m_impl->windowOcclusionDetectionEnabled() && (viewWindow.occlusionState & NSWindowOcclusionStateVisible) != NSWindowOcclusionStateVisible;
     };
@@ -284,7 +300,8 @@ void PageClientImpl::didRelaunchProcess()
 
 void PageClientImpl::preferencesDidChange()
 {
-    checkedImpl()->preferencesDidChange();
+    if (CheckedPtr impl = m_impl.get())
+        impl->preferencesDidChange();
 }
 
 void PageClientImpl::toolTipChanged(const String& oldToolTip, const String& newToolTip)
@@ -501,7 +518,15 @@ IntRect PageClientImpl::rootViewToAccessibilityScreen(const IntRect& rect)
 
 void PageClientImpl::doneWithKeyEvent(const NativeWebKeyboardEvent& event, bool eventWasHandled)
 {
+<<<<<<< HEAD
     checkedImpl()->doneWithKeyEvent(RetainPtr { event.nativeEvent() }.get(), eventWasHandled);
+||||||| parent of 5900ccb2a680 (chore(webkit): bootstrap build #2219)
+    checkedImpl()->doneWithKeyEvent(event.nativeEvent(), eventWasHandled);
+=======
+    if (!event.nativeEvent())
+        return;
+    checkedImpl()->doneWithKeyEvent(event.nativeEvent(), eventWasHandled);
+>>>>>>> 5900ccb2a680 (chore(webkit): bootstrap build #2219)
 }
 
 #if ENABLE(IMAGE_ANALYSIS)
@@ -520,6 +545,8 @@ void PageClientImpl::computeHasVisualSearchResults(const URL& imageURL, Shareabl
 
 RefPtr<WebPopupMenuProxy> PageClientImpl::createPopupMenuProxy(WebPageProxy& page)
 {
+    if (_headless)
+        return nullptr;
     return WebPopupMenuProxyMac::create(m_view.get().get(), page.checkedPopupMenuClient().get());
 }
 
@@ -644,6 +671,12 @@ CALayer *PageClientImpl::footerBannerLayer() const
 {
     return m_impl->footerBannerLayer();
 }
+
+// Paywright begin
+RetainPtr<CGImageRef> PageClientImpl::takeSnapshotForAutomation() {
+    return m_impl->takeSnapshotForAutomation();
+}
+// Paywright begin
 
 RefPtr<ViewSnapshot> PageClientImpl::takeViewSnapshot(std::optional<WebCore::IntRect>&&)
 {
@@ -859,6 +892,13 @@ void PageClientImpl::beganExitFullScreen(const IntRect& initialFrame, const IntR
 
 #endif // ENABLE(FULLSCREEN_API)
 
+#if ENABLE(TOUCH_EVENTS)
+void PageClientImpl::doneWithTouchEvent(const WebTouchEvent& event, bool wasEventHandled)
+{
+    notImplemented();
+}
+#endif // ENABLE(TOUCH_EVENTS)
+
 void PageClientImpl::navigationGestureDidBegin()
 {
     checkedImpl()->dismissContentRelativeChildWindowsWithAnimation(true);
@@ -1039,7 +1079,16 @@ void PageClientImpl::requestScrollToRect(const WebCore::FloatRect& targetRect, c
 
 bool PageClientImpl::windowIsFrontWindowUnderMouse(const NativeWebMouseEvent& event)
 {
+<<<<<<< HEAD
     return checkedImpl()->windowIsFrontWindowUnderMouse(RetainPtr { event.nativeEvent() }.get());
+||||||| parent of 5900ccb2a680 (chore(webkit): bootstrap build #2219)
+    return checkedImpl()->windowIsFrontWindowUnderMouse(event.nativeEvent());
+=======
+    // Simulated event.
+    if (!event.nativeEvent())
+        return false;
+    return checkedImpl()->windowIsFrontWindowUnderMouse(event.nativeEvent());
+>>>>>>> 5900ccb2a680 (chore(webkit): bootstrap build #2219)
 }
 
 std::optional<float> PageClientImpl::computeAutomaticTopObscuredInset()
