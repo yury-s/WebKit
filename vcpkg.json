@@ -1,7 +1,8 @@
 {
   "name": "webkit",
   "dependencies": [
-    "icu"
+    "icu",
+    "libvpx"
   ],
   "features": {
     "avif": {
@@ -96,5 +97,11 @@
         "woff2"
       ]
     }
-  }
+  },
+  "overrides": [
+    {
+      "name": "libvpx",
+      "version": "1.13.1#3"
+    }
+  ]
 }

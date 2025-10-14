@@ -33,6 +33,7 @@
 #include "LayerTreeContext.h"
 #include "MessageSenderInlines.h"
 #include "UpdateInfo.h"
+#include "WebPageInspectorController.h"
 #include "WebPageProxy.h"
 #include "WebPreferences.h"
 #include "WebProcessPool.h"
@@ -40,9 +41,15 @@
 #include <WebCore/Region.h>
 #include <optional>
 #include <wtf/TZoneMallocInlines.h>
+#include <wtf/Vector.h>
 
 #if PLATFORM(GTK)
+#include "WebKitWebViewBasePrivate.h"
 #include <gtk/gtk.h>
+#include <cairo.h>
+#include <skia/core/SkImage.h>
+#include <skia/core/SkSurface.h>
+#include <skia/core/SkCanvas.h>
 #endif
 
 #if USE(GLIB_EVENT_LOOP)
@@ -182,6 +189,11 @@ void DrawingAreaProxyCoordinatedGraphics::deviceScaleFactorDidChange(CompletionH
     sendWithAsyncReply(Messages::DrawingArea::SetDeviceScaleFactor(page()->deviceScaleFactor()), WTFMove(completionHandler));
 }
 
+void DrawingAreaProxyCoordinatedGraphics::waitForSizeUpdate(Function<void (const DrawingAreaProxyCoordinatedGraphics&)>&& callback)
+{
+    m_callbacks.append(WTFMove(callback));
+}
+
 void DrawingAreaProxyCoordinatedGraphics::setBackingStoreIsDiscardable(bool isBackingStoreDiscardable)
 {
 #if !PLATFORM(WPE)
@@ -242,6 +254,44 @@ void DrawingAreaProxyCoordinatedGraphics::updateAcceleratedCompositingMode(uint6
 {
     updateAcceleratedCompositingMode(layerTreeContext);
 }
+
+#if PLATFORM(GTK)
+void DrawingAreaProxyCoordinatedGraphics::captureFrame()
+{
+    RefPtr<cairo_surface_t> surface;
+    if (isInAcceleratedCompositingMode()) {
+        AcceleratedBackingStore* backingStore = webkitWebViewBaseGetAcceleratedBackingStore(WEBKIT_WEB_VIEW_BASE(protectedPage()->viewWidget()));
+        if (!backingStore)
+            return;
+
+        surface = backingStore->surface();
+    } else if (m_backingStore) {
+        surface = m_backingStore->surface();
+    }
+
+    if (!surface)
+        return;
+
+    if (cairo_surface_get_type(surface.get()) != CAIRO_SURFACE_TYPE_IMAGE)
+        return;
+
+    unsigned char* data   = cairo_image_surface_get_data(surface.get());
+    int width             = cairo_image_surface_get_width(surface.get());
+    int height            = cairo_image_surface_get_height(surface.get());
+    int stride            = cairo_image_surface_get_stride(surface.get());
+
+    SkImageInfo info = SkImageInfo::Make(
+        width, height,
+        kBGRA_8888_SkColorType,  // matches CAIRO_FORMAT_ARGB32 on LE
+        kPremul_SkAlphaType
+    );
+    sk_sp<SkImage> skImage = SkImages::RasterFromData(info, SkData::MakeWithCopy(data, height * stride), stride);
+    if (!skImage)
+        return;
+
+    protectedPage()->inspectorController().didPaint(WTFMove(skImage));
+}
+#endif // PLATFORM(GTK)
 
 bool DrawingAreaProxyCoordinatedGraphics::alwaysUseCompositing() const
 {
@@ -310,6 +360,12 @@ void DrawingAreaProxyCoordinatedGraphics::didUpdateGeometry()
     // we need to resend the new size here.
     if (m_lastSentSize != size())
         sendUpdateGeometry();
+    else {
+        Vector<Function<void (const DrawingAreaProxyCoordinatedGraphics&)>> callbacks;
+        callbacks.swap(m_callbacks);
+        for (auto& cb : callbacks)
+            cb(*this);
+    }
 }
 
 #if !PLATFORM(WPE)
