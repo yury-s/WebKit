@@ -1099,8 +1099,7 @@ inline void InspectorInstrumentation::applyUserAgentOverride(LocalFrame& frame, 
 inline void InspectorInstrumentation::applyPlatformOverride(LocalFrame& frame, String& platform)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (auto* agents = instrumentingAgents(frame))
-        applyPlatformOverrideImpl(*agents, platform);
+    applyPlatformOverrideImpl(instrumentingAgents(frame), platform);
 }
 
 inline void InspectorInstrumentation::applyEmulatedMedia(LocalFrame& frame, AtomString& media)
@@ -1204,8 +1203,7 @@ inline void InspectorInstrumentation::didFailLoading(ServiceWorkerGlobalScope& g
 inline void InspectorInstrumentation::didReceiveMainResourceError(LocalFrame& frame, const ResourceError& error)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (auto* agents = instrumentingAgents(frame))
-        didReceiveMainResourceErrorImpl(*agents, frame, error);
+    didReceiveMainResourceErrorImpl(instrumentingAgents(frame), frame, error);
 }
 
 inline void InspectorInstrumentation::continueAfterXFrameOptionsDenied(LocalFrame& frame, ResourceLoaderIdentifier identifier, DocumentLoader& loader, const ResourceResponse& response)
@@ -1318,8 +1316,7 @@ inline void InspectorInstrumentation::accessibilitySettingsDidChange(Page& page)
 inline void InspectorInstrumentation::didNavigateWithinPage(LocalFrame& frame)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (auto* agents = instrumentingAgents(frame))
-        didNavigateWithinPageImpl(*agents, frame);
+    didNavigateWithinPageImpl(instrumentingAgents(frame), frame);
 }
 
 #if ENABLE(DARK_MODE_CSS)
@@ -1771,8 +1768,7 @@ inline void InspectorInstrumentation::renderLayerDestroyed(Page* page, const Ren
 inline void InspectorInstrumentation::runOpenPanel(LocalFrame* frame, HTMLInputElement* element, bool* intercept)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (auto* agents = instrumentingAgents(*frame))
-        runOpenPanelImpl(*agents, element, intercept);
+    runOpenPanelImpl(instrumentingAgents(*frame), element, intercept);
 }
 
 inline void InspectorInstrumentation::frameAttached(LocalFrame* frame)
@@ -1793,15 +1789,13 @@ inline bool InspectorInstrumentation::shouldBypassCSP(ScriptExecutionContext* co
 inline void InspectorInstrumentation::willCheckNavigationPolicy(LocalFrame& frame)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (auto* agents = instrumentingAgents(frame))
-        willCheckNavigationPolicyImpl(*agents, frame);
+    willCheckNavigationPolicyImpl(instrumentingAgents(frame), frame);
 }
 
 inline void InspectorInstrumentation::didCheckNavigationPolicy(LocalFrame& frame, bool cancel)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (auto* agents = instrumentingAgents(frame))
-        didCheckNavigationPolicyImpl(*agents, frame, cancel);
+    didCheckNavigationPolicyImpl(instrumentingAgents(frame), frame, cancel);
 }
 
 inline InstrumentingAgents* InspectorInstrumentation::instrumentingAgents(ScriptExecutionContext* context)
