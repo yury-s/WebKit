@@ -50,7 +50,7 @@ static unsigned modifiersToEventState(OptionSet<WebEventModifier> modifiers)
 void WebPageInspectorInputAgent::platformDispatchKeyEvent(WebEventType type, const String& text, const String& unmodifiedText, const String& key, const String& code, const String& keyIdentifier, int windowsVirtualKeyCode, int nativeVirtualKeyCode, bool isAutoRepeat, bool isKeypad, bool isSystemKey, OptionSet<WebEventModifier> modifiers, Vector<String>& macCommands, MonotonicTime timestamp)
 {
     Vector<String> commands;
-    const guint keyVal = WebCore::PlatformKeyboardEvent::gdkKeyCodeForWindowsKeyCode(windowsVirtualKeyCode);
+    const guint keyVal = WebKeyboardEvent::gdkKeyCodeForWindowsKeyCode(windowsVirtualKeyCode);
     if (keyVal) {
         unsigned state = modifiersToEventState(modifiers);
         commands = KeyBindingTranslator().commandsForKeyval(keyVal, state);

@@ -27,7 +27,7 @@
 #include "InspectorTargetProxy.h"
 
 #include "WebPageProxy.h"
-#include <WebCore/GtkUtilities.h>
+#include "GtkUtilities.h"
 #include <gtk/gtk.h>
 
 namespace WebKit {

@@ -27,7 +27,7 @@
 #include "WebPageInspectorTargetProxy.h"
 
 #include "WebPageProxy.h"
-#include <WebCore/GtkUtilities.h>
+#include "GtkUtilities.h"
 #include <gtk/gtk.h>
 
 namespace WebKit {
@@ -35,7 +35,7 @@ namespace WebKit {
 void WebPageInspectorTargetProxy::platformActivate(String& error) const
 {
     GtkWidget* parent = GTK_WIDGET(gtk_widget_get_root(m_page->viewWidget()));
-    if (WebCore::widgetIsOnscreenToplevelWindow(parent))
+    if (widgetIsOnscreenToplevelWindow(parent))
         gtk_window_present(GTK_WINDOW(parent));
     else
         error = "The view is not on screen"_s;
