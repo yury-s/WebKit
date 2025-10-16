@@ -69,6 +69,9 @@ public:
     InspectorPageAgent(PageAgentContext&, InspectorBackendClient*, InspectorOverlay&);
     ~InspectorPageAgent();
 
+    WEBCORE_EXPORT static String serializeFrameID(FrameIdentifier frameID);
+    WEBCORE_EXPORT static std::optional<FrameIdentifier> parseFrameID(String frameID);
+
     // InspectorAgentBase
     void didCreateFrontendAndBackend();
     void willDestroyFrontendAndBackend(Inspector::DisconnectReason);

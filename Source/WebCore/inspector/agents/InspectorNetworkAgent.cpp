@@ -1369,6 +1369,12 @@ Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::setEmulatedCondi
 
 #endif // ENABLE(INSPECTOR_NETWORK_THROTTLING)
 
+Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::setEmulateOfflineState(bool offline)
+{
+    platformStrategies()->loaderStrategy()->setEmulateOfflineState(offline);
+    return { };
+}
+
 static Ref<Inspector::Protocol::Page::SearchResult> buildObjectForSearchResult(const Inspector::Protocol::Network::RequestId& requestId, const Inspector::Protocol::Network::FrameId& frameId, const String& url, int matchesCount)
 {
     auto searchResult = Inspector::Protocol::Page::SearchResult::create()
