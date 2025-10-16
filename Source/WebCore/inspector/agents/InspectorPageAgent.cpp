@@ -64,6 +64,7 @@
 #include "InspectorOverlay.h"
 #include "InspectorResourceUtilities.h"
 #include "InstrumentingAgents.h"
+#include "JSDOMWindowCustom.h"
 #include "LocalFrame.h"
 #include "LocalFrameView.h"
 #include "MIMETypeRegistry.h"
