@@ -147,10 +147,6 @@ void webkitWebViewBaseSetPlugID(WebKitWebViewBase*, const String&);
 #endif
 
 WebKit::RendererBufferDescription webkitWebViewBaseGetRendererBufferDescription(WebKitWebViewBase*);
-<<<<<<< HEAD
 void webkitWebViewBaseSetCursor(WebKitWebViewBase*, const WebCore::Cursor&);
-||||||| parent of eedf7fb914e3 (chore(webkit): bootstrap build #2221)
-=======
 
 WebKit::AcceleratedBackingStore* webkitWebViewBaseGetAcceleratedBackingStore(WebKitWebViewBase*);
->>>>>>> eedf7fb914e3 (chore(webkit): bootstrap build #2221)

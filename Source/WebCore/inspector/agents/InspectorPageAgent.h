@@ -44,18 +44,11 @@
 #include <wtf/WeakRef.h>
 #include <wtf/text/WTFString.h>
 
-<<<<<<< HEAD
 namespace Inspector {
 enum class ResourceType;
-}
-
-||||||| parent of eedf7fb914e3 (chore(webkit): bootstrap build #2221)
-=======
-namespace Inspector {
 class InjectedScriptManager;
 }
 
->>>>>>> eedf7fb914e3 (chore(webkit): bootstrap build #2221)
 namespace WebCore {
 
 class DOMWrapperWorld;
@@ -76,72 +69,6 @@ public:
     InspectorPageAgent(PageAgentContext&, InspectorBackendClient*, InspectorOverlay&);
     ~InspectorPageAgent();
 
-<<<<<<< HEAD
-||||||| parent of eedf7fb914e3 (chore(webkit): bootstrap build #2221)
-    enum ResourceType {
-        DocumentResource,
-        StyleSheetResource,
-        ImageResource,
-        FontResource,
-        ScriptResource,
-        XHRResource,
-        FetchResource,
-        PingResource,
-        BeaconResource,
-        WebSocketResource,
-#if ENABLE(APPLICATION_MANIFEST)
-        ApplicationManifestResource,
-#endif
-        EventSourceResource,
-        OtherResource,
-    };
-
-    static bool sharedBufferContent(RefPtr<FragmentedSharedBuffer>&&, const String& textEncodingName, bool withBase64Encode, String* result);
-    static Vector<CachedResource*> cachedResourcesForFrame(LocalFrame*);
-    static void resourceContent(Inspector::Protocol::ErrorString&, LocalFrame*, const URL&, String* result, bool* base64Encoded);
-    static String sourceMapURLForResource(CachedResource*);
-    static CachedResource* cachedResource(const LocalFrame*, const URL&);
-    static Inspector::Protocol::Page::ResourceType resourceTypeJSON(ResourceType);
-    static ResourceType inspectorResourceType(CachedResource::Type);
-    static ResourceType inspectorResourceType(const CachedResource&);
-    static Inspector::Protocol::Page::ResourceType cachedResourceTypeJSON(const CachedResource&);
-    static LocalFrame* findFrameWithSecurityOrigin(Page&, const String& originRawString);
-    static DocumentLoader* assertDocumentLoader(Inspector::Protocol::ErrorString&, LocalFrame*);
-
-=======
-    enum ResourceType {
-        DocumentResource,
-        StyleSheetResource,
-        ImageResource,
-        FontResource,
-        ScriptResource,
-        XHRResource,
-        FetchResource,
-        PingResource,
-        BeaconResource,
-        WebSocketResource,
-#if ENABLE(APPLICATION_MANIFEST)
-        ApplicationManifestResource,
-#endif
-        EventSourceResource,
-        OtherResource,
-    };
-
-    WEBCORE_EXPORT static String serializeFrameID(FrameIdentifier frameID);
-    WEBCORE_EXPORT static std::optional<FrameIdentifier> parseFrameID(String frameID);
-    static bool sharedBufferContent(RefPtr<FragmentedSharedBuffer>&&, const String& textEncodingName, bool withBase64Encode, String* result);
-    static Vector<CachedResource*> cachedResourcesForFrame(LocalFrame*);
-    static void resourceContent(Inspector::Protocol::ErrorString&, LocalFrame*, const URL&, String* result, bool* base64Encoded);
-    static String sourceMapURLForResource(CachedResource*);
-    static CachedResource* cachedResource(const LocalFrame*, const URL&);
-    static Inspector::Protocol::Page::ResourceType resourceTypeJSON(ResourceType);
-    static ResourceType inspectorResourceType(CachedResource::Type);
-    static ResourceType inspectorResourceType(const CachedResource&);
-    static Inspector::Protocol::Page::ResourceType cachedResourceTypeJSON(const CachedResource&);
-    static LocalFrame* findFrameWithSecurityOrigin(Page&, const String& originRawString);
-    static DocumentLoader* assertDocumentLoader(Inspector::Protocol::ErrorString&, LocalFrame*);
-
->>>>>>> eedf7fb914e3 (chore(webkit): bootstrap build #2221)
     // InspectorAgentBase
     void didCreateFrontendAndBackend();
     void willDestroyFrontendAndBackend(Inspector::DisconnectReason);

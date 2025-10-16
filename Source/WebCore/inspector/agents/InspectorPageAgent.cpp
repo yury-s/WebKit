@@ -122,57 +122,11 @@ using namespace Inspector;
 
 WTF_MAKE_TZONE_ALLOCATED_IMPL(InspectorPageAgent);
 
-<<<<<<< HEAD
-||||||| parent of eedf7fb914e3 (chore(webkit): bootstrap build #2221)
-static bool decodeBuffer(std::span<const uint8_t> buffer, const String& textEncodingName, String* result)
-{
-    if (buffer.data()) {
-        PAL::TextEncoding encoding(textEncodingName);
-        if (!encoding.isValid())
-            encoding = PAL::WindowsLatin1Encoding();
-        *result = encoding.decode(buffer);
-        return true;
-    }
-    return false;
-}
-
-bool InspectorPageAgent::mainResourceContent(LocalFrame* frame, bool withBase64Encode, String* result)
-{
-    RefPtr<FragmentedSharedBuffer> buffer = frame->loader().documentLoader()->mainResourceData();
-    if (!buffer)
-        return false;
-    return InspectorPageAgent::dataContent(buffer->makeContiguous()->span(), frame->document()->encoding(), withBase64Encode, result);
-}
-
-
-=======
 static UncheckedKeyHashMap<String, Ref<DOMWrapperWorld>>& createdUserWorlds() {
     static NeverDestroyed<UncheckedKeyHashMap<String, Ref<DOMWrapperWorld>>> nameToWorld;
     return nameToWorld;
 }
 
-static bool decodeBuffer(std::span<const uint8_t> buffer, const String& textEncodingName, String* result)
-{
-    if (buffer.data()) {
-        PAL::TextEncoding encoding(textEncodingName);
-        if (!encoding.isValid())
-            encoding = PAL::WindowsLatin1Encoding();
-        *result = encoding.decode(buffer);
-        return true;
-    }
-    return false;
-}
-
-bool InspectorPageAgent::mainResourceContent(LocalFrame* frame, bool withBase64Encode, String* result)
-{
-    RefPtr<FragmentedSharedBuffer> buffer = frame->loader().documentLoader()->mainResourceData();
-    if (!buffer)
-        return false;
-    return InspectorPageAgent::dataContent(buffer->makeContiguous()->span(), frame->document()->encoding(), withBase64Encode, result);
-}
-
-
->>>>>>> eedf7fb914e3 (chore(webkit): bootstrap build #2221)
 Ref<InspectorOverlay> InspectorPageAgent::protectedOverlay() const
 {
     return m_overlay.get();
@@ -225,15 +179,9 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::enable()
 
 Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::disable()
 {
-<<<<<<< HEAD
     Ref { m_instrumentingAgents.get() }->setEnabledPageAgent(nullptr);
-||||||| parent of eedf7fb914e3 (chore(webkit): bootstrap build #2221)
-    m_instrumentingAgents.setEnabledPageAgent(nullptr);
-=======
-    m_instrumentingAgents.setEnabledPageAgent(nullptr);
     m_interceptFileChooserDialog = false;
     m_bypassCSP = false;
->>>>>>> eedf7fb914e3 (chore(webkit): bootstrap build #2221)
 
     setShowPaintRects(false);
 #if !PLATFORM(IOS_FAMILY)

@@ -1291,23 +1291,6 @@ inline void InspectorInstrumentation::frameDocumentUpdated(LocalFrame& frame)
     frameDocumentUpdatedImpl(instrumentingAgents(frame), frame);
 }
 
-<<<<<<< HEAD
-inline void InspectorInstrumentation::loaderDetachedFromFrame(LocalFrame& frame, DocumentLoader& loader)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    loaderDetachedFromFrameImpl(instrumentingAgents(frame), loader);
-}
-
-||||||| parent of eedf7fb914e3 (chore(webkit): bootstrap build #2221)
-inline void InspectorInstrumentation::loaderDetachedFromFrame(LocalFrame& frame, DocumentLoader& loader)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (auto* agents = instrumentingAgents(frame))
-        loaderDetachedFromFrameImpl(*agents, loader);
-}
-
-=======
->>>>>>> eedf7fb914e3 (chore(webkit): bootstrap build #2221)
 inline void InspectorInstrumentation::frameStartedLoading(LocalFrame& frame)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());

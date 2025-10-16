@@ -282,14 +282,8 @@ UIProcess/gtk/ClipboardGtk4.cpp @no-unify
 UIProcess/gtk/Display.cpp @no-unify
 UIProcess/gtk/DisplayX11.cpp @no-unify
 UIProcess/gtk/DisplayWayland.cpp @no-unify
-<<<<<<< HEAD
 UIProcess/gtk/GRefPtrGtk.cpp @no-unify
 UIProcess/gtk/GtkUtilities.cpp @no-unify
-UIProcess/gtk/WebDateTimePickerGtk.cpp
-||||||| parent of eedf7fb914e3 (chore(webkit): bootstrap build #2221)
-UIProcess/gtk/WebDateTimePickerGtk.cpp
-=======
->>>>>>> eedf7fb914e3 (chore(webkit): bootstrap build #2221)
 UIProcess/gtk/HardwareAccelerationManager.cpp
 UIProcess/gtk/KeyBindingTranslator.cpp
 UIProcess/gtk/PointerLockManager.cpp @no-unify
