@@ -98,7 +98,7 @@ Inspector::Protocol::ErrorStringOr<void> PageRuntimeAgent::disable()
 
 void PageRuntimeAgent::frameNavigated(LocalFrame& frame)
 {
-    auto* pageAgent = m_instrumentingAgents.enabledPageAgent();
+    auto* pageAgent = Ref { m_instrumentingAgents.get() }->enabledPageAgent();
     if (pageAgent)
         pageAgent->setIgnoreDidClearWindowObject(true);
     // Ensure execution context is created for the frame even if it doesn't have scripts.

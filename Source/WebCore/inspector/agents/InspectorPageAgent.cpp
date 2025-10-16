@@ -1658,7 +1658,7 @@ Protocol::ErrorStringOr<Ref<Protocol::Page::AXNode>> InspectorPageAgent::accessi
 
     Node* node = nullptr;
     if (!objectId.isEmpty()) {
-        InspectorDOMAgent* domAgent = m_instrumentingAgents.persistentDOMAgent();
+        InspectorDOMAgent* domAgent = Ref { m_instrumentingAgents.get() }->persistentDOMAgent();
         ASSERT(domAgent);
         node = domAgent->nodeForObjectId(objectId);
         if (!node)

@@ -1937,7 +1937,7 @@ Inspector::Protocol::ErrorStringOr<std::tuple<String /* contentFrameId */, Strin
     if (!node)
         return makeUnexpected("Node not found"_s);
 
-    auto* pageAgent = m_instrumentingAgents.enabledPageAgent();
+    auto* pageAgent = m_instrumentingAgents->enabledPageAgent();
     if (!pageAgent)
         return makeUnexpected("Page agent must be enabled"_s);
 
@@ -2028,7 +2028,7 @@ Inspector::Protocol::ErrorStringOr<Ref<Protocol::Runtime::RemoteObject>> Inspect
     Inspector::Protocol::ErrorString errorString;
     Node* node = nullptr;
     if (!!frameId) {
-        auto* pageAgent = m_instrumentingAgents.enabledPageAgent();
+        auto* pageAgent = m_instrumentingAgents->enabledPageAgent();
         if (!pageAgent)
             return makeUnexpected("Page domain must be enabled"_s);
 
