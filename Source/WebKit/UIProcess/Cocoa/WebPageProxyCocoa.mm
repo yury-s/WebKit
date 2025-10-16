@@ -372,8 +372,7 @@ void WebPageProxy::startDrag(const DragItem& dragItem, ShareableBitmap::Handle&&
                 dragCancelled();
                 return;
             }
-            NSString *utiType = attachment->utiType().createNSString().get();
-            if (!utiType.length) {
+            if (!attachment->utiType().createNSString().get().length) {
                 dragCancelled();
                 return;
             }
