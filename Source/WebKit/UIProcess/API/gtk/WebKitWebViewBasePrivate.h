@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "AcceleratedBackingStore.h"
 #include "APIPageConfiguration.h"
 #include "GRefPtrGtk.h"
 #include "GUniquePtrGtk.h"
@@ -105,7 +106,7 @@ void webkitWebViewBaseStartDrag(WebKitWebViewBase*, WebCore::SelectionData&&, Op
 void webkitWebViewBaseDidPerformDragControllerAction(WebKitWebViewBase*);
 #endif
 
-RefPtr<WebKit::ViewSnapshot> webkitWebViewBaseTakeViewSnapshot(WebKitWebViewBase*, std::optional<WebCore::IntRect>&&);
+RefPtr<WebKit::ViewSnapshot> webkitWebViewBaseTakeViewSnapshot(WebKitWebViewBase*, std::optional<WebCore::IntRect>&&, bool nominalResolution);
 void webkitWebViewBaseSetEnableBackForwardNavigationGesture(WebKitWebViewBase*, bool enabled);
 WebKit::ViewGestureController* webkitWebViewBaseViewGestureController(WebKitWebViewBase*);
 
@@ -146,4 +147,10 @@ void webkitWebViewBaseSetPlugID(WebKitWebViewBase*, const String&);
 #endif
 
 WebKit::RendererBufferDescription webkitWebViewBaseGetRendererBufferDescription(WebKitWebViewBase*);
+<<<<<<< HEAD
 void webkitWebViewBaseSetCursor(WebKitWebViewBase*, const WebCore::Cursor&);
+||||||| parent of eedf7fb914e3 (chore(webkit): bootstrap build #2221)
+=======
+
+WebKit::AcceleratedBackingStore* webkitWebViewBaseGetAcceleratedBackingStore(WebKitWebViewBase*);
+>>>>>>> eedf7fb914e3 (chore(webkit): bootstrap build #2221)

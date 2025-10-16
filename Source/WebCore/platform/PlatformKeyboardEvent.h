@@ -129,11 +129,35 @@ namespace WebCore {
 #endif
 #endif
 
+<<<<<<< HEAD
+||||||| parent of eedf7fb914e3 (chore(webkit): bootstrap build #2221)
+#if PLATFORM(GTK)
+        // Used by WebKit2
+        static String keyValueForGdkKeyCode(unsigned);
+        static String keyCodeForHardwareKeyCode(unsigned);
+        static String keyIdentifierForGdkKeyCode(unsigned);
+        static int windowsKeyCodeForGdkKeyCode(unsigned);
+        static String singleCharacterString(unsigned);
+#endif
+
+=======
+#if PLATFORM(GTK)
+        // Used by WebKit2
+        static String keyValueForGdkKeyCode(unsigned);
+        static String keyCodeForHardwareKeyCode(unsigned);
+        static String keyIdentifierForGdkKeyCode(unsigned);
+        static int windowsKeyCodeForGdkKeyCode(unsigned);
+        static unsigned gdkKeyCodeForWindowsKeyCode(int);
+        static String singleCharacterString(unsigned);
+#endif
+
+>>>>>>> eedf7fb914e3 (chore(webkit): bootstrap build #2221)
 #if USE(LIBWPE)
         static String keyValueForWPEKeyCode(unsigned);
         static String keyCodeForHardwareKeyCode(unsigned);
         static String keyIdentifierForWPEKeyCode(unsigned);
         static int windowsKeyCodeForWPEKeyCode(unsigned);
+        static unsigned WPEKeyCodeForWindowsKeyCode(int);
         static String singleCharacterString(unsigned);
 #endif
 

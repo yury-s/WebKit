@@ -279,6 +279,7 @@ UIProcess/API/Cocoa/_WKArchiveExclusionRule.mm @nonARC
 UIProcess/API/Cocoa/_WKAttachment.mm @nonARC
 UIProcess/API/Cocoa/_WKAutomationSession.mm @nonARC
 UIProcess/API/Cocoa/_WKAutomationSessionConfiguration.mm @nonARC
+UIProcess/API/Cocoa/_WKBrowserInspector.mm @nonARC
 UIProcess/API/Cocoa/_WKContentRuleListAction.mm @nonARC
 UIProcess/API/Cocoa/_WKContextMenuElementInfo.mm @nonARC
 UIProcess/API/Cocoa/_WKCustomHeaderFields.mm @nonARC @no-unify
@@ -532,6 +533,7 @@ UIProcess/Inspector/ios/WKInspectorHighlightView.mm @nonARC
 UIProcess/Inspector/ios/WKInspectorNodeSearchGestureRecognizer.mm @nonARC
 
 UIProcess/Inspector/mac/RemoteWebInspectorUIProxyMac.mm @nonARC
+UIProcess/Inspector/mac/ScreencastEncoderMac.mm @nonARC
 UIProcess/Inspector/mac/WebInspectorUIProxyMac.mm @nonARC
 UIProcess/Inspector/mac/WKInspectorResourceURLSchemeHandler.mm @nonARC
 UIProcess/Inspector/mac/WKInspectorViewController.mm @nonARC
