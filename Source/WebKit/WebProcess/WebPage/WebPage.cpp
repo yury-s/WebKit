@@ -3710,7 +3710,6 @@ void WebPage::flushDeferredScrollEvents()
     protectedCorePage()->flushDeferredScrollEvents();
 }
 
-<<<<<<< HEAD
 void WebPage::startDeferringIntersectionObservations()
 {
     protectedCorePage()->startDeferringIntersectionObservations();
@@ -3721,8 +3720,6 @@ void WebPage::flushDeferredIntersectionObservations()
     protectedCorePage()->flushDeferredIntersectionObservations();
 }
 
-||||||| parent of ee9e0867b0e4 (chore(webkit): bootstrap build #2222)
-=======
 #if ENABLE(ORIENTATION_EVENTS)
 void WebPage::setDeviceOrientation(WebCore::IntDegrees deviceOrientation)
 {
@@ -3730,7 +3727,6 @@ void WebPage::setDeviceOrientation(WebCore::IntDegrees deviceOrientation)
 }
 #endif
 
->>>>>>> ee9e0867b0e4 (chore(webkit): bootstrap build #2222)
 void WebPage::flushDeferredDidReceiveMouseEvent()
 {
     if (auto info = std::exchange(m_deferredDidReceiveMouseEvent, std::nullopt))
