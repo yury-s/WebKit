@@ -108,3 +108,16 @@ platform/wpe/PasteboardWPE.cpp
 platform/wpe/PlatformScreenWPE.cpp
 
 platform/xdg/MIMETypeRegistryXdg.cpp
+<<<<<<< HEAD
+||||||| parent of 9394b695e9b5 (chore(webkit): bootstrap build #2223)
+
+platform/xr/openxr/PlatformXROpenXR.cpp
+=======
+
+platform/xr/openxr/PlatformXROpenXR.cpp
+
+JSSpeechSynthesisErrorCode.cpp
+JSSpeechSynthesisErrorEvent.cpp
+JSSpeechSynthesisErrorEventInit.cpp
+JSSpeechSynthesisEventInit.cpp
+>>>>>>> 9394b695e9b5 (chore(webkit): bootstrap build #2223)
