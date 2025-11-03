@@ -37,7 +37,12 @@
 #include "ProvisionalFrameProxy.h"
 #include "RemotePageDrawingAreaProxy.h"
 #include "RemotePageFullscreenManagerProxy.h"
+<<<<<<< HEAD
 #include "RemotePageScreenOrientationManagerProxy.h"
+||||||| parent of 252c108b27c6 (chore(webkit): bootstrap build #2227)
+=======
+#include "RemotePagePlaybackSessionManagerProxy.h"
+>>>>>>> 252c108b27c6 (chore(webkit): bootstrap build #2227)
 #include "RemotePageVisitedLinkStoreRegistration.h"
 #include "UserMediaProcessManager.h"
 #include "WebBackForwardList.h"
@@ -55,12 +60,14 @@
 #include <WebCore/RemoteUserInputEventData.h>
 #include <wtf/TZoneMallocInlines.h>
 
+
 #if ENABLE(FULLSCREEN_API)
 #include "WebFullScreenManagerProxy.h"
 #endif
 
 #if ENABLE(VIDEO_PRESENTATION_MODE)
 #include "RemotePageVideoPresentationManagerProxy.h"
+#include "VideoPresentationManagerProxy.h"
 #endif
 
 namespace WebKit {

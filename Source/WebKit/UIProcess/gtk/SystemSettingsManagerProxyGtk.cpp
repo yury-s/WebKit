@@ -128,6 +128,8 @@ int SystemSettingsManagerProxy::xftDPI() const
 
 bool SystemSettingsManagerProxy::followFontSystemSettings() const
 {
+    // Align with WPE's behavior, which always returns false.
+    return false;
 #if USE(GTK4)
 #if GTK_CHECK_VERSION(4, 16, 0)
     GtkFontRendering fontRendering;
@@ -192,7 +194,7 @@ void SystemSettingsManagerProxy::updateFontProperties(const String& fontName, We
     int size = pango_font_description_get_size(pangoDescription) / PANGO_SCALE;
     // If the size of the font is in points, we need to convert it to pixels.
     if (!pango_font_description_get_size_is_absolute(pangoDescription))
-        size = size * (fontDPI() / 72.0);
+        size = size * (WebCore::fontDPI() / 72.0);
     changedState.fontFamily = String::fromUTF8(unsafeSpan8(pango_font_description_get_family(pangoDescription)));
     changedState.fontSize = static_cast<float>(size);
     changedState.fontWeight = pango_font_description_get_weight(pangoDescription);

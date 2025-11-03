@@ -38,6 +38,7 @@
 #include "WebPreferencesKeys.h"
 #include "WebProcess.h"
 #include <WebCore/GraphicsContext.h>
+#include <WebCore/InspectorController.h>
 #include <WebCore/LocalFrameInlines.h>
 #include <WebCore/LocalFrameView.h>
 #include <WebCore/Page.h>

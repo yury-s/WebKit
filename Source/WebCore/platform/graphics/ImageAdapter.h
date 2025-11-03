@@ -55,6 +55,8 @@ typedef struct HBITMAP__ *HBITMAP;
 #include <wtf/RetainPtr.h>
 #endif
 
+#include "NativeImage.h"
+
 namespace WebCore {
 
 class Image;

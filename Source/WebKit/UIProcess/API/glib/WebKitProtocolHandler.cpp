@@ -166,51 +166,7 @@ static bool canvasAccelerationEnabled(WebKitURISchemeRequest* request)
 }
 #endif
 
-static bool uiProcessContextIsEGL()
-{
-#if PLATFORM(GTK)
-    return Display::singleton().glDisplayIsSharedWithGtk();
-#else
-    return true;
-#endif
-}
-
-static const char* openGLAPI()
-{
-    if (epoxy_is_desktop_gl())
-        return "OpenGL (libepoxy)";
-    return "OpenGL ES 2 (libepoxy)";
-}
-
-#if PLATFORM(GTK) || (PLATFORM(WPE) && ENABLE(WPE_PLATFORM))
-static String dmabufRendererWithSupportedBuffers()
-{
-    StringBuilder buffers;
-    buffers.append("DMABuf (Supported buffers: "_s);
-
-#if PLATFORM(GTK)
-    auto mode = AcceleratedBackingStore::rendererBufferTransportMode();
-#else
-    OptionSet<RendererBufferTransportMode> mode;
-    if (wpe_display_get_drm_device(wpe_display_get_primary()))
-        mode.add(RendererBufferTransportMode::Hardware);
-    mode.add(RendererBufferTransportMode::SharedMemory);
-#endif
-
-    if (mode.contains(RendererBufferTransportMode::Hardware))
-        buffers.append("Hardware"_s);
-    if (mode.contains(RendererBufferTransportMode::SharedMemory)) {
-        if (mode.contains(RendererBufferTransportMode::Hardware))
-            buffers.append(", "_s);
-        buffers.append("Shared Memory"_s);
-    }
-
-    buffers.append(')');
-    return buffers.toString();
-}
-
 #if USE(LIBDRM)
-
 // Base on function 'drmGetFormatName' from 'https://gitlab.freedesktop.org/mesa/drm/-/blob/main/xf86drm.c'.
 static String webkitDrmGetFormatName(uint32_t format)
 {
@@ -262,42 +218,6 @@ static String modifierListToString(const Vector<uint64_t, 1>& modifiers)
 #else
     return { };
 #endif
-}
-
-static String renderBufferDescription(WebKitURISchemeRequest* request)
-{
-    StringBuilder bufferDescription;
-    auto description = webkitWebViewGetRendererBufferDescription(webkit_uri_scheme_request_get_web_view(request));
-    if (description.fourcc) {
-        auto formatName = webkitDrmGetFormatName(description.fourcc);
-        switch (description.type) {
-        case RendererBufferDescription::Type::DMABuf: {
-            auto modifierName = webkitDrmGetModifierName(description.modifier);
-            if (!modifierName.isNull())
-                bufferDescription.append("DMA-BUF: "_s, formatName, " ("_s, modifierName, ")"_s);
-            else
-                bufferDescription.append("Unknown"_s);
-            break;
-        }
-        case RendererBufferDescription::Type::SharedMemory:
-            bufferDescription.append("Shared Memory: "_s, formatName);
-            break;
-        }
-        switch (description.usage) {
-        case RendererBufferFormat::Usage::Rendering:
-            bufferDescription.append(" [Rendering]"_s);
-            break;
-        case RendererBufferFormat::Usage::Scanout:
-            bufferDescription.append(" [Scanout]"_s);
-            break;
-        case RendererBufferFormat::Usage::Mapping:
-            bufferDescription.append(" [Mapping]"_s);
-            break;
-        }
-    } else
-        bufferDescription.append("Unknown"_s);
-
-    return bufferDescription.toString();
 }
 
 #if USE(GBM)
@@ -352,6 +272,87 @@ static String preferredBufferFormats(WebKitURISchemeRequest* request, JSON::Arra
     return builder.toString();
 }
 #endif // USE(GBM)
+#endif // USE(LIBDRM)
+
+static bool uiProcessContextIsEGL()
+{
+#if PLATFORM(GTK)
+    return Display::singleton().glDisplayIsSharedWithGtk();
+#else
+    return true;
+#endif
+}
+
+static const char* openGLAPI()
+{
+    if (epoxy_is_desktop_gl())
+        return "OpenGL (libepoxy)";
+    return "OpenGL ES 2 (libepoxy)";
+}
+
+#if PLATFORM(GTK) || (PLATFORM(WPE) && ENABLE(WPE_PLATFORM))
+static String dmabufRendererWithSupportedBuffers()
+{
+    StringBuilder buffers;
+    buffers.append("DMABuf (Supported buffers: "_s);
+
+#if PLATFORM(GTK)
+    auto mode = AcceleratedBackingStore::rendererBufferTransportMode();
+#else
+    OptionSet<RendererBufferTransportMode> mode;
+    if (wpe_display_get_drm_device(wpe_display_get_primary()))
+        mode.add(RendererBufferTransportMode::Hardware);
+    mode.add(RendererBufferTransportMode::SharedMemory);
+#endif
+
+    if (mode.contains(RendererBufferTransportMode::Hardware))
+        buffers.append("Hardware"_s);
+    if (mode.contains(RendererBufferTransportMode::SharedMemory)) {
+        if (mode.contains(RendererBufferTransportMode::Hardware))
+            buffers.append(", "_s);
+        buffers.append("Shared Memory"_s);
+    }
+
+    buffers.append(')');
+    return buffers.toString();
+}
+
+#if USE(LIBDRM)
+static String renderBufferDescription(WebKitURISchemeRequest* request)
+{
+    StringBuilder bufferDescription;
+    auto description = webkitWebViewGetRendererBufferDescription(webkit_uri_scheme_request_get_web_view(request));
+    if (description.fourcc) {
+        auto formatName = webkitDrmGetFormatName(description.fourcc);
+        switch (description.type) {
+        case RendererBufferDescription::Type::DMABuf: {
+            auto modifierName = webkitDrmGetModifierName(description.modifier);
+            if (!modifierName.isNull())
+                bufferDescription.append("DMA-BUF: "_s, formatName, " ("_s, modifierName, ")"_s);
+            else
+                bufferDescription.append("Unknown"_s);
+            break;
+        }
+        case RendererBufferDescription::Type::SharedMemory:
+            bufferDescription.append("Shared Memory: "_s, formatName);
+            break;
+        }
+        switch (description.usage) {
+        case RendererBufferFormat::Usage::Rendering:
+            bufferDescription.append(" [Rendering]"_s);
+            break;
+        case RendererBufferFormat::Usage::Scanout:
+            bufferDescription.append(" [Scanout]"_s);
+            break;
+        case RendererBufferFormat::Usage::Mapping:
+            bufferDescription.append(" [Mapping]"_s);
+            break;
+        }
+    } else
+        bufferDescription.append("Unknown"_s);
+
+    return bufferDescription.toString();
+}
 #endif // USE(LIBDRM)
 #endif // PLATFORM(GTK) || (PLATFORM(WPE) && ENABLE(WPE_PLATFORM))
 
@@ -739,13 +740,19 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request, RenderPro
         bool showBuffersInfo = false;
 #endif
         if (showBuffersInfo) {
+#if PLATFORM(GTK) || PLATFORM(WPE) && ENABLE(WPE_PLATFORM)
             addTableRow(hardwareAccelerationObject, "Renderer"_s, dmabufRendererWithSupportedBuffers());
+#endif
+
 #if USE(LIBDRM)
 #if USE(GBM)
             auto jsonFormats = JSON::Array::create();
             auto formatsString = preferredBufferFormats(request, jsonFormats.get());
             addTableRow(hardwareAccelerationObject, "Preferred buffer formats"_s, formatsString, WTFMove(jsonFormats));
 #endif
+#endif
+
+#if PLATFORM(GTK) || PLATFORM(WPE) && ENABLE(WPE_PLATFORM)
             addTableRow(hardwareAccelerationObject, "Buffer format"_s, renderBufferDescription(request));
 #endif
         }

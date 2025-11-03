@@ -1,7 +1,8 @@
 {
   "name": "webkit",
   "dependencies": [
-    "icu"
+    "icu",
+    "libvpx"
   ],
   "features": {
     "avif": {
@@ -101,6 +102,10 @@
     {
         "name": "ngtcp2",
         "version": "1.12.0"
+    },
+    {
+      "name": "libvpx",
+      "version": "1.13.1#3"
     }
   ]
 }
