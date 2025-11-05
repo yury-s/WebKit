@@ -8438,12 +8438,12 @@ UseGPUProcessForWebGLEnabled:
     WebKit:
       "ENABLE(GPU_PROCESS_BY_DEFAULT) && ENABLE(GPU_PROCESS_WEBGL_BY_DEFAULT)": true
       "USE(GRAPHICS_LAYER_WC)": true
-      "PLATFORM(GTK) || PLATFORM(WPE)" : false
+      "PLATFORM(GTK) || PLATFORM(WPE)" : true
       default: false
     WebCore:
       "ENABLE(GPU_PROCESS_BY_DEFAULT) && ENABLE(GPU_PROCESS_WEBGL_BY_DEFAULT)": true
       "USE(GRAPHICS_LAYER_WC)": true
-      "PLATFORM(GTK) || PLATFORM(WPE)" : false
+      "PLATFORM(GTK) || PLATFORM(WPE)" : true
       default: false
   sharedPreferenceForWebProcess: true
 
