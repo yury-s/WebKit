@@ -37,12 +37,8 @@
 #include "ProvisionalFrameProxy.h"
 #include "RemotePageDrawingAreaProxy.h"
 #include "RemotePageFullscreenManagerProxy.h"
-<<<<<<< HEAD
-#include "RemotePageScreenOrientationManagerProxy.h"
-||||||| parent of 0719862aa313 (chore(webkit): bootstrap build #2227)
-=======
 #include "RemotePagePlaybackSessionManagerProxy.h"
->>>>>>> 0719862aa313 (chore(webkit): bootstrap build #2227)
+#include "RemotePageScreenOrientationManagerProxy.h"
 #include "RemotePageVisitedLinkStoreRegistration.h"
 #include "UserMediaProcessManager.h"
 #include "WebBackForwardList.h"
