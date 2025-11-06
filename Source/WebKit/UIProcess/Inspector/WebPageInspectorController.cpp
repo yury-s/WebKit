@@ -90,18 +90,18 @@ WeakRef<WebPageProxy> WebPageInspectorController::protectedInspectedPage()
 
 void WebPageInspectorController::init()
 {
-    auto targetAgent = makeUnique<InspectorTargetAgent>(m_frontendRouter.get(), m_backendDispatcher.get());
-    m_targetAgent = targetAgent.get();
+    auto targetAgent = makeUniqueRef<InspectorTargetAgent>(m_frontendRouter.get(), m_backendDispatcher.get());
+    m_targetAgent = targetAgent.ptr();
     m_agents.append(WTFMove(targetAgent));
-    auto emulationAgent = makeUnique<WebPageInspectorEmulationAgent>(m_backendDispatcher.get(), m_inspectedPage);
-    m_emulationAgent = emulationAgent.get();
+    auto emulationAgent = makeUniqueRef<WebPageInspectorEmulationAgent>(m_backendDispatcher.get(), m_inspectedPage);
+    m_emulationAgent = emulationAgent.ptr();
     m_agents.append(WTFMove(emulationAgent));
-    auto inputAgent = makeUnique<WebPageInspectorInputAgent>(m_backendDispatcher.get(), m_inspectedPage);
-    m_inputAgent = inputAgent.get();
+    auto inputAgent = makeUniqueRef<WebPageInspectorInputAgent>(m_backendDispatcher.get(), m_inspectedPage);
+    m_inputAgent = inputAgent.ptr();
     m_agents.append(WTFMove(inputAgent));
-    m_agents.append(makeUnique<InspectorDialogAgent>(m_backendDispatcher.get(), m_frontendRouter.get(), m_inspectedPage));
-    auto screencastAgent = makeUnique<InspectorScreencastAgent>(m_backendDispatcher.get(), m_frontendRouter.get(), m_inspectedPage);
-    m_screecastAgent = screencastAgent.get();
+    m_agents.append(makeUniqueRef<InspectorDialogAgent>(m_backendDispatcher.get(), m_frontendRouter.get(), m_inspectedPage));
+    auto screencastAgent = makeUniqueRef<InspectorScreencastAgent>(m_backendDispatcher.get(), m_frontendRouter.get(), m_inspectedPage);
+    m_screecastAgent = screencastAgent.ptr();
     m_agents.append(WTFMove(screencastAgent));
     if (s_observer)
         s_observer->didCreateInspectorController(m_inspectedPage);
