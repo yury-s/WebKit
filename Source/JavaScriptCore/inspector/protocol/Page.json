@@ -142,40 +142,6 @@
             ]
         },
         {
-            "id": "AXNode",
-            "type": "object",
-            "description": "Accessibility Node",
-            "properties": [
-                { "name": "role", "type": "string", "description": "The role."},
-                { "name": "name", "type": "string","optional": true, "description": "A human readable name for the node."},
-                { "name": "value", "type": "any", "optional": true, "description": "The current value of the node."},
-                { "name": "description", "type": "string", "optional": true, "description": "An additional human readable description of the node."},
-                { "name": "keyshortcuts", "type": "string", "optional": true, "description": "Keyboard shortcuts associated with this node."},
-                { "name": "roledescription", "type": "string", "optional": true, "description": "A human readable alternative to the role."},
-                { "name": "valuetext", "type": "string", "optional": true, "description": "A description of the current value."},
-                { "name": "disabled", "type": "boolean", "optional": true, "description": "Whether the node is disabled."},
-                { "name": "expanded", "type": "boolean", "optional": true, "description": "Whether the node is expanded or collapsed."},
-                { "name": "focused", "type": "boolean", "optional": true, "description": "Whether the node is focused."},
-                { "name": "modal", "type": "boolean", "optional": true, "description": "Whether the node is modal."},
-                { "name": "multiselectable", "type": "boolean", "optional": true, "description": "Whether more than one child can be selected."},
-                { "name": "readonly", "type": "boolean", "optional": true, "description": "Whether the node is read only."},
-                { "name": "required", "type": "boolean", "optional": true, "description": "Whether the node is required."},
-                { "name": "selected", "type": "boolean", "optional": true, "description": "Whether the node is selected in its parent node."},
-                { "name": "checked", "type": "string", "optional": true, "enum": ["true", "false", "mixed"], "description": "Whether the checkbox is checked, or \"mixed\"."},
-                { "name": "pressed", "type": "string", "optional": true, "enum": ["true", "false", "mixed"], "description": "Whether the toggle button is checked, or \"mixed\"."},
-                { "name": "level", "type": "integer", "optional": true, "description": "The level of a heading."},
-                { "name": "valuemin", "type": "number", "optional": true, "description": "The minimum value in a node."},
-                { "name": "valuemax", "type": "number", "optional": true, "description": "The maximum value in a node."},
-                { "name": "autocomplete", "type": "string", "optional": true, "description": "What kind of autocomplete is supported by a control."},
-                { "name": "haspopup", "type": "string", "optional": true, "description": "What kind of popup is currently being shown for a node."},
-                { "name": "invalid", "type": "string", "optional": true, "enum": ["true", "false", "grammar", "spelling"], "description": "Whether and in what way this node's value is invalid."},
-                { "name": "orientation", "type": "string", "optional": true, "description": "Whether the node is oriented horizontally or vertically."},
-                { "name": "focusable", "type": "boolean", "optional": true, "description": "Whether the node is focusable."},
-                { "name": "children", "type": "array", "optional": true, "items": { "$ref": "AXNode"}, "description": "Child AXNodes of this node, if any."},
-                { "name": "found", "type": "boolean", "optional": true, "description": "True if this AXNode corresponds with the ObjectId passed into acessibilitySnapshot."}
-            ]
-        },
-        {
             "id": "Insets",
             "type": "object",
             "properties": [
@@ -423,16 +389,6 @@
             "description": "Insert text into the current selection of the page.",
             "parameters": [
                 { "name": "text", "type": "string", "description": "Text to insert." }
-            ]
-        },
-        {
-            "name": "accessibilitySnapshot",
-            "description": "Serializes and returns all of the accessibility nodes of the page.",
-            "parameters": [
-                { "name": "objectId", "type": "string", "optional": true, "description": "Object Id of a node to find in the accessibility tree."}
-            ],
-            "returns": [
-                { "name": "axNode", "$ref": "AXNode", "description": "The root AXNode."}
             ]
         },
         {

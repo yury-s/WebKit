@@ -1408,13 +1408,6 @@ InstrumentingAgents& InspectorInstrumentation::instrumentingAgents(Page& page)
     return page.inspectorController().m_instrumentingAgents.get();
 }
 
-void InspectorInstrumentation::maybeOverrideDefaultObjectInclusion(Page& page, AccessibilityObjectInclusion& inclusion) {
-    if (InspectorPageAgent* pageAgent = instrumentingAgents(page).enabledPageAgent()) {
-        if (pageAgent->doingAccessibilitySnapshot())
-            inclusion = AccessibilityObjectInclusion::DefaultBehavior;
-    }
-}
-
 InstrumentingAgents* InspectorInstrumentation::instrumentingAgents(ScriptExecutionContext& context)
 {
     // Using RefPtr makes us hit the m_inRemovedLastRefFunction assert.

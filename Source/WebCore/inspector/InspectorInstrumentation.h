@@ -31,7 +31,6 @@
 
 #pragma once
 
-#include "AXCoreObject.h"
 #include "CSSSelector.h"
 #include "CanvasBase.h"
 #include "CanvasRenderingContext.h"
@@ -364,8 +363,6 @@ public:
 
     static void registerInstrumentingAgents(InstrumentingAgents&);
     static void unregisterInstrumentingAgents(InstrumentingAgents&);
-
-    static void maybeOverrideDefaultObjectInclusion(Page&, AccessibilityObjectInclusion&);
 
 private:
     static void didClearWindowObjectInWorldImpl(InstrumentingAgents&, LocalFrame&, DOMWrapperWorld&);

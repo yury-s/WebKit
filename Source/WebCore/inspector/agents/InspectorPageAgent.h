@@ -110,7 +110,6 @@ public:
     Inspector::Protocol::ErrorStringOr<void> setScreenSizeOverride(std::optional<int>&& width, std::optional<int>&& height);
 
     Inspector::Protocol::ErrorStringOr<void> insertText(const String& text);
-    Inspector::Protocol::ErrorStringOr<Ref<Inspector::Protocol::Page::AXNode>> accessibilitySnapshot(const String& objectId);
     Inspector::Protocol::ErrorStringOr<void> setInterceptFileChooserDialog(bool enabled);
     Inspector::Protocol::ErrorStringOr<void> setDefaultBackgroundColorOverride(RefPtr<JSON::Object>&&);
     Inspector::Protocol::ErrorStringOr<void> createUserWorld(const String&);
@@ -143,7 +142,6 @@ public:
     bool shouldBypassCSP();
     void willCheckNavigationPolicy(LocalFrame&);
     void didCheckNavigationPolicy(LocalFrame&, bool cancel);
-    bool doingAccessibilitySnapshot() const { return m_doingAccessibilitySnapshot; };
 
     Frame* frameForId(const Inspector::Protocol::Network::FrameId&);
     WEBCORE_EXPORT String frameId(Frame*);
@@ -183,7 +181,6 @@ private:
     bool m_showPaintRects { false };
     bool m_interceptFileChooserDialog { false };
     bool m_bypassCSP { false };
-    bool m_doingAccessibilitySnapshot { false };
     bool m_ignoreDidClearWindowObject { false };
 };
 
