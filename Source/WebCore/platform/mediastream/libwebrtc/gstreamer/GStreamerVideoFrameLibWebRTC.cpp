@@ -24,6 +24,14 @@
 #include "GStreamerVideoFrameConverter.h"
 #include <gst/video/video-format.h>
 #include <gst/video/video-info.h>
+<<<<<<< HEAD
+||||||| parent of f7e19a9777bf (chore(webkit): bootstrap build #2229)
+#include <thread>
+=======
+#include <wtf/glib/GUniquePtr.h>
+#include <wtf/MediaTime.h>
+#include <thread>
+>>>>>>> f7e19a9777bf (chore(webkit): bootstrap build #2229)
 #include <wtf/MediaTime.h>
 #include <wtf/glib/GUniquePtr.h>
 
