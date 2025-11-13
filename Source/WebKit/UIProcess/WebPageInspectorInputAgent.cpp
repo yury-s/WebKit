@@ -386,7 +386,7 @@ void WebPageInspectorInputAgent::dispatchWheelEvent(int x, int y, std::optional<
     WebCore::FloatSize delta = {-eventDeltaX, -eventDeltaY};
     WebCore::FloatSize wheelTicks = delta;
     wheelTicks.scale(1.0f / WebCore::Scrollbar::pixelsPerLineStep());
-    WebWheelEvent webEvent({WebEventType::Wheel, eventModifiers, timestamp}, {x, y}, {x, y}, delta, wheelTicks, WebWheelEvent::ScrollByPixelWheelEvent);
+    WebWheelEvent webEvent({WebEventType::Wheel, eventModifiers, timestamp}, {x, y}, {x, y}, delta, wheelTicks, WebWheelEvent::Granularity::ScrollByPixelWheelEvent);
     NativeWebWheelEvent event(webEvent);
     m_page.handleNativeWheelEvent(event);
 }
