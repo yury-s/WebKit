@@ -80,14 +80,8 @@ public:
     Inspector::Protocol::ErrorStringOr<void> enable();
     Inspector::Protocol::ErrorStringOr<void> disable();
     Inspector::Protocol::ErrorStringOr<void> reload(std::optional<bool>&& ignoreCache, std::optional<bool>&& revalidateAllResources);
-<<<<<<< HEAD
-||||||| parent of 5a88b5805c8a (chore(webkit): bootstrap build #2230)
-    Inspector::Protocol::ErrorStringOr<void> navigate(const String& url);
-=======
     Inspector::Protocol::ErrorStringOr<void> goBack();
     Inspector::Protocol::ErrorStringOr<void> goForward();
-    Inspector::Protocol::ErrorStringOr<void> navigate(const String& url);
->>>>>>> 5a88b5805c8a (chore(webkit): bootstrap build #2230)
     Inspector::Protocol::ErrorStringOr<void> overrideUserAgent(const String&);
     Inspector::Protocol::ErrorStringOr<void> overridePlatform(const String&);
     Inspector::Protocol::ErrorStringOr<void> overrideSetting(Inspector::Protocol::Page::Setting, std::optional<bool>&& value);

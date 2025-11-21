@@ -204,17 +204,6 @@
             ]
         },
         {
-<<<<<<< HEAD
-||||||| parent of 5a88b5805c8a (chore(webkit): bootstrap build #2230)
-            "name": "navigate",
-            "description": "Navigates current page to the given URL.",
-            "targetTypes": ["page"],
-            "parameters": [
-                { "name": "url", "type": "string", "description": "URL to navigate the page to." }
-            ]
-        },
-        {
-=======
             "name": "goBack",
             "description": "Goes back in the history."
         },
@@ -223,15 +212,6 @@
             "description": "Goes forward in the history."
         },
         {
-            "name": "navigate",
-            "description": "Navigates current page to the given URL.",
-            "targetTypes": ["page"],
-            "parameters": [
-                { "name": "url", "type": "string", "description": "URL to navigate the page to." }
-            ]
-        },
-        {
->>>>>>> 5a88b5805c8a (chore(webkit): bootstrap build #2230)
             "name": "overrideUserAgent",
             "description": "Override's the user agent of the inspected page",
             "targetTypes": ["page"],

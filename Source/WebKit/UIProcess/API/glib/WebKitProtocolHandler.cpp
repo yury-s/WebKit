@@ -388,7 +388,6 @@ static String threadedRenderingInfo(const RenderProcessInfo& info)
 static String supportedBufferFormats(const RenderProcessInfo& info, JSON::Array& jsonArray)
 {
     StringBuilder builder;
-#if PLATFORM(GTK) || (PLATFORM(WPE) && ENABLE(WPE_PLATFORM))
     for (const auto& format : info.supportedBufferFormats) {
         StringBuilder jsonStringBuilder;
         auto formatName = webkitDrmGetFormatName(format.fourcc);
@@ -403,7 +402,6 @@ static String supportedBufferFormats(const RenderProcessInfo& info, JSON::Array&
         }
         jsonArray.pushString(jsonStringBuilder.toString());
     }
-#endif
     return builder.toString();
 }
 #endif
@@ -742,12 +740,7 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request, RenderPro
         bool showBuffersInfo = false;
 #endif
         if (showBuffersInfo) {
-<<<<<<< HEAD
 #if PLATFORM(GTK) || (PLATFORM(WPE) && ENABLE(WPE_PLATFORM))
-||||||| parent of 0a992c6491e9 (chore(webkit): bootstrap build #2230)
-=======
-#if PLATFORM(GTK) || PLATFORM(WPE) && ENABLE(WPE_PLATFORM)
->>>>>>> 0a992c6491e9 (chore(webkit): bootstrap build #2230)
             addTableRow(hardwareAccelerationObject, "Renderer"_s, dmabufRendererWithSupportedBuffers());
 #endif
 
@@ -757,11 +750,10 @@ void WebKitProtocolHandler::handleGPU(WebKitURISchemeRequest* request, RenderPro
             auto formatsString = preferredBufferFormats(request, jsonFormats.get());
             addTableRow(hardwareAccelerationObject, "Preferred buffer formats"_s, formatsString, WTFMove(jsonFormats));
 #endif
-#endif
-
-#if PLATFORM(GTK) || PLATFORM(WPE) && ENABLE(WPE_PLATFORM)
-            addTableRow(hardwareAccelerationObject, "Buffer format"_s, renderBufferDescription(request));
 #endif // USE(LIBDRM)
+
+#if PLATFORM(GTK) || (PLATFORM(WPE) && ENABLE(WPE_PLATFORM))
+            addTableRow(hardwareAccelerationObject, "Buffer format"_s, renderBufferDescription(request));
 #endif // PLATFORM(GTK) || (PLATFORM(WPE) && ENABLE(WPE_PLATFORM))
         }
 

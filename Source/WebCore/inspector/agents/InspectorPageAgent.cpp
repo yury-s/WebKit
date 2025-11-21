@@ -235,28 +235,6 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::reload(std::optiona
     return { };
 }
 
-<<<<<<< HEAD
-||||||| parent of 5a88b5805c8a (chore(webkit): bootstrap build #2230)
-Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::navigate(const String& url)
-{
-    RefPtr localMainFrame = m_inspectedPage->localMainFrame();
-    if (!localMainFrame)
-        return { };
-    RefPtr localTopDocument = m_inspectedPage->localTopDocument();
-    if (!localTopDocument)
-        return { };
-
-    UserGestureIndicator indicator { IsProcessingUserGesture::Yes, localTopDocument.get() };
-
-    ResourceRequest resourceRequest { localTopDocument->completeURL(url) };
-    FrameLoadRequest frameLoadRequest { *localTopDocument, localTopDocument->securityOrigin(), WTFMove(resourceRequest), selfTargetFrameName(), InitiatedByMainFrame::Unknown };
-    frameLoadRequest.disableNavigationToInvalidURL();
-    localMainFrame->loader().changeLocation(WTFMove(frameLoadRequest));
-
-    return { };
-}
-
-=======
 Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::goBack()
 {
     if (!m_inspectedPage->backForward().goBack())
@@ -273,26 +251,6 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::goForward()
     return { };
 }
 
-Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::navigate(const String& url)
-{
-    RefPtr localMainFrame = m_inspectedPage->localMainFrame();
-    if (!localMainFrame)
-        return { };
-    RefPtr localTopDocument = m_inspectedPage->localTopDocument();
-    if (!localTopDocument)
-        return { };
-
-    UserGestureIndicator indicator { IsProcessingUserGesture::Yes, localTopDocument.get() };
-
-    ResourceRequest resourceRequest { localTopDocument->completeURL(url) };
-    FrameLoadRequest frameLoadRequest { *localTopDocument, localTopDocument->securityOrigin(), WTFMove(resourceRequest), selfTargetFrameName(), InitiatedByMainFrame::Unknown };
-    frameLoadRequest.disableNavigationToInvalidURL();
-    localMainFrame->loader().changeLocation(WTFMove(frameLoadRequest));
-
-    return { };
-}
-
->>>>>>> 5a88b5805c8a (chore(webkit): bootstrap build #2230)
 Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::overrideUserAgent(const String& value)
 {
     m_userAgentOverride = value;
