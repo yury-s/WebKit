@@ -30,6 +30,7 @@
 
 #import "AppKitSPI.h"
 #import "NativeWebWheelEvent.h"
+#import "ViewGestureController.h"
 #import "WKWebView.h"
 #import "WebEventModifier.h"
 #import "WebEventType.h"
