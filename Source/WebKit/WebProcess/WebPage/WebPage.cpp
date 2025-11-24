@@ -1212,7 +1212,7 @@ WebPage::WebPage(PageIdentifier pageID, WebPageCreationParameters&& parameters)
     // dispatch nested message loop and receive IPC messages. To mitigate that, the actual
     // pause is postponed until the page is added to the map.
     if (parameters.shouldPauseInInspectorWhenShown)
-        m_page->inspectorController().pauseOnStart(parameters.windowFeatures ? InspectorController::PauseCondition::WHEN_CREATION_FINISHED : InspectorController::PauseCondition::WHEN_SHOWN);
+        m_page->inspectorController().pauseOnStart(parameters.windowFeatures ? PageInspectorController::PauseCondition::WHEN_CREATION_FINISHED : PageInspectorController::PauseCondition::WHEN_SHOWN);
     if (parameters.windowFeatures) {
         page->applyWindowFeatures(*parameters.windowFeatures);
         page->chrome().show();
