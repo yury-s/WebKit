@@ -552,29 +552,29 @@ void PageInspectorController::didComposite(LocalFrame& frame)
     InspectorInstrumentation::didComposite(frame);
 }
 
-void InspectorController::pauseOnStart(PauseCondition condition)
+void PageInspectorController::pauseOnStart(PauseCondition condition)
 {
     m_pauseOnStart = condition;
 }
 
-void InspectorController::resumeIfPausedInNewWindow()
+void PageInspectorController::resumeIfPausedInNewWindow()
 {
     m_pauseOnStart = PauseCondition::DONT_PAUSE;
 }
 
-void InspectorController::didFinishPageCreation()
+void PageInspectorController::didFinishPageCreation()
 {
     if (m_pauseOnStart == PauseCondition::WHEN_CREATION_FINISHED)
         runLoopWhilePaused();
 }
 
-void InspectorController::didShowPage()
+void PageInspectorController::didShowPage()
 {
     if (m_pauseOnStart == PauseCondition::WHEN_SHOWN)
         runLoopWhilePaused();
 }
 
-void InspectorController::runLoopWhilePaused()
+void PageInspectorController::runLoopWhilePaused()
 {
     while (m_pauseOnStart != PauseCondition::DONT_PAUSE) {
         if (RunLoop::cycle() == RunLoop::CycleResult::Stop)
