@@ -36,6 +36,7 @@
 #include <WebCore/DOMPasteAccess.h>
 #include <WebCore/FrameIdentifier.h>
 #include <WebCore/FocusDirection.h>
+#include <WebCore/HTMLMediaElementIdentifier.h>
 #include <WebCore/KeypressCommand.h>
 #include <WebCore/PlatformPlaybackSessionInterface.h>
 #include <WebCore/ScrollTypes.h>
