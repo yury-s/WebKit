@@ -17384,13 +17384,9 @@
 				99788ACB1F421DDA00C08000 /* _WKAutomationSessionConfiguration.h in Headers */,
 				990D28AC1C6420CF00986977 /* _WKAutomationSessionDelegate.h in Headers */,
 				990D28B11C65208D00986977 /* _WKAutomationSessionInternal.h in Headers */,
-				CD89ACBD2EA696A300C76423 /* _WKCaptionStyleMenuController.h in Headers */,
-<<<<<<< HEAD
-				97C476282ECD33A6004D1492 /* _WKCaptionStyleMenuControllerInternal.h in Headers */,
-||||||| parent of 641bb81bbe72 (chore(webkit): bootstrap build #2231)
-=======
 				D71A944A2372290B002C4D9E /* _WKBrowserInspector.h in Headers */,
->>>>>>> 641bb81bbe72 (chore(webkit): bootstrap build #2231)
+				CD89ACBD2EA696A300C76423 /* _WKCaptionStyleMenuController.h in Headers */,
+				97C476282ECD33A6004D1492 /* _WKCaptionStyleMenuControllerInternal.h in Headers */,
 				5C4609E7224317B4009943C2 /* _WKContentRuleListAction.h in Headers */,
 				5C4609E8224317BB009943C2 /* _WKContentRuleListActionInternal.h in Headers */,
 				9B4CE9512CD99B7C00351173 /* _WKContentWorldConfiguration.h in Headers */,

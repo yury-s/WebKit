@@ -256,13 +256,7 @@
 #include <WebCore/HitTestResult.h>
 #include <WebCore/ImageAnalysisQueue.h>
 #include <WebCore/ImageOverlay.h>
-<<<<<<< HEAD
-||||||| parent of 641bb81bbe72 (chore(webkit): bootstrap build #2231)
-#include <WebCore/InspectorController.h>
-=======
-#include <WebCore/InspectorController.h>
 #include <WebCore/InspectorInstrumentationWebKit.h>
->>>>>>> 641bb81bbe72 (chore(webkit): bootstrap build #2231)
 #include <WebCore/JSDOMExceptionHandling.h>
 #include <WebCore/JSNode.h>
 #include <WebCore/KeyboardEvent.h>

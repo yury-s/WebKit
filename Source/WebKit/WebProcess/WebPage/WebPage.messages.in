@@ -172,14 +172,8 @@ messages -> WebPage WantsAsyncDispatchMessage {
     DidBeginTouchPoint(WebCore::FloatPoint locationInRootView)
 #endif
 #if !ENABLE(IOS_TOUCH_EVENTS) && ENABLE(TOUCH_EVENTS)
-<<<<<<< HEAD
     TouchEvent(WebKit::WebTouchEvent event) -> (enum:uint32_t std::optional<WebKit::WebEventType> eventType, bool handled)
-||||||| parent of 641bb81bbe72 (chore(webkit): bootstrap build #2231)
-    TouchEvent(WebKit::WebTouchEvent event) -> (enum:uint8_t std::optional<WebKit::WebEventType> eventType, bool handled)
-=======
-    TouchEvent(WebKit::WebTouchEvent event) -> (enum:uint8_t std::optional<WebKit::WebEventType> eventType, bool handled)
     FakeTouchTap(WebCore::IntPoint position, uint8_t modifiers) -> () Async
->>>>>>> 641bb81bbe72 (chore(webkit): bootstrap build #2231)
 #endif
 
     CancelPointer(WebCore::PointerID pointerId, WebCore::IntPoint documentPoint)
