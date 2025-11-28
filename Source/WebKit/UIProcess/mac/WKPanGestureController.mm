@@ -30,8 +30,13 @@
 
 #import "AppKitSPI.h"
 #import "NativeWebWheelEvent.h"
+<<<<<<< HEAD
 #import "ScrollingAccelerationCurve.h"
 #import "ViewGestureController.h"
+||||||| parent of 641bb81bbe72 (chore(webkit): bootstrap build #2231)
+=======
+#import "ViewGestureController.h"
+>>>>>>> 641bb81bbe72 (chore(webkit): bootstrap build #2231)
 #import "WKWebView.h"
 #import "WebEventModifier.h"
 #import "WebEventType.h"

@@ -190,7 +190,7 @@ static Expected<SkImageInfo, String> getImageInfoFromBuffer(const  GRefPtr<WPEBu
     return makeUnexpected("Failed to extract snapshot pixel information"_s);
 }
 
-static Expected<Ref<ViewSnapshot>, String> saveBufferSnapshot(const GRefPtr<WPEBuffer>& buffer, std::optional<WebCore::IntRect>&& clipRect)
+static Expected<Ref<ViewSnapshot>, String> saveBufferSnapshot(const GRefPtr<WPEBuffer>& buffer, std::optional<WebCore::IntRect>&& clipRect, bool nominalResolution)
 {
     GUniqueOutPtr<GError> error;
     GBytes* pixels = wpe_buffer_import_to_pixels(buffer.get(), &error.outPtr());
@@ -208,33 +208,39 @@ static Expected<Ref<ViewSnapshot>, String> saveBufferSnapshot(const GRefPtr<WPEB
     if (!info)
         return makeUnexpected(info.error());
 
-    SkPixmap pixmap(info.value(), g_bytes_get_data(bytes.get(), nullptr), info->minRowBytes());
+    sk_sp<SkImage> fullScreenshot = SkImage::MakeRasterDirect(info, pixelsData, info->minRowBytes());
 
-    if (clipRect) {
-        SkIRect clippedRect = SkIRect::MakeXYWH(clipRect->x(), clipRect->y(), clipRect->width(), clipRect->height());
-        SkImageInfo clippedInfo = info->makeWH(clipRect->width(), clipRect->height());
-        SkPixmap clippedPixmap(info.value(), nullptr, clippedInfo.minRowBytes());
-        if (!pixmap.extractSubset(&clippedPixmap, clippedRect))
-            return makeUnexpected("Failed to extract clipped snapshot"_s);
-        pixmap = clippedPixmap;
+    float deviceScale = m_view.page().deviceScaleFactor();
+    if (!clipRect && (!nominalResolution || deviceScale == 1))
+        return { ViewSnapshot::create(WTFMove(fullScreenshot)) };
+
+    WebCore::IntSize size = clipRect ? clipRect->size() : m_view.page().viewSize();
+    if (!nominalResolution) {
+        size.scale(deviceScale);
+        if (clipRect)
+            clipRect->scale(deviceScale);
     }
 
-    auto image = SkImages::RasterFromPixmap(pixmap, [](const void*, void* context) {
-        g_bytes_unref(static_cast<GBytes*>(context));
-    }, bytes.leakRef());
-
-    if (!image)
-        return makeUnexpected("Failed to create snapshot image"_s);
-
-    return { ViewSnapshot::create(WTFMove(image)) };
+    SkBitmap bitmap;
+    bitmap.allocPixels(SkImageInfo::Make(size.width(), size.height(), kN32_SkColorType, kPremul_SkAlphaType));
+    SkCanvas canvas(bitmap);
+    if (clipRect) {
+        canvas.translate(-clipRect->x(), -clipRect->y());
+        SkRect rect = SkRect::MakeXYWH(clipRect->x(), clipRect->y(), clipRect->width(), clipRect->height());
+        canvas.clipRect(rect);
+    }
+    if (nominalResolution)
+        canvas.scale(1/deviceScale, 1/deviceScale);
+    canvas.drawImage(fullScreenshot, 0, 0);
+    return { ViewSnapshot::create(WTFMove(bitmap.asImage())) };
 }
 
-Expected<Ref<ViewSnapshot>, String> AcceleratedBackingStore::takeSnapshot(std::optional<WebCore::IntRect>&& clipRect)
+Expected<Ref<ViewSnapshot>, String> AcceleratedBackingStore::takeSnapshot(std::optional<WebCore::IntRect>&& clipRect, bool nominalResolution)
 {
     if (!m_committedBuffer && !m_pendingBuffer) [[unlikely]]
         return makeUnexpected("No buffer to create snapshot from"_s);
 
-    return saveBufferSnapshot(m_committedBuffer ? m_committedBuffer : m_pendingBuffer, WTFMove(clipRect));
+    return saveBufferSnapshot(m_committedBuffer ? m_committedBuffer : m_pendingBuffer, WTFMove(clipRect), nominalResolution);
 }
 
 #endif
