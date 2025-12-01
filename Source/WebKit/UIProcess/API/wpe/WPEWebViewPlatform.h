@@ -64,7 +64,7 @@ public:
 #endif
 
 #if USE(SKIA)
-    Expected<Ref<WebKit::ViewSnapshot>, String> takeViewSnapshot(std::optional<WebCore::IntRect>&&);
+    Expected<Ref<WebKit::ViewSnapshot>, String> takeViewSnapshot(std::optional<WebCore::IntRect>&&, bool nominalResolution);
 #endif
 
     void updateAcceleratedSurface(uint64_t);
