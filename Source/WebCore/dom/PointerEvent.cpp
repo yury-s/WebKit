@@ -334,7 +334,7 @@ double PointerEvent::offsetY()
     return adjustedCoordinateForType(offsetLocation().y());
 }
 
-#if ENABLE(TOUCH_EVENTS) && !PLATFORM(IOS_FAMILY) && !PLATFORM(WPE)
+#if ENABLE(TOUCH_EVENTS) && !PLATFORM(IOS_FAMILY) && !PLATFORM(WPE) && !PLATFORM(GTK)
 
 static const AtomString& pointerEventType(PlatformTouchPoint::State state)
 {
@@ -387,6 +387,6 @@ PointerEvent::PointerEvent(const AtomString& type, const PlatformTouchEvent& eve
 {
 }
 
-#endif // ENABLE(TOUCH_EVENTS) && !PLATFORM(IOS_FAMILY)
+#endif // ENABLE(TOUCH_EVENTS) && !PLATFORM(IOS_FAMILY) && !PLATFORM(WPE) && !PLATFORM(GTK)
 
 } // namespace WebCore
