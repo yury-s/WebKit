@@ -5503,7 +5503,7 @@ Expected<bool, RemoteFrameGeometryTransformer> EventHandler::handleTouchEvent(co
         }
 #endif
 
-#if PLATFORM(WPE) || PLATFORM(GTK)
+#if !ENABLE(IOS_TOUCH_EVENTS)
         // FIXME: Pass the touch delta for pointermove events by remembering the position per pointerID similar to
         // Apple's m_touchLastGlobalPositionAndDeltaMap
         document->protectedPage()->pointerCaptureController().dispatchEventForTouchAtIndex(
