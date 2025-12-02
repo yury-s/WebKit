@@ -669,9 +669,9 @@ void ViewPlatform::callAfterNextPresentationUpdate(CompletionHandler<void()>&& c
 }
 
 #if USE(SKIA)
-Expected<Ref<ViewSnapshot>, String> ViewPlatform::takeViewSnapshot(std::optional<WebCore::IntRect>&& clipRect)
+Expected<Ref<ViewSnapshot>, String> ViewPlatform::takeViewSnapshot(std::optional<WebCore::IntRect>&& clipRect, bool nominalResolution)
 {
-    return m_backingStore->takeSnapshot(WTFMove(clipRect));
+    return m_backingStore->takeSnapshot(WTFMove(clipRect), nominalResolution);
 }
 #endif
 
