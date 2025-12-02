@@ -34,15 +34,9 @@
 #include <wtf/text/WTFString.h>
 
 #if ENABLE(TOUCH_EVENTS) && PLATFORM(IOS_FAMILY)
-<<<<<<< HEAD
 #include <WebKitAdditions/PlatformTouchEventIOS.h>
-||||||| parent of 15d3e522b21a (chore(webkit): bootstrap build #2233)
-#include "PlatformTouchEventIOS.h"
-=======
-#include "PlatformTouchEventIOS.h"
 #else
 #include "PlatformTouchEvent.h"
->>>>>>> 15d3e522b21a (chore(webkit): bootstrap build #2233)
 #endif
 
 #if ENABLE(TOUCH_EVENTS) && (PLATFORM(WPE) || PLATFORM(GTK))
@@ -103,13 +97,7 @@ public:
     static Ref<PointerEvent> create(const AtomString& type, MouseButton, const MouseEvent&, PointerID, const String& pointerType, CanBubble, IsCancelable);
     static Ref<PointerEvent> create(const AtomString& type, PointerID, const String& pointerType, IsPrimary = IsPrimary::No);
 
-<<<<<<< HEAD
-#if ENABLE(TOUCH_EVENTS) && (PLATFORM(IOS_FAMILY) || PLATFORM(WPE) || PLATFORM(GTK))
-||||||| parent of 15d3e522b21a (chore(webkit): bootstrap build #2233)
-#if ENABLE(TOUCH_EVENTS) && (PLATFORM(IOS_FAMILY) || PLATFORM(WPE))
-=======
 #if ENABLE(TOUCH_EVENTS)
->>>>>>> 15d3e522b21a (chore(webkit): bootstrap build #2233)
     static Ref<PointerEvent> create(const PlatformTouchEvent&, const Vector<Ref<PointerEvent>>& coalescedEvents, const Vector<Ref<PointerEvent>>& predictedEvents, unsigned touchIndex, bool isPrimary, Ref<WindowProxy>&&, const DoublePoint& touchDelta = { });
     static Ref<PointerEvent> create(const PlatformTouchEvent&, const Vector<Ref<PointerEvent>>& coalescedEvents, const Vector<Ref<PointerEvent>>& predictedEvents, CanBubble, IsCancelable, unsigned touchIndex, bool isPrimary, Ref<WindowProxy>&& view, const DoublePoint& touchDelta = { });
     static Ref<PointerEvent> create(const AtomString& type, const PlatformTouchEvent&, const Vector<Ref<PointerEvent>>& coalescedEvents, const Vector<Ref<PointerEvent>>& predictedEvents, unsigned touchIndex, bool isPrimary, Ref<WindowProxy>&&, const DoublePoint& touchDelta = { });
@@ -202,13 +190,7 @@ private:
     PointerEvent();
     PointerEvent(const AtomString&, Init&&, IsTrusted);
     PointerEvent(const AtomString& type, PointerID, const String& pointerType, IsPrimary);
-<<<<<<< HEAD
-#if ENABLE(TOUCH_EVENTS) && (PLATFORM(IOS_FAMILY) || PLATFORM(WPE) || PLATFORM(GTK))
-||||||| parent of 15d3e522b21a (chore(webkit): bootstrap build #2233)
-#if ENABLE(TOUCH_EVENTS) && (PLATFORM(IOS_FAMILY) || PLATFORM(WPE))
-=======
 #if ENABLE(TOUCH_EVENTS)
->>>>>>> 15d3e522b21a (chore(webkit): bootstrap build #2233)
     PointerEvent(const AtomString& type, const PlatformTouchEvent&, const Vector<Ref<PointerEvent>>& coalescedEvents, const Vector<Ref<PointerEvent>>& predictedEvents, CanBubble canBubble, IsCancelable isCancelable, unsigned touchIndex, bool isPrimary, Ref<WindowProxy>&&, const DoublePoint& touchDelta = { });
 #endif
 
