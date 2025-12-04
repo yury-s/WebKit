@@ -34,6 +34,7 @@
 #import "RemotePageProxy.h"
 #import "SandboxExtension.h"
 #import "WebPageProxy.h"
+#import "WebPageMessages.h"
 #import "WebPreferences.h"
 #import "WebProcessMessages.h"
 #import "WebProcessProxy.h"
