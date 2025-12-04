@@ -35,12 +35,10 @@
 
 #if ENABLE(TOUCH_EVENTS) && PLATFORM(IOS_FAMILY)
 #include <WebKitAdditions/PlatformTouchEventIOS.h>
-#else
-#include "PlatformTouchEvent.h"
 #endif
 
-#if ENABLE(TOUCH_EVENTS) && (PLATFORM(WPE) || PLATFORM(GTK))
-#include "PlatformTouchEvent.h"
+#if ENABLE(TOUCH_EVENTS) && !PLATFORM(IOS_FAMILY)
+#include <WebCore/PlatformTouchEvent.h>
 #endif
 
 namespace WebCore {

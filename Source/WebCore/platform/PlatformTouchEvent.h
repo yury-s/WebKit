@@ -20,8 +20,8 @@
 #ifndef PlatformTouchEvent_h
 #define PlatformTouchEvent_h
 
-#include "PlatformEvent.h"
-#include "PlatformTouchPoint.h"
+#include <WebCore/PlatformEvent.h>
+#include <WebCore/PlatformTouchPoint.h>
 #include <wtf/Vector.h>
 
 #if ENABLE(TOUCH_EVENTS)
