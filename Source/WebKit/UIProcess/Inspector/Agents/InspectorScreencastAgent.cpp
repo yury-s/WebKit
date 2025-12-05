@@ -100,6 +100,7 @@ void InspectorScreencastAgent::willDestroyFrontendAndBackend(DisconnectReason)
 #if USE(SKIA)
 void InspectorScreencastAgent::didPaint(sk_sp<SkImage>&& surface)
 {
+    MonotonicTime timestamp = MonotonicTime::now();
     sk_sp<SkImage> image(surface);
 #if PLATFORM(WPE) || PLATFORM(WIN)
     // Get actual image size (in device pixels).
@@ -162,7 +163,7 @@ void InspectorScreencastAgent::didPaint(sk_sp<SkImage>&& surface)
         sk_sp<SkData> jpegData = stream.detachAsData();
         String result = base64EncodeToString(std::span(reinterpret_cast<const unsigned char*>(jpegData->data()), jpegData->size()));
         ++m_screencastFramesInFlight;
-        m_frontendDispatcher->screencastFrame(result, displaySize.width(), displaySize.height());
+        m_frontendDispatcher->screencastFrame(result, timestamp.secondsSinceEpoch().value(), displaySize.width(), displaySize.height());
     }
 }
 #endif
@@ -277,6 +278,7 @@ void InspectorScreencastAgent::encodeFrame()
         return;
     RetainPtr<CGImageRef> imageRef = m_page.pageClient()->takeSnapshotForAutomation();
     if (m_screencast && m_screencastFramesInFlight <= kMaxFramesInFlight) {
+        MonotonicTime timestamp = MonotonicTime::now();
         CGImage* imagePtr = imageRef.get();
         WebCore::IntSize imageSize(CGImageGetWidth(imagePtr), CGImageGetHeight(imagePtr));
         WebCore::IntSize displaySize = imageSize;
@@ -305,7 +307,7 @@ void InspectorScreencastAgent::encodeFrame()
         if (m_lastFrameDigest != digest) {
             String base64Data = base64EncodeToString(data);
             ++m_screencastFramesInFlight;
-            m_frontendDispatcher->screencastFrame(base64Data, displaySize.width(), displaySize.height());
+            m_frontendDispatcher->screencastFrame(base64Data, timestamp.secondsSinceEpoch().value(), displaySize.width(), displaySize.height());
             m_lastFrameDigest = digest;
         }
     }
