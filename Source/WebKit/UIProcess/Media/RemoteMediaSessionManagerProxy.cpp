@@ -29,7 +29,9 @@
 #if ENABLE(VIDEO) || ENABLE(WEB_AUDIO)
 
 #include "RemoteMediaSessionClientProxy.h"
+#include "RemoteMediaSessionManager.h"
 #include "RemoteMediaSessionManagerProxyMessages.h"
+#include "RemoteMediaSessionManagerMessages.h"
 #include "RemoteMediaSessionProxy.h"
 #include "RemoteMediaSessionState.h"
 #include "WebPage.h"

@@ -20,7 +20,7 @@
 #ifndef PlatformTouchPoint_h
 #define PlatformTouchPoint_h
 
-#include "DoublePoint.h"
+#include <WebCore/DoublePoint.h>
 
 #if ENABLE(TOUCH_EVENTS)
 
@@ -47,7 +47,7 @@ public:
     {
     }
 
-#if PLATFORM(WPE)
+#if !ENABLE(IOS_TOUCH_EVENTS)
     // FIXME: since WPE currently does not send touch stationary events, we need to be able to
     // create a PlatformTouchPoint of type TouchCancelled artificially
     PlatformTouchPoint(unsigned id, State state, DoublePoint screenPos, DoublePoint pos)
