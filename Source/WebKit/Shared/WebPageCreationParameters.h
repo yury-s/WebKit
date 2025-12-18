@@ -312,6 +312,7 @@ struct WebPageCreationParameters {
     
     bool httpsUpgradeEnabled { true };
 
+    std::optional<int> deviceOrientationOverride { };
     bool shouldPauseInInspectorWhenShown { false };
     
 #if ENABLE(APP_HIGHLIGHTS)

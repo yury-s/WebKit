@@ -4055,6 +4055,7 @@ private:
     std::optional<WebCore::Credential> m_credentialsForAutomation;
     std::optional<URL> m_authOriginForAutomation;
     UncheckedKeyHashMap<String, HashSet<String>> m_permissionsForAutomation;
+    std::optional<int> m_deviceOrientationOverride;
     std::optional<bool> m_activeForAutomation;
         
 #if PLATFORM(IOS_FAMILY) && ENABLE(DEVICE_ORIENTATION)

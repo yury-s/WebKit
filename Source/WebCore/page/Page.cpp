@@ -688,7 +688,7 @@ void Page::setOverrideViewportArguments(const std::optional<ViewportArguments>& 
 
 FloatSize Page::screenSize()
 {
-    auto* localMainFrame = dynamicDowncast<LocalFrame>(mainFrame());
+    RefPtr localMainFrame = this->localMainFrame();
     RefPtr frameView = localMainFrame ? localMainFrame->view() : nullptr;
     if (!frameView)
         return { };
@@ -701,7 +701,7 @@ void Page::setOverrideScreenSize(std::optional<FloatSize> size)
         return;
 
     m_overrideScreenSize = size;
-    auto* localMainFrame = dynamicDowncast<LocalFrame>(mainFrame());
+    RefPtr localMainFrame = this->localMainFrame();
     if (auto* document = localMainFrame ? localMainFrame->document() : nullptr)
         document->updateViewportArguments();
 }
@@ -719,8 +719,7 @@ void Page::setOverrideOrientation(std::optional<int> orientation)
 
     m_overrideOrientation = orientation;
 
-    auto* localMainFrame = dynamicDowncast<LocalFrame>(mainFrame());
-    if (localMainFrame)
+    if (RefPtr localMainFrame = this->localMainFrame())
         localMainFrame->orientationChanged();
 }
 #endif

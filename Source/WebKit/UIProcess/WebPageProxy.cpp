@@ -2876,10 +2876,11 @@ static inline WebCore::ScreenOrientationType toScreenOrientationType(int angle)
 
 void WebPageProxy::setOrientationOverride(std::optional<int>&& angle)
 {
-    auto deviceOrientation = toScreenOrientationType(angle.value_or(0));
+    m_deviceOrientationOverride = WTFMove(angle);
+    auto deviceOrientation = toScreenOrientationType(m_deviceOrientationOverride.value_or(0));
     if (m_screenOrientationManager)
         m_screenOrientationManager->setCurrentOrientation(deviceOrientation);
-    m_legacyMainFrameProcess->send(Messages::WebPage::SetDeviceOrientation(angle.value_or(0)), webPageIDInMainFrameProcess());
+    m_legacyMainFrameProcess->send(Messages::WebPage::SetDeviceOrientation(m_deviceOrientationOverride.value_or(0)), webPageIDInMainFrameProcess());
 }
 
 std::optional<bool> WebPageProxy::permissionForAutomation(const String& origin, const String& permission) const
@@ -12777,8 +12778,9 @@ WebPageCreationParameters WebPageProxy::creationParameters(WebProcessProxy& proc
     parameters.httpsUpgradeEnabled = preferences->upgradeKnownHostsToHTTPSEnabled() ? m_configuration->httpsUpgradeEnabled() : false;
     parameters.allowPostingLegacySynchronousMessages = m_configuration->allowPostingLegacySynchronousMessages();
 
+    parameters.deviceOrientationOverride = m_deviceOrientationOverride;
     parameters.shouldPauseInInspectorWhenShown = m_inspectorController->shouldPauseInInspectorWhenShown();
-    
+
 #if ENABLE(APP_HIGHLIGHTS)
     parameters.appHighlightsVisible = appHighlightsVisibility() ? HighlightVisibility::Visible : HighlightVisibility::Hidden;
 #endif

@@ -1206,6 +1206,8 @@ WebPage::WebPage(PageIdentifier pageID, WebPageCreationParameters&& parameters)
     setLinkDecorationFilteringData(WTFMove(parameters.linkDecorationFilteringData));
     setAllowedQueryParametersForAdvancedPrivacyProtections(WTFMove(parameters.allowedQueryParametersForAdvancedPrivacyProtections));
 #endif
+    if (parameters.deviceOrientationOverride)
+        page->setOverrideOrientation(parameters.deviceOrientationOverride);
     // For popup windows WebPage::Show() maybe called in the next lines from the constructor,
     // at which point the page is not in the WebProcess's map yet and it is not safe to
     // dispatch nested message loop and receive IPC messages. To mitigate that, the actual
