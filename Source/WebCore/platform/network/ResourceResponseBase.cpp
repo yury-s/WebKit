@@ -79,6 +79,7 @@ ResourceResponseBase::ResourceResponseBase(std::optional<ResourceResponseData>&&
     , m_httpStatusText(data ? WTFMove(data->httpStatusText) : String { })
     , m_httpVersion(data ? WTFMove(data->httpVersion) : String { })
     , m_httpHeaderFields(data ? WTFMove(data->httpHeaderFields) : HTTPHeaderMap { })
+    , m_httpRequestHeaderFields(data ? data->httpRequestHeaderFields : HTTPHeaderMap { })
     , m_networkLoadMetrics(data && data->networkLoadMetrics ? Box<NetworkLoadMetrics>::create(WTFMove(*data->networkLoadMetrics)) : Box<NetworkLoadMetrics> { })
     , m_certificateInfo(data ? WTFMove(data->certificateInfo) : std::nullopt)
     , m_httpStatusCode(data ? data->httpStatusCode : 0)
@@ -908,6 +909,7 @@ std::optional<ResourceResponseData> ResourceResponseBase::getResponseData() cons
         String { m_httpStatusText },
         String { m_httpVersion },
         HTTPHeaderMap { m_httpHeaderFields },
+        HTTPHeaderMap { m_httpRequestHeaderFields },
         m_networkLoadMetrics ? std::optional(*m_networkLoadMetrics) : std::nullopt,
         m_source,
         m_type,
@@ -984,6 +986,11 @@ std::optional<WebCore::ResourceResponseData> Coder<WebCore::ResourceResponseData
     if (!httpHeaderFields)
         return std::nullopt;
 
+    std::optional<WebCore::HTTPHeaderMap> httpRequestHeaderFields;
+    decoder >> httpRequestHeaderFields;
+    if (!httpRequestHeaderFields)
+        return std::nullopt;
+
     std::optional<short> httpStatusCode;
     decoder >> httpStatusCode;
     if (!httpStatusCode)
@@ -1043,6 +1050,7 @@ std::optional<WebCore::ResourceResponseData> Coder<WebCore::ResourceResponseData
         WTFMove(*httpStatusText),
         WTFMove(*httpVersion),
         WTFMove(*httpHeaderFields),
+        WTFMove(*httpRequestHeaderFields),
         std::nullopt,
         *source,
         *type,

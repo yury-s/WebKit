@@ -734,3 +734,9 @@ testing/cocoa/WebViewVisualIdentificationOverlay.mm @nonARC
 platform/graphics/angle/GraphicsContextGLANGLE.cpp @no-unify
 platform/graphics/cocoa/GraphicsContextGLCocoa.mm @nonARC @no-unify
 platform/graphics/cv/GraphicsContextGLCVCocoa.mm @nonARC @no-unify
+
+// Playwright begin
+JSTouch.cpp
+JSTouchEvent.cpp
+JSTouchList.cpp
+// Playwright end
