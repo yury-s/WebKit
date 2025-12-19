@@ -220,87 +220,6 @@ static String modifierListToString(const Vector<uint64_t, 1>& modifiers)
 #endif
 }
 
-<<<<<<< HEAD
-static String renderBufferDescription(WebKitURISchemeRequest* request)
-{
-    StringBuilder bufferDescription;
-    auto description = webkitWebViewGetRendererBufferDescription(webkit_uri_scheme_request_get_web_view(request));
-    if (description.fourcc) {
-        auto formatName = webkitDrmGetFormatName(description.fourcc);
-        switch (description.type) {
-        case RendererBufferDescription::Type::DMABuf: {
-            auto modifierName = webkitDrmGetModifierName(description.modifier);
-            if (!modifierName.isNull())
-                bufferDescription.append("DMA-BUF: "_s, formatName, " ("_s, modifierName, ")"_s);
-            else
-                bufferDescription.append("Unknown"_s);
-            break;
-        }
-        case RendererBufferDescription::Type::SharedMemory:
-            bufferDescription.append("Shared Memory: "_s, formatName);
-            break;
-#if OS(ANDROID)
-        case RendererBufferDescription::Type::AHardwareBuffer:
-            bufferDescription.append("AHardwareBuffer: "_s, formatName);
-            break;
-#endif
-        }
-        switch (description.usage) {
-        case RendererBufferFormat::Usage::Rendering:
-            bufferDescription.append(" [Rendering]"_s);
-            break;
-        case RendererBufferFormat::Usage::Scanout:
-            bufferDescription.append(" [Scanout]"_s);
-            break;
-        case RendererBufferFormat::Usage::Mapping:
-            bufferDescription.append(" [Mapping]"_s);
-            break;
-        }
-    } else
-        bufferDescription.append("Unknown"_s);
-
-    return bufferDescription.toString();
-}
-
-||||||| parent of d3cecb8e0ea3 (chore(webkit): bootstrap build #2240)
-static String renderBufferDescription(WebKitURISchemeRequest* request)
-{
-    StringBuilder bufferDescription;
-    auto description = webkitWebViewGetRendererBufferDescription(webkit_uri_scheme_request_get_web_view(request));
-    if (description.fourcc) {
-        auto formatName = webkitDrmGetFormatName(description.fourcc);
-        switch (description.type) {
-        case RendererBufferDescription::Type::DMABuf: {
-            auto modifierName = webkitDrmGetModifierName(description.modifier);
-            if (!modifierName.isNull())
-                bufferDescription.append("DMA-BUF: "_s, formatName, " ("_s, modifierName, ")"_s);
-            else
-                bufferDescription.append("Unknown"_s);
-            break;
-        }
-        case RendererBufferDescription::Type::SharedMemory:
-            bufferDescription.append("Shared Memory: "_s, formatName);
-            break;
-        }
-        switch (description.usage) {
-        case RendererBufferFormat::Usage::Rendering:
-            bufferDescription.append(" [Rendering]"_s);
-            break;
-        case RendererBufferFormat::Usage::Scanout:
-            bufferDescription.append(" [Scanout]"_s);
-            break;
-        case RendererBufferFormat::Usage::Mapping:
-            bufferDescription.append(" [Mapping]"_s);
-            break;
-        }
-    } else
-        bufferDescription.append("Unknown"_s);
-
-    return bufferDescription.toString();
-}
-
-=======
->>>>>>> d3cecb8e0ea3 (chore(webkit): bootstrap build #2240)
 #if USE(GBM)
 static String preferredBufferFormats(WebKitURISchemeRequest* request, JSON::Array& jsonArray)
 {
@@ -417,6 +336,11 @@ static String renderBufferDescription(WebKitURISchemeRequest* request)
         case RendererBufferDescription::Type::SharedMemory:
             bufferDescription.append("Shared Memory: "_s, formatName);
             break;
+#if OS(ANDROID)
+        case RendererBufferDescription::Type::AHardwareBuffer:
+            bufferDescription.append("AHardwareBuffer: "_s, formatName);
+            break;
+#endif
         }
         switch (description.usage) {
         case RendererBufferFormat::Usage::Rendering:
