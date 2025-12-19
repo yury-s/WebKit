@@ -305,12 +305,6 @@
                 { "name": "uuid", "type": "string" },
                 { "name": "error", "type": "string" }
             ]
-        },
-        {
-            "name": "screencastFinished",
-            "parameters": [
-                { "name": "screencastId", "$ref": "Screencast.ScreencastId", "description": "Unique identifier of the screencast." }
-            ]
         }
     ]
 }

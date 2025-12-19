@@ -125,36 +125,6 @@ list(APPEND WebKit_PRIVATE_LIBRARIES
     comctl32
 )
 
-# Playwright begin
-list(APPEND WebKit_SYSTEM_INCLUDE_DIRECTORIES
-    "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libyuv/include"
-    "${LIBVPX_CUSTOM_INCLUDE_DIR}"
-)
-
-list(APPEND WebKit_PRIVATE_INCLUDE_DIRECTORIES
-    "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libwebm"
-)
-
-add_library(mkvmuxer STATIC
-    "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libwebm/mkvmuxer/mkvmuxer.cc"
-    "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libwebm/mkvmuxer/mkvmuxerutil.cc"
-    "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libwebm/mkvmuxer/mkvwriter.cc"
-)
-target_include_directories(mkvmuxer PRIVATE
-    "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libwebm"
-)
-target_link_libraries(WebKit PRIVATE mkvmuxer)
-
-add_subdirectory(
-    "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libyuv"
-    "${CMAKE_BINARY_DIR}/libyuv"
-    EXCLUDE_FROM_ALL
-)
-target_link_libraries(WebKit PRIVATE yuv)
-target_link_libraries(WebKit PRIVATE ${LIBVPX_LIBRARIES})
-
-# Playwright end
-
 list(APPEND WebProcess_SOURCES
     WebProcess/EntryPoint/win/WebProcessMain.cpp
 

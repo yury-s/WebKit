@@ -80,7 +80,6 @@ public:
     virtual void willDestroyInspectorController(WebPageProxy&) = 0;
     virtual void didFailProvisionalLoad(WebPageProxy&, WebCore::NavigationIdentifier, const String& error) = 0;
     virtual void willCreateNewPage(WebPageProxy&, const WebCore::WindowFeatures&, const URL&) = 0;
-    virtual void didFinishScreencast(const PAL::SessionID& sessionID, const String& screencastID) = 0;
 
 protected:
     virtual ~WebPageInspectorControllerObserver() = default;

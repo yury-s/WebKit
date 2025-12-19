@@ -55,10 +55,6 @@ find_package(ZLIB 1.2.11 REQUIRED)
 find_package(LibPSL 0.20.2 REQUIRED)
 find_package(WebP REQUIRED COMPONENTS demux)
 
-# Playwright begin
-find_package(LibVPX REQUIRED)
-# Playwright end
-
 WEBKIT_OPTION_BEGIN()
 
 # FIXME: Most of these options should not be public.

@@ -29,10 +29,6 @@ find_package(ZLIB REQUIRED)
 find_package(WebP REQUIRED COMPONENTS demux)
 find_package(ATSPI 2.5.3)
 
-# Playwright begin
-find_package(LibVPX REQUIRED)
-# Playwright end
-
 include(GStreamerDefinitions)
 include(FindGLibCompileResources)
 

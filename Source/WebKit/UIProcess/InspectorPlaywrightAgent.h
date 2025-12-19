@@ -86,7 +86,6 @@ private:
     void willDestroyInspectorController(WebPageProxy&) override;
     void didFailProvisionalLoad(WebPageProxy&, WebCore::NavigationIdentifier navigationID, const String& error) override;
     void willCreateNewPage(WebPageProxy&, const WebCore::WindowFeatures&, const URL&) override;
-    void didFinishScreencast(const PAL::SessionID& sessionID, const String& screencastID) override;
 
     // PlaywrightDispatcherHandler
     Inspector::Protocol::ErrorStringOr<void> enable() override;

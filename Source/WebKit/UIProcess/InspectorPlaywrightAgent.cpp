@@ -474,14 +474,6 @@ void InspectorPlaywrightAgent::willCreateNewPage(WebPageProxy& page, const WebCo
         getEnabledWindowFeatures(features));
 }
 
-void InspectorPlaywrightAgent::didFinishScreencast(const PAL::SessionID& sessionID, const String& screencastID)
-{
-    if (!m_isEnabled)
-        return;
-
-    m_frontendDispatcher->screencastFinished(screencastID);
-}
-
 static WebsiteDataStore* findDefaultWebsiteDataStore() {
     WebsiteDataStore* result = nullptr;
     WebsiteDataStore::forEachWebsiteDataStore([&result] (WebsiteDataStore& dataStore) {

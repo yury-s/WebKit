@@ -27,7 +27,6 @@
 #include "InspectorScreencastAgent.h"
 
 #include "PageClient.h"
-#include "ScreencastEncoder.h"
 #include "WebPageInspectorController.h"
 #include "WebPageProxy.h"
 #include "WebsiteDataStore.h"
@@ -85,21 +84,17 @@ void InspectorScreencastAgent::didCreateFrontendAndBackend()
 
 void InspectorScreencastAgent::willDestroyFrontendAndBackend(DisconnectReason)
 {
-    if (!m_encoder)
-        return;
-
-    // The agent may be destroyed when the callback is invoked.
-    m_encoder->finish([sessionID = m_page.websiteDataStore().sessionID(), screencastID = WTFMove(m_currentScreencastID)] {
-        if (WebPageInspectorController::observer())
-            WebPageInspectorController::observer()->didFinishScreencast(sessionID, screencastID);
-    });
-
-    m_encoder = nullptr;
 }
 
 #if USE(SKIA)
 void InspectorScreencastAgent::didPaint(sk_sp<SkImage>&& surface)
 {
+    if (!m_screencast)
+        return;
+
+    if (m_screencastFramesInFlight > kMaxFramesInFlight)
+        return;
+
     MonotonicTime timestamp = MonotonicTime::now();
     sk_sp<SkImage> image(surface);
 #if PLATFORM(WPE) || PLATFORM(WIN)
@@ -114,100 +109,52 @@ void InspectorScreencastAgent::didPaint(sk_sp<SkImage>&& surface)
 #else
     WebCore::IntSize displaySize = m_page.drawingArea()->size();
 #endif
-    // Do not WTFMove image here as it is used below
-    if (m_encoder)
-        m_encoder->encodeFrame(sk_sp<SkImage>(image), displaySize);
-    if (m_screencast) {
-        {
-            SkPixmap pixmap;
-            if (!image->peekPixels(&pixmap)) {
-                fprintf(stderr, "Failed to peek pixels from SkImage to compute hash\n");
-                return;
-            }
-            // Do not send the same frame over and over.
-            size_t len = pixmap.computeByteSize();
-            auto cryptoDigest = PAL::CryptoDigest::create(PAL::CryptoDigest::Algorithm::SHA_1);
-            cryptoDigest->addBytes(std::span(reinterpret_cast<const unsigned char*>(pixmap.addr()), len));
-            auto digest = cryptoDigest->computeHash();
-            if (m_lastFrameDigest == digest)
-                return;
-            m_lastFrameDigest = digest;
-        }
-
-        if (m_screencastFramesInFlight > kMaxFramesInFlight)
-            return;
-        // Scale image to fit width / height
-        double scale = std::min(m_screencastWidth / displaySize.width(), m_screencastHeight / displaySize.height());
-        if (scale < 1) {
-            SkBitmap dstBitmap;
-            dstBitmap.allocPixels(SkImageInfo::MakeN32Premul(displaySize.width() * scale, displaySize.height() * scale));
-            SkCanvas canvas(dstBitmap);
-            canvas.scale(scale, scale);
-            canvas.drawImage(image, 0, 0);
-            image = dstBitmap.asImage();
-        }
-
+    {
         SkPixmap pixmap;
         if (!image->peekPixels(&pixmap)) {
-            fprintf(stderr, "Failed to peek pixels from SkImage for JPEG encoding\n");
+            fprintf(stderr, "Failed to peek pixels from SkImage to compute hash\n");
             return;
         }
-
-        SkJpegEncoder::Options options;
-        options.fQuality = 90;
-        SkDynamicMemoryWStream stream;
-        if (!SkJpegEncoder::Encode(&stream, pixmap, options)) {
-            fprintf(stderr, "Failed to encode image to JPEG\n");
+        // Do not send the same frame over and over.
+        size_t len = pixmap.computeByteSize();
+        auto cryptoDigest = PAL::CryptoDigest::create(PAL::CryptoDigest::Algorithm::SHA_1);
+        cryptoDigest->addBytes(std::span(reinterpret_cast<const unsigned char*>(pixmap.addr()), len));
+        auto digest = cryptoDigest->computeHash();
+        if (m_lastFrameDigest == digest)
             return;
-        }
-        sk_sp<SkData> jpegData = stream.detachAsData();
-        String result = base64EncodeToString(std::span(reinterpret_cast<const unsigned char*>(jpegData->data()), jpegData->size()));
-        ++m_screencastFramesInFlight;
-        m_frontendDispatcher->screencastFrame(result, timestamp.secondsSinceEpoch().value(), displaySize.width(), displaySize.height());
+        m_lastFrameDigest = digest;
     }
-}
-#endif
 
-Inspector::Protocol::ErrorStringOr<String /* screencastID */> InspectorScreencastAgent::startVideo(const String& file, int width, int height, int toolbarHeight)
-{
-    if (m_encoder)
-        return makeUnexpected("Already recording"_s);
+    // Scale image to fit width / height
+    double scale = std::min(m_screencastWidth / displaySize.width(), m_screencastHeight / displaySize.height());
+    if (scale < 1) {
+        SkBitmap dstBitmap;
+        dstBitmap.allocPixels(SkImageInfo::MakeN32Premul(displaySize.width() * scale, displaySize.height() * scale));
+        SkCanvas canvas(dstBitmap);
+        canvas.scale(scale, scale);
+        canvas.drawImage(image, 0, 0);
+        image = dstBitmap.asImage();
+    }
 
-    if (width < 10 || width > 10000 || height < 10 || height > 10000)
-        return makeUnexpected("Invalid size"_s);
-
-    String errorString;
-    m_encoder = ScreencastEncoder::create(errorString, file, WebCore::IntSize(width, height));
-    if (!m_encoder)
-        return makeUnexpected(errorString);
-
-    m_currentScreencastID = createVersion4UUIDString();
-
-#if PLATFORM(MAC)
-    m_encoder->setOffsetTop(toolbarHeight);
-#endif
-
-    kickFramesStarted();
-    return { { m_currentScreencastID } };
-}
-
-void InspectorScreencastAgent::stopVideo(Ref<StopVideoCallback>&& callback)
-{
-    if (!m_encoder) {
-        callback->sendFailure("Not recording"_s);
+    SkPixmap pixmap;
+    if (!image->peekPixels(&pixmap)) {
+        fprintf(stderr, "Failed to peek pixels from SkImage for JPEG encoding\n");
         return;
     }
 
-    // The agent may be destroyed when the callback is invoked.
-    m_encoder->finish([sessionID = m_page.websiteDataStore().sessionID(), screencastID = WTFMove(m_currentScreencastID), callback = WTFMove(callback)] {
-        if (WebPageInspectorController::observer())
-            WebPageInspectorController::observer()->didFinishScreencast(sessionID, screencastID);
-        callback->sendSuccess();
-    });
-    m_encoder = nullptr;
-    if (!m_screencast)
-      m_framesAreGoing = false;
+    SkJpegEncoder::Options options;
+    options.fQuality = 90;
+    SkDynamicMemoryWStream stream;
+    if (!SkJpegEncoder::Encode(&stream, pixmap, options)) {
+        fprintf(stderr, "Failed to encode image to JPEG\n");
+        return;
+    }
+    sk_sp<SkData> jpegData = stream.detachAsData();
+    String result = base64EncodeToString(std::span(reinterpret_cast<const unsigned char*>(jpegData->data()), jpegData->size()));
+    ++m_screencastFramesInFlight;
+    m_frontendDispatcher->screencastFrame(result, timestamp.secondsSinceEpoch().value(), displaySize.width(), displaySize.height());
 }
+#endif
 
 Inspector::Protocol::ErrorStringOr<int /* generation */> InspectorScreencastAgent::startScreencast(int width, int height, int toolbarHeight, int quality)
 {
@@ -237,8 +184,7 @@ Inspector::Protocol::ErrorStringOr<void> InspectorScreencastAgent::stopScreencas
     if (!m_screencast)
         return makeUnexpected("Not screencasting"_s);
     m_screencast = false;
-    if (!m_encoder)
-      m_framesAreGoing = false;
+    m_framesAreGoing = false;
     return { };
 }
 
@@ -256,10 +202,11 @@ void InspectorScreencastAgent::kickFramesStarted()
 #if !PLATFORM(WPE)
 void InspectorScreencastAgent::scheduleFrameEncoding()
 {
-    if (!m_encoder && !m_screencast)
+    if (!m_screencast)
         return;
 
-    RunLoop::mainSingleton().dispatchAfter(Seconds(1.0 / ScreencastEncoder::fps), [agent = WeakPtr { this }]() mutable {
+    const int fps = 25;
+    RunLoop::mainSingleton().dispatchAfter(Seconds(1.0 / fps), [agent = WeakPtr { this }]() mutable {
         if (!agent)
             return;
         if (!agent->m_page.hasPageClient())
@@ -274,8 +221,9 @@ void InspectorScreencastAgent::scheduleFrameEncoding()
 #if PLATFORM(MAC)
 void InspectorScreencastAgent::encodeFrame()
 {
-    if (!m_encoder && !m_screencast)
+    if (!m_screencast)
         return;
+
     RetainPtr<CGImageRef> imageRef = m_page.pageClient()->takeSnapshotForAutomation();
     if (m_screencast && m_screencastFramesInFlight <= kMaxFramesInFlight) {
         MonotonicTime timestamp = MonotonicTime::now();
@@ -311,15 +259,13 @@ void InspectorScreencastAgent::encodeFrame()
             m_lastFrameDigest = digest;
         }
     }
-    if (m_encoder)
-        m_encoder->encodeFrame(WTFMove(imageRef));
 }
 #endif
 
 #if PLATFORM(GTK)
 void InspectorScreencastAgent::encodeFrame()
 {
-    if (!m_encoder && !m_screencast)
+    if (!m_screencast)
         return;
 
     if (auto* drawingArea = m_page.drawingArea())
@@ -330,7 +276,7 @@ void InspectorScreencastAgent::encodeFrame()
 #if PLATFORM(WIN)
 void InspectorScreencastAgent::encodeFrame()
 {
-    if (!m_encoder && !m_screencast)
+    if (!m_screencast)
         return;
 
     if (auto* drawingArea = m_page.drawingArea())

@@ -456,16 +456,6 @@ list(APPEND WebKit_PRIVATE_INCLUDE_DIRECTORIES
     "${JavaScriptCoreGLib_DERIVED_SOURCES_DIR}/jsc"
 )
 
-# Playwright begin
-list(APPEND WebKit_SYSTEM_INCLUDE_DIRECTORIES
-    "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libyuv/include"
-)
-
-list(APPEND WebKit_PRIVATE_INCLUDE_DIRECTORIES
-    "${THIRDPARTY_DIR}/libwebrtc/Source/third_party/libwebm"
-)
-# Playwright end
-
 list(APPEND WebKit_LIBRARIES
     GLib::Module
     Soup3::Soup3

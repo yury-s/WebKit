@@ -536,7 +536,6 @@ UIProcess/Inspector/ios/WKInspectorHighlightView.mm @nonARC
 UIProcess/Inspector/ios/WKInspectorNodeSearchGestureRecognizer.mm @nonARC
 
 UIProcess/Inspector/mac/RemoteWebInspectorUIProxyMac.mm @nonARC
-UIProcess/Inspector/mac/ScreencastEncoderMac.mm @nonARC
 UIProcess/Inspector/mac/WebInspectorUIProxyMac.mm @nonARC
 UIProcess/Inspector/mac/WKInspectorResourceURLSchemeHandler.mm @nonARC
 UIProcess/Inspector/mac/WKInspectorViewController.mm @nonARC

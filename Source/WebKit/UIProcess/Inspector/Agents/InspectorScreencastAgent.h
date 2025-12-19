@@ -55,7 +55,6 @@ template<> struct IsDeprecatedWeakRefSmartPointerException<WebKit::InspectorScre
 
 namespace WebKit {
 
-class ScreencastEncoder;
 class WebPageProxy;
 
 class InspectorScreencastAgent : public Inspector::InspectorAgentBase, public Inspector::ScreencastBackendDispatcherHandler, public CanMakeWeakPtr<InspectorScreencastAgent> {
@@ -71,9 +70,6 @@ public:
 #if USE(SKIA)
     void didPaint(sk_sp<SkImage>&& surface);
 #endif
-
-    Inspector::Protocol::ErrorStringOr<String /* screencastID */> startVideo(const String& file, int width, int height, int toolbarHeight) override;
-    void stopVideo(Ref<StopVideoCallback>&&) override;
 
     Inspector::Protocol::ErrorStringOr<int /* generation */> startScreencast(int width, int height, int toolbarHeight, int quality) override;
     Inspector::Protocol::ErrorStringOr<void> screencastFrameAck(int generation) override;
@@ -91,7 +87,6 @@ private:
     Ref<Inspector::ScreencastBackendDispatcher> m_backendDispatcher;
     WebPageProxy& m_page;
     Vector<uint8_t> m_lastFrameDigest;
-    RefPtr<ScreencastEncoder> m_encoder;
     bool m_screencast = false;
     bool m_framesAreGoing = false;
     double m_screencastWidth = 0;
@@ -100,7 +95,6 @@ private:
     int m_screencastToolbarHeight = 0;
     int m_screencastGeneration = 0;
     int m_screencastFramesInFlight = 0;
-    String m_currentScreencastID;
 };
 
 } // namespace WebKit
