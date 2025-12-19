@@ -888,6 +888,14 @@ static NSDictionary<NSString *, id> *extractResolutionReport(NSError *error)
 
         resourceResponse.setDeprecatedNetworkLoadMetrics(WebCore::copyTimingData(taskMetrics.get(), networkDataTask->networkLoadMetrics()));
         resourceResponse.setProxyName(WTFMove(proxyName));
+
+        __block WebCore::HTTPHeaderMap requestHeaders;
+        NSURLSessionTaskTransactionMetrics *m = dataTask._incompleteTaskMetrics.transactionMetrics.lastObject;
+        [m.request.allHTTPHeaderFields enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSString *value, BOOL *) {
+            requestHeaders.set(String(name), String(value));
+        }];
+        resourceResponse.m_httpRequestHeaderFields = WTFMove(requestHeaders);
+
         networkDataTask->didReceiveResponse(WTFMove(resourceResponse), negotiatedLegacyTLS, privateRelayed, [completionHandler = makeBlockPtr(completionHandler), taskIdentifier](WebCore::PolicyAction policyAction) {
 #if !LOG_DISABLED
             LOG(NetworkSession, "%zu didReceiveResponse completionHandler (%s)", taskIdentifier, toString(policyAction).characters());

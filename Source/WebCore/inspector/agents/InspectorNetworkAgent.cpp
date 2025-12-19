@@ -62,6 +62,7 @@
 #include "LocalFrame.h"
 #include "MIMETypeRegistry.h"
 #include "MemoryCache.h"
+#include "NetworkStateNotifier.h"
 #include "Page.h"
 #include "PlatformStrategies.h"
 #include "ProgressTracker.h"
@@ -275,8 +276,8 @@ static Ref<Inspector::Protocol::Network::Request> buildObjectForResourceRequest(
         .release();
 
     if (request.httpBody() && !request.httpBody()->isEmpty()) {
-        auto bytes = request.httpBody()->flatten();
-        requestObject->setPostData(String::fromUTF8WithLatin1Fallback(bytes.span()));
+        Vector<uint8_t> bytes = request.httpBody()->flatten();
+        requestObject->setPostData(base64EncodeToString(bytes));
     }
 
     if (resourceLoader) {
@@ -327,6 +328,8 @@ RefPtr<Inspector::Protocol::Network::Response> InspectorNetworkAgent::buildObjec
         .setMimeType(response.mimeType())
         .setSource(responseSource(response.source()))
         .release();
+
+    responseObject->setRequestHeaders(buildObjectForHeaders(response.m_httpRequestHeaderFields));
 
     if (resourceLoader) {
         auto* metrics = response.deprecatedNetworkLoadMetricsOrNull();
@@ -614,6 +617,9 @@ void InspectorNetworkAgent::didFailLoading(ResourceLoaderIdentifier identifier, 
     String requestId = IdentifiersFactory::requestId(identifier.toUInt64());
 
     if (loader && m_resourcesData->resourceType(requestId) == ResourceType::Document) {
+        if (m_stoppingLoadingDueToProcessSwap)
+            return;
+
         auto* frame = loader->frame();
         if (frame && frame->loader().documentLoader() && frame->document()) {
             m_resourcesData->addResourceSharedBuffer(requestId,
@@ -843,6 +849,7 @@ Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::disable()
     Ref { m_instrumentingAgents.get() }->setEnabledNetworkAgent(nullptr);
     m_resourcesData->clear();
     m_extraRequestHeaders.clear();
+    m_stoppingLoadingDueToProcessSwap = false;
 
     continuePendingRequests();
     continuePendingResponses();
@@ -901,6 +908,7 @@ void InspectorNetworkAgent::continuePendingResponses()
 
 Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::setExtraHTTPHeaders(Ref<JSON::Object>&& headers)
 {
+    m_extraRequestHeaders.clear();
     for (auto& entry : headers.get()) {
         auto stringValue = entry.value->asString();
         if (!!stringValue)
@@ -1148,6 +1156,11 @@ void InspectorNetworkAgent::interceptResponse(const ResourceResponse& response, 
     m_frontendDispatcher->responseIntercepted(requestId, resourceResponse.releaseNonNull());
 }
 
+void InspectorNetworkAgent::setStoppingLoadingDueToProcessSwap(bool stopping)
+{
+    m_stoppingLoadingDueToProcessSwap = stopping;
+}
+
 Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::interceptContinue(const Inspector::Protocol::Network::RequestId& requestId, Inspector::Protocol::Network::NetworkStage networkStage)
 {
     switch (networkStage) {
@@ -1177,6 +1190,9 @@ Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::interceptWithReq
         return makeUnexpected("Missing pending intercept request for given requestId"_s);
 
     auto& loader = *pendingRequest->m_loader;
+    if (loader.reachedTerminalState())
+        return makeUnexpected("Unable to intercept request, it has already been processed"_s);
+
     ResourceRequest request = loader.request();
     if (!!url)
         request.setURL(URL({ }, url));
@@ -1272,13 +1288,22 @@ Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::interceptRequest
     response.setHTTPStatusCode(status);
     response.setHTTPStatusText(String { statusText });
     HTTPHeaderMap explicitHeaders;
+    String setCookieValue;
     for (auto& header : headers.get()) {
         auto headerValue = header.value->asString();
-        if (!!headerValue)
+        if (equalIgnoringASCIICase(header.key, "Set-Cookie"_s))
+            setCookieValue = headerValue;
+        else if (!!headerValue)
             explicitHeaders.add(header.key, headerValue);
+
     }
     response.setHTTPHeaderFields(WTFMove(explicitHeaders));
     response.setHTTPHeaderField(HTTPHeaderName::ContentType, response.mimeType());
+
+    auto* frame = loader->frame();
+    if (!setCookieValue.isEmpty() && frame && frame->page())
+        frame->page()->cookieJar().setCookieFromResponse(*loader.get(), setCookieValue);
+
     loader->didReceiveResponse(WTFMove(response), [loader, buffer = data.releaseNonNull()]() {
         if (loader->reachedTerminalState())
             return;
@@ -1341,6 +1366,12 @@ Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::setEmulatedCondi
 }
 
 #endif // ENABLE(INSPECTOR_NETWORK_THROTTLING)
+
+Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::setEmulateOfflineState(bool offline)
+{
+    platformStrategies()->loaderStrategy()->setEmulateOfflineState(offline);
+    return { };
+}
 
 static Ref<Inspector::Protocol::Page::SearchResult> buildObjectForSearchResult(const Inspector::Protocol::Network::RequestId& requestId, const Inspector::Protocol::Network::FrameId& frameId, const String& url, int matchesCount)
 {
