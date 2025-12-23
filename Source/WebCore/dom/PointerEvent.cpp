@@ -34,7 +34,6 @@
 #include "PointerEventTypeNames.h"
 #include <numbers>
 #include <wtf/TZoneMallocInlines.h>
-#include <wtf/IsoMallocInlines.h>
 
 namespace WebCore {
 
