@@ -133,11 +133,19 @@ void WebFoundTextRangeController::findTextRangesForStringMatches(const String& s
     };
 
     HashMap<WebCore::FrameIdentifier, Vector<WebFoundTextRange>> frameMatches;
-    for (const auto& [foundTextRange, simpleRange] : std::views::zip(webFoundTextRanges, validSimpleRanges)) {
+    auto webFoundTextRangesIter = webFoundTextRanges.begin();
+    auto validSimpleRangesIter = validSimpleRanges.begin();
+    while (webFoundTextRangesIter != webFoundTextRanges.end() && validSimpleRangesIter != validSimpleRanges.end()) {
+        const auto& foundTextRange = *webFoundTextRangesIter;
+        const auto& simpleRange = *validSimpleRangesIter;
+
         m_cachedFoundRanges.add(foundTextRange, simpleRange.makeWeakSimpleRange());
         const auto frameID = simpleRange.startContainer().protectedDocument()->frame()->frameID();
         auto& matches = frameMatches.ensure(frameID, createEmptyVector).iterator->value;
         matches.append(foundTextRange);
+
+        webFoundTextRangesIter++;
+        validSimpleRangesIter++;
     }
 
 #if ENABLE(PDF_PLUGIN)
