@@ -570,6 +570,7 @@ ApplePayEnabled:
   richJavaScript: true
 
 # FIXME: This is on by default in WebKit2 PLATFORM(COCOA). Perhaps we should consider turning it on for WebKitLegacy as well.
+# Playwright: enable on all platforms to align with Safari.
 AsyncClipboardAPIEnabled:
   type: bool
   status: mature
@@ -580,7 +581,7 @@ AsyncClipboardAPIEnabled:
       default: false
     WebKit:
       "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)" : true
-      default: false
+      default: true
     WebCore:
       default: false
 
@@ -852,13 +853,10 @@ BlobFileAccessEnforcementEnabled:
   sharedPreferenceForWebProcess: true
   defaultValue:
     WebKitLegacy:
-      "PLATFORM(COCOA)": true
       default: false
     WebKit:
-      "PLATFORM(COCOA)": true
       default: false
     WebCore:
-      "PLATFORM(COCOA)": true
       default: false
 
 BlockFontServiceInWebContentSandbox:
@@ -2180,6 +2178,7 @@ CrossOriginEmbedderPolicyEnabled:
     WebCore:
       default: false
 
+# Playwright: disable setting.
 CrossOriginOpenerPolicyEnabled:
   type: bool
   status: stable
@@ -2253,6 +2252,7 @@ DOMAudioSessionFullEnabled:
     WebCore:
       default: false
 
+# Playwright: enable on all platforms to align with Safari.
 DOMPasteAccessRequestsEnabled:
   type: bool
   status: internal
@@ -2264,7 +2264,7 @@ DOMPasteAccessRequestsEnabled:
       default: false
     WebKit:
       "PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(VISION)": true
-      default: false
+      default: true
     WebCore:
       default: false
 
@@ -2330,10 +2330,10 @@ DataListElementEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-      "(PLATFORM(COCOA) && !PLATFORM(WATCHOS)) || PLATFORM(GTK)": true
+      "(PLATFORM(COCOA) && !PLATFORM(WATCHOS)) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN)": true
       default: false
     WebCore:
-      "(PLATFORM(COCOA) && !PLATFORM(WATCHOS)) || PLATFORM(GTK)": true
+      "(PLATFORM(COCOA) && !PLATFORM(WATCHOS)) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN)": true
       default: false
   sharedPreferenceForWebProcess: true
 
@@ -2346,7 +2346,7 @@ DataTransferItemsEnabled:
     WebKitLegacy:
       default: true
     WebKit:
-      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)": true
+      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN)": true
       default: false
     WebCore:
       default: false
@@ -2589,7 +2589,7 @@ DirectoryUploadEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)": true
+      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN)": true
       default: false
     WebCore:
       default: false
@@ -3254,10 +3254,10 @@ FullScreenEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-      "PLATFORM(GTK) || PLATFORM(WPE)": true
+      "PLATFORM(WIN) || PLATFORM(GTK) || PLATFORM(WPE)": true
       default: false
     WebCore:
-      "PLATFORM(GTK) || PLATFORM(WPE)": true
+      "PLATFORM(WIN) || PLATFORM(GTK) || PLATFORM(WPE)": true
       default: false
   sharedPreferenceForWebProcess: true
 
@@ -3975,7 +3975,7 @@ InputTypeColorEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-      "PLATFORM(COCOA) && !PLATFORM(WATCHOS) || PLATFORM(GTK)": true
+      "PLATFORM(COCOA) && !PLATFORM(WATCHOS) || PLATFORM(GTK) || PLATFORM(WPE)": true
       default: false
     WebCore:
       default: false
@@ -4008,7 +4008,7 @@ InputTypeDateEnabled:
       "PLATFORM(IOS_FAMILY)": true
       default: false
     WebKit:
-      "PLATFORM(COCOA) || PLATFORM(GTK)": true
+      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)": true
       default: false
     WebCore:
       default: false
@@ -4024,7 +4024,7 @@ InputTypeDateTimeLocalEnabled:
       "PLATFORM(IOS_FAMILY)": true
       default: false
     WebKit:
-      "PLATFORM(COCOA) || PLATFORM(GTK)": true
+      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)": true
       default: false
     WebCore:
       default: false
@@ -4056,7 +4056,7 @@ InputTypeTimeEnabled:
       "PLATFORM(IOS_FAMILY)": true
       default: false
     WebKit:
-      "PLATFORM(COCOA) || PLATFORM(GTK)": true
+      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)": true
       default: false
     WebCore:
       default: false
@@ -4117,6 +4117,7 @@ InspectorMaximumResourcesContentSize:
       "PLATFORM(WPE)": 50
       default: 200
 
+# Playwright: disable setting.
 InspectorStartsAttached:
   type: bool
   status: embedder
@@ -4124,7 +4125,7 @@ InspectorStartsAttached:
   exposed: [ WebKit ]
   defaultValue:
     WebKit:
-      default: true
+      default: false
 
 InspectorSupportsShowingCertificate:
   type: bool
@@ -6296,7 +6297,7 @@ PointerLockEnabled:
       "PLATFORM(IOS_FAMILY)": false
       default: true
     WebCore:
-      default: false
+      default: true
 
 PointerLockOptionsEnabled:
   type: bool
@@ -6925,7 +6926,7 @@ ScreenOrientationAPIEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-      default: WebKit::defaultShouldEnableScreenOrientationAPI()
+      default: true
     WebCore:
       default: false
   sharedPreferenceForWebProcess: true

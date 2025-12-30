@@ -54,8 +54,13 @@ list(APPEND WebKit_SOURCES
 
     UIProcess/win/AutomationClientWin.cpp
     UIProcess/win/AutomationSessionClientWin.cpp
+
+    UIProcess/win/WebPageInspectorTargetProxyWin.cpp
+    UIProcess/win/InspectorPlaywrightAgentClientWin.cpp
     UIProcess/win/PageClientImpl.cpp
     UIProcess/win/WebContextMenuProxyWin.cpp
+    UIProcess/win/WebPageInspectorEmulationAgentWin.cpp
+    UIProcess/win/WebPageInspectorInputAgentWin.cpp
     UIProcess/win/WebPageProxyWin.cpp
     UIProcess/win/WebPopupMenuProxyWin.cpp
     UIProcess/win/WebProcessPoolWin.cpp
@@ -71,6 +76,7 @@ list(APPEND WebKit_SOURCES
     WebProcess/MediaCache/WebMediaKeyStorageManager.cpp
 
     WebProcess/WebCoreSupport/win/WebPopupMenuWin.cpp
+    WebProcess/WebCoreSupport/win/WebDragClientWin.cpp
 
     WebProcess/WebPage/CoordinatedGraphics/DrawingAreaCoordinatedGraphics.cpp
 
