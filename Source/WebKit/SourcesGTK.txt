@@ -264,6 +264,7 @@ UIProcess/WebsiteData/soup/WebsiteDataStoreSoup.cpp
 
 UIProcess/cairo/BackingStoreCairo.cpp
 
+UIProcess/glib/BrowserInspectorWebSocketServer.cpp
 UIProcess/glib/DRMMainDevice.cpp @no-unify
 UIProcess/glib/DisplayLinkGLib.cpp
 UIProcess/glib/DisplayVBlankMonitor.cpp

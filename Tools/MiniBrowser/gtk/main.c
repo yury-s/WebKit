@@ -66,6 +66,7 @@ static gboolean enableITP;
 static gboolean exitAfterLoad;
 static gboolean webProcessCrashed;
 static gboolean inspectorPipe;
+static gint remoteDebuggingPort = -1;
 static gboolean headless;
 static gboolean noStartupWindow;
 static const char *userDataDir;
@@ -178,6 +179,7 @@ static const GOptionEntry commandLineOptions[] =
     { "version", 'v', 0, G_OPTION_ARG_NONE, &printVersion, "Print the WebKitGTK version", NULL },
     { "config", 'C', 0, G_OPTION_ARG_FILENAME, &configFile, "Path to a configuration file", "PATH" },
     { "inspector-pipe", 0, 0, G_OPTION_ARG_NONE, &inspectorPipe, "Open pipe connection to the remote inspector", NULL },
+    { "remote-debugging-port", 0, 0, G_OPTION_ARG_INT, &remoteDebuggingPort, "Start remote debugging server on the specified port",  NULL },
     { "user-data-dir", 0, 0, G_OPTION_ARG_STRING, &userDataDir, "Default profile persistence folder location", NULL },
     { "headless", 0, 0, G_OPTION_ARG_NONE, &headless, "Noop headless operation", NULL },
     { "no-startup-window", 0, 0, G_OPTION_ARG_NONE, &noStartupWindow, "Do not open default page", NULL },
@@ -784,8 +786,16 @@ static void configureBrowserInspectorPipe()
 {
     WebKitBrowserInspector* browserInspector = webkit_browser_inspector_get_default();
     g_signal_connect(browserInspector, "create-new-page", G_CALLBACK(createNewPage), NULL);
- 
+
     webkit_browser_inspector_initialize_pipe(proxy, ignoreHosts);
+}
+
+static void configureBrowserInspectorPort()
+{
+    WebKitBrowserInspector* browserInspector = webkit_browser_inspector_get_default();
+    g_signal_connect(browserInspector, "create-new-page", G_CALLBACK(createNewPage), NULL);
+
+    webkit_browser_inspector_initialize_web_socket(remoteDebuggingPort, proxy, ignoreHosts);
 }
 
 static void startup(GApplication *application)
@@ -848,6 +858,8 @@ static void activate(GApplication *application, WebKitSettings *webkitSettings)
 {
     if (inspectorPipe)
         configureBrowserInspectorPipe();
+    else if (remoteDebuggingPort != -1)
+        configureBrowserInspectorPort();
 
     if (noStartupWindow) {
         keepApplicationAliveUntilQuit(application);
@@ -867,7 +879,7 @@ static void activate(GApplication *application, WebKitSettings *webkitSettings)
         g_free(dataDirectory);
         g_free(cacheDirectory);
         cookiesFile = g_build_filename(userDataDir, "cookies.txt", NULL);
-    } else if (inspectorPipe || privateMode || automationMode) {
+    } else if (inspectorPipe || remoteDebuggingPort != -1 || privateMode || automationMode) {
         networkSession = webkit_network_session_new_ephemeral();
     } else {
         char *dataDirectory = g_build_filename(g_get_user_data_dir(), "webkitgtk-" WEBKITGTK_API_VERSION, "MiniBrowser", NULL);
@@ -916,7 +928,7 @@ static void activate(GApplication *application, WebKitSettings *webkitSettings)
     if (userDataDir) {
         manager = webkit_website_data_manager_new("base-data-directory", userDataDir, "base-cache-directory", userDataDir, NULL);
         cookiesFile = g_build_filename(userDataDir, "cookies.txt", NULL);
-    } else if (inspectorPipe || privateMode || automationMode) {
+    } else if (inspectorPipe || remoteDebuggingPort != -1 || privateMode || automationMode) {
         manager = webkit_website_data_manager_new_ephemeral();
     } else {
         char *dataDirectory = g_build_filename(g_get_user_data_dir(), "webkitgtk-" WEBKITGTK_API_VERSION, "MiniBrowser", NULL);

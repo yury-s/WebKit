@@ -31,6 +31,7 @@
 #if USE(CAIRO) || PLATFORM(GTK)
 
 #include "UpdateInfo.h"
+#include "WebPageProxy.h"
 #include <WebCore/IntRect.h>
 #include <WebCore/ShareableBitmap.h>
 #include <cairo.h>

@@ -76,6 +76,11 @@ WEBKIT_API void
 webkit_browser_inspector_initialize_pipe              (const char* defaultProxyURI,
                                                        const char* const* ignoreHosts);
 
+WEBKIT_API void
+webkit_browser_inspector_initialize_web_socket        (unsigned port,
+                                                       const char* defaultProxyURI,
+                                                       const char* const* ignoreHosts);
+
 G_END_DECLS
 
 #endif

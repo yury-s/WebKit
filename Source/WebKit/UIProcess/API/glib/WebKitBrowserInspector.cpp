@@ -27,6 +27,7 @@
 #include "WebKitBrowserInspector.h"
 
 #include "BrowserInspectorPipe.h"
+#include "BrowserInspectorWebSocketServer.h"
 #include "InspectorPlaywrightAgentClientGLib.h"
 #include "WebKitBrowserInspectorPrivate.h"
 #include "WebKitWebViewPrivate.h"
@@ -155,4 +156,18 @@ WebKitBrowserInspector* webkit_browser_inspector_get_default(void)
 void webkit_browser_inspector_initialize_pipe(const char* defaultProxyURI, const char* const* ignoreHosts)
 {
     WebKit::initializeBrowserInspectorPipe(makeUnique<WebKit::InspectorPlaywrightAgentClientGlib>(String::fromUTF8(defaultProxyURI), ignoreHosts));
+}
+
+/**
+ * webkit_browser_inspector_initialize_web_socket:
+ * @port: port number to start the remote debugging server on
+ * @defaultProxyURI: default proxy URI
+ * @ignoreHosts: list of hosts to ignore for proxy
+ *
+ * Creates browser inspector and configures HTTP server to communicate with
+ * remote debugging clients on the specified port.
+ */
+void webkit_browser_inspector_initialize_web_socket(unsigned port, const char* defaultProxyURI, const char* const* ignoreHosts)
+{
+    WebKit::initializeBrowserInspectorWebSocket(port, makeUnique<WebKit::InspectorPlaywrightAgentClientGlib>(String::fromUTF8(defaultProxyURI), ignoreHosts));
 }

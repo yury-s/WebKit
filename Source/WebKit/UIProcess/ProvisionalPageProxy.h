@@ -32,6 +32,7 @@
 #include "ProcessThrottler.h"
 #include "SandboxExtension.h"
 #include "WebFramePolicyListenerProxy.h"
+#include "WebPageProxy.h"
 #include "WebPageProxyIdentifier.h"
 #include "WebPageProxyMessageReceiverRegistration.h"
 #include "WebsiteDataStore.h"

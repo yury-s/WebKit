@@ -240,6 +240,7 @@ UIProcess/Gamepad/wpe/PlatformGamepadWPE.cpp
 
 UIProcess/geoclue/GeoclueGeolocationProvider.cpp
 
+UIProcess/glib/BrowserInspectorWebSocketServer.cpp
 UIProcess/glib/DRMMainDevice.cpp @no-unify
 UIProcess/glib/DisplayLinkGLib.cpp
 UIProcess/glib/DisplayVBlankMonitor.cpp
