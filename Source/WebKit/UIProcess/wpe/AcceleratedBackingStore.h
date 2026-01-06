@@ -73,7 +73,7 @@ public:
     void updateSurfaceID(uint64_t);
 
 #if USE(SKIA)
-    Expected<Ref<ViewSnapshot>, String> takeSnapshot(std::optional<WebCore::IntRect>&&);
+    Expected<Ref<ViewSnapshot>, String> takeSnapshot(std::optional<WebCore::IntRect>&&, bool nominalResolution);
 #endif
 
     RendererBufferDescription bufferDescription() const;
