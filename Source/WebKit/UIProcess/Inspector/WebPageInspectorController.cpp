@@ -33,6 +33,7 @@
 #include "InspectorDialogAgent.h"
 #include "InspectorScreencastAgent.h"
 #include "ProvisionalPageProxy.h"
+#include "WebFrameInspectorTarget.h"
 #include "WebFrameInspectorTargetProxy.h"
 #include "WebFrameProxy.h"
 #include "WebPageInspectorAgentBase.h"
@@ -118,6 +119,8 @@ void WebPageInspectorController::didInitializeWebPage()
     if (m_targets.contains(pageTargetId))
         return;
     createWebPageInspectorTarget(pageTargetId, Inspector::InspectorTargetType::Page);
+    if (m_inspectedPage->mainFrame())
+        createWebFrameInspectorTarget(*m_inspectedPage->mainFrame(), WebFrameInspectorTarget::toTargetID(m_inspectedPage->mainFrame()->frameID()));
 }
 
 void WebPageInspectorController::pageClosed()
@@ -422,6 +425,8 @@ void WebPageInspectorController::setContinueLoadingCallback(const ProvisionalPag
 void WebPageInspectorController::didCreateProvisionalPage(ProvisionalPageProxy& provisionalPage)
 {
     addTarget(WebPageInspectorTargetProxy::create(provisionalPage, getTargetID(provisionalPage)));
+    if (provisionalPage.mainFrame())
+        createWebFrameInspectorTarget(*provisionalPage.mainFrame(), WebFrameInspectorTarget::toTargetID(provisionalPage.mainFrame()->frameID()));
 }
 
 void WebPageInspectorController::willDestroyProvisionalPage(const ProvisionalPageProxy& provisionalPage)
@@ -439,6 +444,11 @@ void WebPageInspectorController::didCommitProvisionalPage(WebCore::PageIdentifie
     newTarget->didCommitProvisionalTarget();
     targetAgent->didCommitProvisionalTarget(oldID, newID);
 
+
+    String newMainFrameTargetID = WebFrameInspectorTarget::toTargetID(m_inspectedPage->mainFrame()->frameID());
+    auto newMainFrameTarget = m_targets.take(newMainFrameTargetID);
+    ASSERT(newMainFrameTarget);
+
     // We've disconnected from the old page and will not receive any message from it, so
     // we destroy everything but the new target here.
     // FIXME: <https://webkit.org/b/202937> do not destroy targets that belong to the committed page.
@@ -446,6 +456,7 @@ void WebPageInspectorController::didCommitProvisionalPage(WebCore::PageIdentifie
         targetAgent->targetDestroyed(*target);
     m_targets.clear();
     m_targets.set(newTarget->identifier(), WTF::move(newTarget));
+    m_targets.set(newMainFrameTarget->identifier(), WTF::move(newMainFrameTarget));
 }
 
 InspectorBrowserAgent* WebPageInspectorController::enabledBrowserAgent() const
