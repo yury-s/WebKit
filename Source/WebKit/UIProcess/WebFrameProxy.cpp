@@ -124,8 +124,6 @@ WebFrameProxy::WebFrameProxy(WebPageProxy& page, FrameProcess& process, FrameIde
     ASSERT(!allFrames().contains(frameID));
     allFrames().set(frameID, *this);
     WebProcessPool::statistics().wkFrameCount++;
-
-    page.inspectorController().createWebFrameInspectorTarget(*this, WebFrameInspectorTarget::toTargetID(frameID));
 }
 
 WebFrameProxy::~WebFrameProxy()
@@ -516,6 +514,8 @@ void WebFrameProxy::didCreateSubframe(WebCore::FrameIdentifier frameID, String&&
     if (RefPtr session = page->activeAutomationSession())
         session->didCreateFrame(child);
 #endif
+
+    page->inspectorController().createWebFrameInspectorTarget(child, WebFrameInspectorTarget::toTargetID(child->frameID()));
 }
 
 void WebFrameProxy::prepareForProvisionalLoadInProcess(WebProcessProxy& process, API::Navigation& navigation, BrowsingContextGroup& group, CompletionHandler<void(WebCore::PageIdentifier)>&& completionHandler)
