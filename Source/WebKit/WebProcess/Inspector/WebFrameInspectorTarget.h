@@ -55,6 +55,8 @@ public:
 
     static String toTargetID(WebCore::FrameIdentifier);
 
+    void didCreateSubframe(WebFrame&);
+
 private:
     Ref<WebFrame> protectedFrame();
 
