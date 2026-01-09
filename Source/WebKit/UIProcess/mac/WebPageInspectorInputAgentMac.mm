@@ -74,7 +74,7 @@ void WebPageInspectorInputAgent::platformDispatchMouseEvent(const String& type, 
         upEventType = NSEventTypeLeftMouseUp;
     } else if (button == "middle"_s) {
         downEventType = NSEventTypeOtherMouseDown;
-        dragEventType = NSEventTypeLeftMouseDragged;
+        dragEventType = NSEventTypeOtherMouseDragged;
         upEventType = NSEventTypeOtherMouseUp;
     } else if (button == "right"_s) {
         downEventType = NSEventTypeRightMouseDown;
@@ -95,6 +95,12 @@ void WebPageInspectorInputAgent::platformDispatchMouseEvent(const String& type, 
         event = [NSEvent mouseEventWithType:upEventType location:locationInWindow modifierFlags:modifiers timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:eventNumber clickCount:clickCount pressure:0.0f];
     } else {
         return;
+    }
+
+    if (button == "middle"_s) {
+        CGEventRef cgEvent = [event CGEvent];
+        CGEventSetIntegerValueField(cgEvent, kCGMouseEventButtonNumber, kCGMouseButtonCenter);
+        event = [NSEvent eventWithCGEvent:cgEvent];
     }
 
     NativeWebMouseEvent nativeEvent(event, nil, [window contentView]);
