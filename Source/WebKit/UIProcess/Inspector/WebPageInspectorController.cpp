@@ -80,20 +80,6 @@ WebPageInspectorController::WebPageInspectorController(WebPageProxy& inspectedPa
     , m_backendDispatcher(BackendDispatcher::create(m_frontendRouter.copyRef()))
     , m_inspectedPage(inspectedPage)
 {
-    auto targetAgent = makeUniqueRef<InspectorTargetAgent>(m_frontendRouter, m_backendDispatcher);
-    m_targetAgent = targetAgent.ptr();
-    m_agents.append(WTF::move(targetAgent));
-}
-
-WebPageInspectorController::~WebPageInspectorController() = default;
-
-WeakRef<WebPageProxy> WebPageInspectorController::protectedInspectedPage()
-{
-    return m_inspectedPage;
-}
-
-void WebPageInspectorController::init()
-{
     auto targetAgent = makeUniqueRef<InspectorTargetAgent>(m_frontendRouter.get(), m_backendDispatcher.get());
     m_targetAgent = targetAgent.ptr();
     m_agents.append(WTF::move(targetAgent));
@@ -107,17 +93,25 @@ void WebPageInspectorController::init()
     auto screencastAgent = makeUniqueRef<InspectorScreencastAgent>(m_backendDispatcher.get(), m_frontendRouter.get(), m_inspectedPage);
     m_screecastAgent = screencastAgent.ptr();
     m_agents.append(WTF::move(screencastAgent));
-    if (s_observer)
-        s_observer->didCreateInspectorController(m_inspectedPage);
+}
+
+WebPageInspectorController::~WebPageInspectorController() = default;
+
+Ref<WebPageProxy> WebPageInspectorController::protectedInspectedPage()
+{
+    return m_inspectedPage.get();
+}
+
+void WebPageInspectorController::init()
+{
 }
 
 void WebPageInspectorController::didInitializeWebPage()
 {
+    if (s_observer)
+        s_observer->didCreateInspectorController(m_inspectedPage);
+
     String pageTargetId = WebPageInspectorTarget::toTargetID(m_inspectedPage->webPageIDInMainFrameProcess());
-    // Create target only after attaching to a Web Process first time. Before that
-    // we cannot event establish frontend connection.
-    if (m_targets.contains(pageTargetId))
-        return;
     createWebPageInspectorTarget(pageTargetId, Inspector::InspectorTargetType::Page);
     if (m_inspectedPage->mainFrame())
         createWebFrameInspectorTarget(*m_inspectedPage->mainFrame(), WebFrameInspectorTarget::toTargetID(m_inspectedPage->mainFrame()->frameID()));
@@ -424,7 +418,7 @@ void WebPageInspectorController::setContinueLoadingCallback(const ProvisionalPag
 
 void WebPageInspectorController::didCreateProvisionalPage(ProvisionalPageProxy& provisionalPage)
 {
-    addTarget(WebPageInspectorTargetProxy::create(provisionalPage, getTargetID(provisionalPage)));
+    addTarget(WebPageInspectorTargetProxy::create(provisionalPage, getTargetID(provisionalPage), Inspector::InspectorTargetType::Page));
     if (provisionalPage.mainFrame())
         createWebFrameInspectorTarget(*provisionalPage.mainFrame(), WebFrameInspectorTarget::toTargetID(provisionalPage.mainFrame()->frameID()));
 }

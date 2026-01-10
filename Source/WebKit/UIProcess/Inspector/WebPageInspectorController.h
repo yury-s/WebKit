@@ -156,7 +156,7 @@ public:
     void browserExtensionsDisabled(HashSet<String>&&);
 
 private:
-    WeakRef<WebPageProxy> protectedInspectedPage();
+    Ref<WebPageProxy> protectedInspectedPage();
     CheckedPtr<Inspector::InspectorTargetAgent> checkedTargetAgent() { return m_targetAgent; }
     WebPageAgentContext webPageAgentContext();
     void createLazyAgents();
