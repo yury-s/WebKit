@@ -99,18 +99,14 @@ void InspectorScreencastAgent::didPaint(sk_sp<SkImage>&& surface)
 
     MonotonicTime timestamp = MonotonicTime::now();
     sk_sp<SkImage> image(surface);
-#if PLATFORM(WPE) || PLATFORM(WIN)
+
     // Get actual image size (in device pixels).
     WebCore::IntSize displaySize(image->width(), image->height());
-
     WebCore::IntSize drawingAreaSize = m_page.drawingArea()->size();
     drawingAreaSize.scale(m_page.deviceScaleFactor());
-    if (drawingAreaSize != displaySize) {
+    if (drawingAreaSize != displaySize)
         return;
-    }
-#else
-    WebCore::IntSize displaySize = m_page.drawingArea()->size();
-#endif
+
     {
         SkPixmap pixmap;
         if (!image->peekPixels(&pixmap)) {
