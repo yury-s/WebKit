@@ -253,4 +253,6 @@ Ref<WorkerOrWorkletGlobalScope> WorkerConsoleClient::protectedGlobalScope()
     return m_globalScope.get();
 }
 
+void WorkerConsoleClient::bindingCalled(JSC::JSGlobalObject*, const String&, const String&) { }
+
 } // namespace WebCore
