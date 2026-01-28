@@ -176,6 +176,10 @@ public:
     void setRelatedPage(WeakPtr<WebKit::WebPageProxy>&& relatedPage) { m_data.relatedPage = WTF::move(relatedPage); }
     RefPtr<WebKit::WebPageProxy> protectedRelatedPage() const;
 
+    // This is similar to relatedPage(), but it is also set for noopener links.
+    WebKit::WebPageProxy* openerPageForInspector() const;
+    void setOpenerPageForInspector(WeakPtr<WebKit::WebPageProxy>&& openerPageForInspector) { m_data.openerPageForInspector = WTF::move(openerPageForInspector); }
+
     WebKit::WebPageProxy* pageToCloneSessionStorageFrom() const;
     void setPageToCloneSessionStorageFrom(WeakPtr<WebKit::WebPageProxy>&&);
 
@@ -308,7 +312,7 @@ public:
 #if ENABLE(APP_BOUND_DOMAINS)
     bool ignoresAppBoundDomains() const { return m_data.ignoresAppBoundDomains; }
     void setIgnoresAppBoundDomains(bool shouldIgnore) { m_data.ignoresAppBoundDomains = shouldIgnore; }
-    
+
     bool limitsNavigationsToAppBoundDomains() const { return m_data.limitsNavigationsToAppBoundDomains; }
     void setLimitsNavigationsToAppBoundDomains(bool limits) { m_data.limitsNavigationsToAppBoundDomains = limits; }
 #endif
@@ -453,7 +457,7 @@ public:
 
     bool isLockdownModeExplicitlySet() const;
     bool lockdownModeEnabled() const;
-    
+
     bool isEnhancedSecurityEnabled() const;
 
     void setAllowTestOnlyIPC(bool enabled) { m_data.allowTestOnlyIPC = enabled; }
@@ -537,6 +541,7 @@ private:
 #endif
         RefPtr<WebKit::WebPageGroup> pageGroup;
         WeakPtr<WebKit::WebPageProxy> relatedPage;
+        WeakPtr<WebKit::WebPageProxy> openerPageForInspector;
         Box<std::optional<OpenerInfo>> openerInfo;
         WebCore::Site openedSite;
         WTF::String openedMainFrameName;

@@ -3927,6 +3927,17 @@ static bool isLockdownModeWarningNeeded()
     [self _doAfterNextPresentationUpdate:^{ }];
 }
 
+- (BOOL)_allowsMagnification
+{
+    return _allowsMagnification;
+}
+
+- (void)_setAllowsMagnification:(BOOL)allowsMagnification
+{
+    _allowsMagnification = allowsMagnification;
+    [_contentView _updateDoubleTapGestureRecognizerEnablement];
+}
+
 #if ENABLE(MODEL_PROCESS)
 - (void)_willInvalidateDraggedModelWithContainerView:(UIView *)containerView
 {
@@ -4950,21 +4961,6 @@ ALLOW_DEPRECATED_IMPLEMENTATIONS_END
 }
 
 @end // WKWebView (WKPrivateIOS)
-
-@implementation WKWebView (WKViewInternalIOS_SwiftNonObjCxxSupport)
-
-- (BOOL)_allowsMagnification
-{
-    return _allowsMagnification;
-}
-
-- (void)_setAllowsMagnification:(BOOL)allowsMagnification
-{
-    _allowsMagnification = allowsMagnification;
-    [_contentView _updateDoubleTapGestureRecognizerEnablement];
-}
-
-@end
 
 #if ENABLE(FULLSCREEN_API)
 

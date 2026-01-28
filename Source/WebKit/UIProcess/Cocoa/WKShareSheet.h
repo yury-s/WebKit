@@ -27,13 +27,11 @@
 
 #if HAVE(SHARE_SHEET_UI)
 
-@class WKWebView;
-@protocol WKShareSheetDelegate;
-
-#if !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
-
 #include <optional>
 #include <wtf/CompletionHandler.h>
+
+@class WKWebView;
+@protocol WKShareSheetDelegate;
 
 namespace WebCore {
 class FloatRect;
@@ -44,19 +42,13 @@ namespace WebKit {
 enum class PickerDismissalReason : uint8_t;
 }
 
-#endif // !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
-
 @interface WKShareSheet : NSObject
 
 - (instancetype)initWithView:(WKWebView *)view;
 
-#if !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
-
 - (void)presentWithParameters:(const WebCore::ShareDataWithParsedURL&)data inRect:(std::optional<WebCore::FloatRect>)rect completionHandler:(WTF::CompletionHandler<void(bool)>&&)completionHandler;
 
 - (BOOL)dismissIfNeededWithReason:(WebKit::PickerDismissalReason)reason;
-
-#endif // !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
 
 @property (nonatomic, weak) id <WKShareSheetDelegate> delegate;
 @end

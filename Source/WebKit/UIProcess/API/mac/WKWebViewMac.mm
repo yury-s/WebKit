@@ -1460,6 +1460,19 @@ ALLOW_DEPRECATED_DECLARATIONS_END
         _impl->resetSecureInputState();
 }
 
+- (void)_setContentOffsetX:(NSNumber *)x y:(NSNumber *)y animated:(BOOL)animated
+{
+    std::optional<int> optionalX = std::nullopt;
+    if (x)
+        optionalX = static_cast<int>([x doubleValue]);
+
+    std::optional<int> optionalY = std::nullopt;
+    if (y)
+        optionalY = static_cast<int>([y doubleValue]);
+
+    _page->setContentOffset(optionalX, optionalY, animated ? WebCore::ScrollIsAnimated::Yes : WebCore::ScrollIsAnimated::No);
+}
+
 #pragma mark - QLPreviewPanelController
 
 - (BOOL)acceptsPreviewPanelControl:(QLPreviewPanel *)panel
@@ -1579,6 +1592,26 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 - (void)_setRubberBandingEnabled:(_WKRectEdge)state
 {
     _impl->setRubberBandingEnabled(state);
+}
+
+- (BOOL)_alwaysBounceVertical
+{
+    return _impl->alwaysBounceVertical();
+}
+
+- (void)_setAlwaysBounceVertical:(BOOL)value
+{
+    _impl->setAlwaysBounceVertical(value);
+}
+
+- (BOOL)_alwaysBounceHorizontal
+{
+    return _impl->alwaysBounceHorizontal();
+}
+
+- (void)_setAlwaysBounceHorizontal:(BOOL)value
+{
+    _impl->setAlwaysBounceHorizontal(value);
 }
 
 - (NSColor *)_backgroundColor

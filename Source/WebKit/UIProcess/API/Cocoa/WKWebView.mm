@@ -3732,48 +3732,6 @@ struct WKWebViewData {
     }
 }
 
-#if PLATFORM(MAC)
-
-- (BOOL)_alwaysBounceVertical
-{
-    return _impl->alwaysBounceVertical();
-}
-
-- (void)_setAlwaysBounceVertical:(BOOL)value
-{
-    _impl->setAlwaysBounceVertical(value);
-}
-
-- (BOOL)_alwaysBounceHorizontal
-{
-    return _impl->alwaysBounceHorizontal();
-}
-
-- (void)_setAlwaysBounceHorizontal:(BOOL)value
-{
-    _impl->setAlwaysBounceHorizontal(value);
-}
-
-- (void)_setContentOffsetX:(NSNumber *)x y:(NSNumber *)y animated:(BOOL)animated
-{
-    std::optional<int> optionalX = std::nullopt;
-    if (x)
-        optionalX = static_cast<int>([x doubleValue]);
-
-    std::optional<int> optionalY = std::nullopt;
-    if (y)
-        optionalY = static_cast<int>([y doubleValue]);
-
-    _page->setContentOffset(optionalX, optionalY, animated ? WebCore::ScrollIsAnimated::Yes : WebCore::ScrollIsAnimated::No);
-}
-
-#endif // PLATFORM(MAC)
-
-- (void)_scrollToEdge:(_WKRectEdge)edge animated:(BOOL)animated
-{
-    self._protectedPage->scrollToEdge(toRectEdges(edge), animated ? WebCore::ScrollIsAnimated::Yes : WebCore::ScrollIsAnimated::No);
-}
-
 @end
 
 #pragma mark -
@@ -6621,6 +6579,11 @@ static Vector<Ref<API::TargetedElementInfo>> elementsFromWKElements(NSArray<_WKT
 - (void)_setUseSystemAppearance:(BOOL)useSystemAppearance
 {
     [[_configuration preferences] _setUseSystemAppearance:useSystemAppearance];
+}
+
+- (void)_scrollToEdge:(_WKRectEdge)edge animated:(BOOL)animated
+{
+    self._protectedPage->scrollToEdge(toRectEdges(edge), animated ? WebCore::ScrollIsAnimated::Yes : WebCore::ScrollIsAnimated::No);
 }
 
 - (BOOL)_shouldSuppressTopColorExtensionView
