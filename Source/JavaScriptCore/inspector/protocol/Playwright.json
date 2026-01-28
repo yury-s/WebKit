@@ -246,7 +246,7 @@
             "description": "Clears browser memory cache.",
             "async": true,
             "parameters": [
-                { "name": "browserContextId", "$ref": "ContextID", "optional": false, "description": "Browser context id." }
+                { "name": "browserContextId", "$ref": "ContextID", "optional": true, "description": "Browser context id." }
             ]
         }
     ],

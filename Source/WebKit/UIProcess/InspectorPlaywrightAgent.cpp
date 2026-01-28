@@ -992,9 +992,10 @@ void InspectorPlaywrightAgent::clearMemoryCache(const String& browserContextID, 
         callback->sendSuccess();
         return;
     }
-    auto browserContext = getExistingBrowserContext(browserContextID);
-    if (!browserContext) {
-        callback->sendSuccess();
+    String errorString;
+    auto browserContext = lookupBrowserContext(errorString, browserContextID);
+    if (!errorString.isEmpty()) {
+        callback->sendFailure(errorString);
         return;
     }
     browserContext->dataStore->removeData(WebKit::WebsiteDataType::MemoryCache, -WallTime::infinity(), [callback] {
