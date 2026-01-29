@@ -25,10 +25,6 @@
 
 #pragma once
 
-#include <wtf/Platform.h>
-
-#if !PLATFORM(COCOA) || !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)
-
 #include "WebFrameMetrics.h"
 #include <WebCore/CertificateInfo.h>
 #include <WebCore/FrameIdentifier.h>
@@ -66,5 +62,3 @@ struct FrameInfoData {
 FrameInfoData legacyEmptyFrameInfo(WebCore::ResourceRequest&&);
 
 }
-
-#endif // !PLATFORM(COCOA) || !__has_feature(modules) || (defined(WK_SUPPORTS_SWIFT_OBJCXX_INTEROP) && WK_SUPPORTS_SWIFT_OBJCXX_INTEROP)

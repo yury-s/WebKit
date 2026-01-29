@@ -25,7 +25,6 @@
 
 #pragma once
 
-#include <WebCore/PlatformExportMacros.h>
 #include <wtf/ObjectIdentifier.h>
 
 namespace WebCore {

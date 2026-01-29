@@ -25,7 +25,8 @@
 
 #pragma once
 
-#if !PLATFORM(IOS_SIMULATOR) || !__has_feature(modules)
+// FIXME: Remove the `__has_feature(modules)` condition when possible.
+#if !__has_feature(modules)
 
 DECLARE_SYSTEM_HEADER
 
@@ -73,4 +74,4 @@ DECLARE_SYSTEM_HEADER
 
 #endif // USE(BROWSERENGINEKIT)
 
-#endif // !PLATFORM(IOS_SIMULATOR) || !__has_feature(modules)
+#endif // !__has_feature(modules)

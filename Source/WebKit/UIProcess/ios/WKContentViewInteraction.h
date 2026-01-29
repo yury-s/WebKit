@@ -136,7 +136,6 @@ enum class PickerDismissalReason : uint8_t;
 }
 
 @class AVPlayerViewController;
-@class BETextSuggestion;
 @class QLPreviewController;
 @class VKCImageAnalysisInteraction;
 @class WebEvent;
@@ -170,10 +169,6 @@ enum class PickerDismissalReason : uint8_t;
 @class UIPointerRegion;
 @class UITargetedPreview;
 @class _UILookupGestureRecognizer;
-
-@protocol BEDragInteractionDelegate;
-@protocol BETextInteractionDelegate;
-@protocol BETextInputDelegate;
 
 #if HAVE(PEPPER_UI_CORE)
 @class PUICQuickboardViewController;

@@ -90,4 +90,13 @@ String WebFrameInspectorTarget::toTargetID(WebCore::FrameIdentifier frameID)
     return makeString("frame-"_s, frameID.toUInt64());
 }
 
+void WebFrameInspectorTarget::didCreateSubframe(WebFrame& frame)
+{
+    if (!m_channel)
+        return;
+
+    // Auto connect to the subframe if the parent frame is inspected.
+    frame.connectInspector(static_cast<Inspector::FrontendChannel*>(m_channel.get())->connectionType());
+}
+
 } // namespace WebKit
