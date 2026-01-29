@@ -499,6 +499,17 @@ static constexpr Seconds tryCloseTimeoutDelay = 50_ms;
 static constexpr Seconds audibleActivityClearDelay = 10_s;
 #endif
 
+static WebCore::ScreenOrientationType toScreenOrientationType(int angle)
+{
+    if (angle == -90)
+        return WebCore::ScreenOrientationType::LandscapeSecondary;
+    if (angle == 180)
+        return WebCore::ScreenOrientationType::PortraitSecondary;
+    if (angle == 90)
+        return WebCore::ScreenOrientationType::LandscapePrimary;
+    return WebCore::ScreenOrientationType::PortraitPrimary;
+}
+
 #if PLATFORM(COCOA)
 static WorkQueue& sharedFileQueueSingleton()
 {
@@ -1654,7 +1665,7 @@ void WebPageProxy::didAttachToRunningProcess()
 #endif
 
 #if !PLATFORM(IOS_FAMILY)
-    auto currentOrientation = WebCore::naturalScreenOrientationType();
+    auto currentOrientation = m_deviceOrientationOverride ? toScreenOrientationType(*m_deviceOrientationOverride) : WebCore::naturalScreenOrientationType();
 #else
     auto currentOrientation = toScreenOrientationType(m_deviceOrientation);
 #endif
@@ -2822,17 +2833,6 @@ void WebPageProxy::setAuthCredentialsForAutomation(std::optional<WebCore::Creden
 void WebPageProxy::setPermissionsForAutomation(const UncheckedKeyHashMap<String, HashSet<String>>& permissions)
 {
     m_permissionsForAutomation = permissions;
-}
-
-static inline WebCore::ScreenOrientationType toScreenOrientationType(int angle)
-{
-    if (angle == -90)
-        return WebCore::ScreenOrientationType::LandscapeSecondary;
-    if (angle == 180)
-        return WebCore::ScreenOrientationType::PortraitSecondary;
-    if (angle == 90)
-        return WebCore::ScreenOrientationType::LandscapePrimary;
-    return WebCore::ScreenOrientationType::PortraitPrimary;
 }
 
 void WebPageProxy::setOrientationOverride(std::optional<int>&& angle)
