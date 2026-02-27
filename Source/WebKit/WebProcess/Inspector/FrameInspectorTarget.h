@@ -55,6 +55,8 @@ public:
 
     static String toTargetID(WebCore::FrameIdentifier);
 
+    void didCreateSubframe(WebFrame&);
+
 private:
     WeakRef<WebFrame> m_frame;
     std::unique_ptr<UIProcessForwardingFrontendChannel> m_channel;

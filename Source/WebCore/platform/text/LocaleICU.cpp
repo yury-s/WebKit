@@ -40,6 +40,7 @@
 #include <wtf/DateMath.h>
 #include <wtf/text/StringBuffer.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/TZoneMallocInlines.h>
 #include <wtf/unicode/icu/ICUHelpers.h>
 
 #if USE(HARFBUZZ)

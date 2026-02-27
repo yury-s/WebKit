@@ -904,8 +904,6 @@ class BundleCreator(object):
 
         # Finally generate the wrappers.
         self._generate_wrapper(interpreter, bundle_binary)
-        if bundle_binary == 'MiniBrowser':
-            self._generate_wrapper(interpreter, self._port_binary_preffix + 'WebDriver')
         self._generate_install_deps_script(system_packages_needed)
         # Clean remaining stuff
         if bundle_binary == 'MiniBrowser' and self._syslibs == 'bundle-all':
