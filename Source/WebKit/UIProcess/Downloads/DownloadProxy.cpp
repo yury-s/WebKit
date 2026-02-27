@@ -178,7 +178,9 @@ void DownloadProxy::decideDestinationWithSuggestedFilename(const WebCore::Resour
         SandboxExtension::Handle sandboxExtensionHandle;
         String destination;
         if (*m_dataStore->allowDownloadForAutomation()) {
-            destination = FileSystem::pathByAppendingComponent(m_dataStore->downloadPathForAutomation(), m_uuid);
+            auto downloadPath = m_dataStore->downloadPathForAutomation();
+            FileSystem::makeAllDirectories(downloadPath);
+            destination = FileSystem::pathByAppendingComponent(downloadPath, m_uuid);
             if (auto handle = SandboxExtension::createHandle(destination, SandboxExtension::Type::ReadWrite))
                 sandboxExtensionHandle = WTF::move(*handle);
         }
