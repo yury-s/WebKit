@@ -59,6 +59,8 @@
 #include "RenderVideo.h"
 #include "RenderView.h"
 #include "RenderedDocumentMarker.h"
+#include "SVGResources.h"
+#include "SVGResourcesCache.h"
 #include "Settings.h"
 #include "StyleComputedStyle+InitialInlines.h"
 #include "StylePrimitiveNumericTypes+Evaluation.h"
@@ -260,7 +262,9 @@ void RenderReplaced::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     LayoutPoint adjustedPaintOffset = paintOffset + location();
 
     if (paintInfo.phase == PaintPhase::EventRegion) {
-        if (isRenderOrLegacyRenderSVGRoot() && !isSkippedContentRoot(*this))
+        auto* resources = SVGResourcesCache::cachedResourcesForRenderer(*this);
+        bool svgRootHasChildrenOrFilters = firstChild() || (resources && resources->filter());
+        if (svgRootHasChildrenOrFilters && isRenderOrLegacyRenderSVGRoot() && !isSkippedContentRoot(*this))
             paintReplaced(paintInfo, adjustedPaintOffset);
         else if (visibleToHitTesting()) {
             auto borderRect = LayoutRect(adjustedPaintOffset, size());

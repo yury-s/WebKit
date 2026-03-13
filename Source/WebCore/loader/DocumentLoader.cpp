@@ -7,13 +7,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Apple Inc. ("Apple") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -266,7 +266,7 @@ void DocumentLoader::setRequest(ResourceRequest&& req)
         shouldNotifyAboutProvisionalURLChange = true;
 
     // We should never be getting a redirect callback after the data
-    // source is committed, except in the unreachable URL case. It 
+    // source is committed, except in the unreachable URL case. It
     // would be a WebFoundation bug if it sent a redirect callback after commit.
     ASSERT(!m_committed);
 
@@ -324,8 +324,8 @@ void DocumentLoader::frameDestroyed()
 }
 
 // Cancels the data source's pending loads.  Conceptually, a data source only loads
-// one document at a time, but one document may have many related resources. 
-// stopLoading will stop all loads initiated by the data source, 
+// one document at a time, but one document may have many related resources.
+// stopLoading will stop all loads initiated by the data source,
 // but not loads initiated by child frames' data sources -- that's the WebFrame's job.
 void DocumentLoader::stopLoading()
 {
@@ -355,7 +355,7 @@ void DocumentLoader::stopLoading()
         callback(nullptr);
     m_iconLoaders.clear();
     m_iconsPendingLoadDecision.clear();
-    
+
 #if ENABLE(APPLICATION_MANIFEST)
     m_applicationManifestLoader = nullptr;
     m_finishedLoadingApplicationManifest = false;
@@ -367,19 +367,19 @@ void DocumentLoader::stopLoading()
 
     if (RefPtr document = this->document())
         document->suspendFontLoading();
-    
+
 #if ENABLE(WEB_ARCHIVE) || ENABLE(MHTML)
     clearArchiveResources();
 #endif
 
     if (!loading) {
-        // If something above restarted loading we might run into mysterious crashes like 
+        // If something above restarted loading we might run into mysterious crashes like
         // https://bugs.webkit.org/show_bug.cgi?id=62764 and <rdar://problem/9328684>
         ASSERT(!isLoading());
         return;
     }
 
-    // We might run in to infinite recursion if we're stopping loading as the result of 
+    // We might run in to infinite recursion if we're stopping loading as the result of
     // detaching from the frame, so break out of that recursion here.
     // See <rdar://problem/9673866> for more details.
     if (m_isStopping)
@@ -409,10 +409,10 @@ void DocumentLoader::stopLoading()
     // in unexpected side effects such as erroneous event dispatch. ( http://webkit.org/b/117112 )
     if (RefPtr document = this->document())
         document->cancelParsing();
-    
+
     stopLoadingSubresources();
     stopLoadingPlugIns();
-    
+
     m_isStopping = false;
 }
 
@@ -500,7 +500,7 @@ void DocumentLoader::finishedLoading()
     maybeFinishLoadingMultipartContent();
 
     timing().markEndTime();
-    
+
     commitIfReady();
     RefPtr frameLoader = this->frameLoader();
     if (!frameLoader)
@@ -640,7 +640,7 @@ void DocumentLoader::willSendRequest(ResourceRequest&& newRequest, const Resourc
 {
     // Note that there are no asserts here as there are for the other callbacks. This is due to the
     // fact that this "callback" is sent when starting every load, and the state of callback
-    // deferrals plays less of a part in this function in preventing the bad behavior deferring 
+    // deferrals plays less of a part in this function in preventing the bad behavior deferring
     // callbacks is meant to prevent.
     ASSERT(!newRequest.isNull());
 
@@ -717,7 +717,7 @@ void DocumentLoader::willSendRequest(ResourceRequest&& newRequest, const Resourc
 
     RefPtr document = frame->document();
     ASSERT(document);
-    
+
     // Update cookie policy base URL as URL changes, except for subframes, which use the
     // URL of the main frame which doesn't change when we redirect.
     if (frame->isMainFrame())
@@ -769,8 +769,10 @@ void DocumentLoader::willSendRequest(ResourceRequest&& newRequest, const Resourc
     if (!didReceiveRedirectResponse)
         return completionHandler(WTF::move(newRequest));
 
+    InspectorInstrumentation::willCheckNavigationPolicy(*frame);
     auto navigationPolicyCompletionHandler = [this, protectedThis = Ref { *this }, frame, completionHandler = WTF::move(completionHandler)] (ResourceRequest&& request, WeakPtr<FormSubmission>&&, NavigationPolicyDecision navigationPolicyDecision) mutable {
         m_waitingForNavigationPolicy = false;
+        InspectorInstrumentation::didCheckNavigationPolicy(*frame, navigationPolicyDecision != NavigationPolicyDecision::ContinueLoad);
         switch (navigationPolicyDecision) {
         case NavigationPolicyDecision::IgnoreLoad:
         case NavigationPolicyDecision::LoadWillContinueInAnotherProcess:
@@ -1558,9 +1560,15 @@ void DocumentLoader::detachFromFrame(LoadWillContinueInAnotherProcess loadWillCo
     if (auto navigationID = std::exchange(m_navigationID, { }))
         frame->loader().client().documentLoaderDetached(*navigationID, loadWillContinueInAnotherProcess);
 
-    InspectorInstrumentation::loaderDetachedFromFrame(*frame, *this);
-
     observeFrame(nullptr);
+}
+
+void DocumentLoader::replacedByFragmentNavigation(LocalFrame& frame)
+{
+    ASSERT(!this->frame());
+    // Notify WebPageProxy that the navigation has been converted into same page navigation.
+    if (auto navigationID = std::exchange(m_navigationID, { }))
+        frame.loader().client().documentLoaderDetached(*navigationID, LoadWillContinueInAnotherProcess::No);
 }
 
 void DocumentLoader::setNavigationID(NavigationIdentifier navigationID)
@@ -1699,7 +1707,7 @@ bool DocumentLoader::maybeCreateArchive()
     m_archive = archive.copyRef();
     if (!archive)
         return false;
-    
+
     addAllArchiveResources(*archive);
     ASSERT(archive->mainResource());
     Ref mainResource = *archive->mainResource();
@@ -1778,7 +1786,7 @@ RefPtr<ArchiveResource> DocumentLoader::subresource(const URL& url) const
 {
     if (!isCommitted())
         return nullptr;
-    
+
     auto* resource = m_cachedResourceLoader->cachedResource(url);
     if (!resource || !resource->isLoaded())
         return archiveResourceForURL(url);

@@ -39,6 +39,7 @@
 #include "WKLayoutMode.h"
 #include "WebMouseEvent.h"
 #include <WebCore/DOMPasteAccess.h>
+#include <WebCore/FrameIdentifier.h>
 #include <WebCore/DigitalCredentialsRequestData.h>
 #include <WebCore/FocusDirection.h>
 #include <WebCore/HTMLMediaElementIdentifier.h>
@@ -607,6 +608,9 @@ public:
     void provideDataForPasteboard(NSPasteboard *, NSString *type);
     NSArray *namesOfPromisedFilesDroppedAtDestination(NSURL *dropDestination);
 
+// Paywright begin
+    RetainPtr<CGImageRef> takeSnapshotForAutomation();
+// Paywright end
     RefPtr<ViewSnapshot> takeViewSnapshot();
     RefPtr<ViewSnapshot> takeViewSnapshot(ForceSoftwareCapturingViewportSnapshot);
     void saveBackForwardSnapshotForCurrentItem();

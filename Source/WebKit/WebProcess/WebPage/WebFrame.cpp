@@ -178,6 +178,9 @@ Ref<WebFrame> WebFrame::createSubframe(WebPage& page, WebFrame& parent, const At
     ASSERT(ownerElement.document().frame());
     coreFrame->init();
 
+    if (parent.m_inspectorTarget)
+        parent.m_inspectorTarget->didCreateSubframe(frame);
+
     return frame;
 }
 
