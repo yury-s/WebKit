@@ -158,12 +158,12 @@ Inspector::Protocol::ErrorStringOr<int /* generation */> InspectorScreencastAgen
 {
     if (m_screencast)
         return makeUnexpected("Already screencasting"_s);
+
     m_screencast = true;
     m_screencastWidth = width;
     m_screencastHeight = height;
     m_screencastQuality = quality;
     m_screencastToolbarHeight = toolbarHeight;
-    m_screencastFramesInFlight = 0;
     ++m_screencastGeneration;
     kickFramesStarted();
     return m_screencastGeneration;
@@ -171,8 +171,12 @@ Inspector::Protocol::ErrorStringOr<int /* generation */> InspectorScreencastAgen
 
 Inspector::Protocol::ErrorStringOr<void> InspectorScreencastAgent::screencastFrameAck(int generation)
 {
+    if (!m_screencast)
+        return makeUnexpected("Not screencasting"_s);
+
     if (m_screencastGeneration != generation)
         return { };
+
     --m_screencastFramesInFlight;
     return { };
 }
@@ -181,8 +185,11 @@ Inspector::Protocol::ErrorStringOr<void> InspectorScreencastAgent::stopScreencas
 {
     if (!m_screencast)
         return makeUnexpected("Not screencasting"_s);
+
     m_screencast = false;
     m_framesAreGoing = false;
+    m_screencastFramesInFlight = 0;
+    m_lastFrameDigest.clear();
     return { };
 }
 
