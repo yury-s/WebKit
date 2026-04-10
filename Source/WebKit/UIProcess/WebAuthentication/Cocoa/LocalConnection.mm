@@ -38,6 +38,9 @@
 #import <wtf/cocoa/SpanCocoa.h>
 #import <wtf/cocoa/TypeCastsCocoa.h>
 
+#if ENABLE(SYNCED_CREDENTIALS)
+#import "AuthenticationServicesCoreSoftLink.h"
+#endif
 #import "LocalAuthenticationSoftLink.h"
 
 namespace WebKit {

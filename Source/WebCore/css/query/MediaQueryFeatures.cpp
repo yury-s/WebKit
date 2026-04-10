@@ -404,7 +404,11 @@ static const IdentifierSchema& forcedColorsFeatureSchema()
         "forced-colors"_s,
         FixedVector { CSSValueNone, CSSValueActive },
         OptionSet<MediaQueryDynamicDependency>(),
-        [](auto&) {
+        [](auto& context) {
+            auto* page = context.document->frame()->page();
+            std::optional<bool> forcedColorsOverride = page->useForcedColorsOverride();
+            if (forcedColorsOverride)
+                return forcedColorsOverride.value() ? MatchingIdentifiers { CSSValueActive } : MatchingIdentifiers { CSSValueNone };
             return MatchingIdentifiers { CSSValueNone };
         }
     };
@@ -592,6 +596,9 @@ static const IdentifierSchema& prefersReducedMotionFeatureSchema()
         [](auto& context) {
             bool userPrefersReducedMotion = [&] {
                 Ref frame = *context.document->frame();
+                std::optional<bool> reducedMotionOverride = frame->page()->useReducedMotionOverride();
+                if (reducedMotionOverride)
+                    return reducedMotionOverride.value();
                 switch (frame->settings().forcedPrefersReducedMotionAccessibilityValue()) {
                 case ForcedAccessibilityValue::On:
                     return true;
@@ -806,7 +813,10 @@ static bool frameUsesDarkAppearanceForPrefersColorScheme(const Frame& frame)
         // > the preferred color scheme must reflect the value of the used color scheme on the
         // > embedding node in the embedding document.
         // FIXME (webkit.org/b/309611): this should recurse up to the main frame.
-        return protect(parent->virtualView())->ownerElementOfChildFrameUsesDarkAppearance(frame);
+        if (RefPtr ownerRenderer = frame.ownerRenderer()) {
+            if (ownerRenderer->style().hasExplicitlySetColorScheme())
+                return protect(parent->virtualView())->ownerElementOfChildFrameUsesDarkAppearance(frame);
+        }
     }
 
     return protect(frame.page())->useDarkAppearance();

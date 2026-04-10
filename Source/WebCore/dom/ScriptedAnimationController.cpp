@@ -166,7 +166,13 @@ void ScriptedAnimationController::serviceRequestAnimationFrameCallbacks(ReducedR
         return;
 
     CheckedRef script = frame->script();
-    if (!script->canExecuteScripts(ReasonForCallingCanExecuteScripts::AboutToExecuteScript) || script->isPaused())
+    // Call canExecuteScripts to increment s_scriptExecutionCount, which is needed to trigger
+    // DOM mutation safety checks in ContainerNode::insertBefore. We intentionally ignore the
+    // return value because rAF is a frame-level mechanism with no world tracking, and isolated
+    // world scripts (e.g. Playwright injected scripts) must be allowed to run even when
+    // JavaScript is disabled at the page level.
+    script->canExecuteScripts(ReasonForCallingCanExecuteScripts::AboutToExecuteScript);
+    if (script->isPaused())
         return;
 
     for (auto& [callback, userGestureTokenToForward, scheduledWorkScope] : callbackDataList) {
