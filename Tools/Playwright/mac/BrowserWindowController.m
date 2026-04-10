@@ -576,6 +576,10 @@ static BOOL areEssentiallyEqual(double a, double b)
 {
     // WebView lifecycle will control the BrowserWindowController life times.
     BrowserWindowController *controller = [[BrowserWindowController alloc] initWithConfiguration:configuration];
+    if (!controller)
+        return nil;
+    NSWindow *window = controller.window;
+    [window setIsVisible:YES];
     return controller->_webView;
 }
 
