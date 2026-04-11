@@ -32,8 +32,10 @@
 #include "ProcessThrottler.h"
 #include "SandboxExtension.h"
 #include "WebFramePolicyListenerProxy.h"
+#include "WebPageProxy.h"
 #include "WebPageProxyIdentifier.h"
 #include "WebPageProxyMessageReceiverRegistration.h"
+#include "WebsiteDataStore.h"
 #include <WebCore/DiagnosticLoggingClient.h>
 #include <WebCore/FrameIdentifier.h>
 #include <WebCore/FrameLoaderClient.h>
@@ -74,7 +76,6 @@ class WebBackForwardListItem;
 class WebFrameProxy;
 class WebPageProxy;
 class WebProcessProxy;
-class WebsiteDataStore;
 
 struct FrameInfoData;
 struct NavigationActionData;
