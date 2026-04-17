@@ -31,6 +31,7 @@
 #include "WebViewDidMoveToWindowObserver.h"
 #include <wtf/CompletionHandler.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/URL.h>
 
 namespace WebKit {
 
