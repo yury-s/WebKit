@@ -84,6 +84,7 @@
 #include <JavaScriptCore/ContentSearchUtilities.h>
 #include <JavaScriptCore/IdentifiersFactory.h>
 #include <JavaScriptCore/InjectedScriptManager.h>
+#include <JavaScriptCore/JSDateMath.h>
 #include <JavaScriptCore/RegularExpression.h>
 #include <wtf/DateMath.h>
 #include <wtf/ListHashSet.h>
@@ -1152,6 +1153,12 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::setTimeZone(const S
     if (!success)
         return makeUnexpected(makeString("Invalid time zone "_s, timeZone));
 
+#if PLATFORM(COCOA)
+    // JSC caches time zone information process-wide using lastTimeZoneID as the cache
+    // key. The cache is normally invalidated only by the system time zone change
+    // notification, so bump the counter explicitly to force re-reading the override.
+    ++JSC::lastTimeZoneID;
+#endif
     return { };
 }
 
