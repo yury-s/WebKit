@@ -49,6 +49,7 @@
 #include <WebCore/NodeIdentifier.h>
 #include <WebCore/NowPlayingMetadataObserver.h>
 #include <WebCore/OwnerPermissionsPolicyData.h>
+#include <WebCore/Page.h>
 #include <WebCore/PageIdentifier.h>
 #include <WebCore/PageOverlay.h>
 #include <WebCore/PlatformLayerIdentifier.h>
@@ -1411,11 +1412,11 @@ public:
     void clearSelection();
     void restoreSelectionInFocusedEditableElement();
 
-#if ENABLE(DRAG_SUPPORT) && PLATFORM(GTK)
+#if ENABLE(DRAG_SUPPORT) && (PLATFORM(GTK) || PLATFORM(WPE)) 
     void performDragControllerAction(DragControllerAction, const WebCore::IntPoint& clientPosition, const WebCore::IntPoint& globalPosition, OptionSet<WebCore::DragOperation> draggingSourceOperationMask, WebCore::SelectionData&&, OptionSet<WebCore::DragApplicationFlags>, CompletionHandler<void(std::optional<WebCore::DragOperation>, WebCore::DragHandlingMethod, bool, unsigned, WebCore::IntRect, WebCore::IntRect, std::optional<WebCore::RemoteUserInputEventData>)>&&);
 #endif
 
-#if ENABLE(DRAG_SUPPORT) && !PLATFORM(GTK)
+#if ENABLE(DRAG_SUPPORT) && !PLATFORM(GTK) && !PLATFORM(WPE)
     void performDragControllerAction(std::optional<WebCore::FrameIdentifier>, DragControllerAction, WebCore::DragData&&, CompletionHandler<void(std::optional<WebCore::DragOperation>, WebCore::DragHandlingMethod, bool, unsigned, WebCore::IntRect, WebCore::IntRect, std::optional<WebCore::RemoteUserInputEventData>)>&&);
     void performDragOperation(std::optional<WebCore::FrameIdentifier>, WebCore::DragData&&, SandboxExtension::Handle&&, Vector<SandboxExtension::Handle>&&,  CompletionHandler<void(DragOperationResult dragOperationResult)>&&);
 #endif
@@ -1432,6 +1433,9 @@ public:
     OptionSet<WebCore::DragSourceAction> allowedDragSourceActions() const { return m_allowedDragSourceActions; }
 #if ENABLE(MODEL_PROCESS)
     void modelDragEnded(WebCore::NodeIdentifier);
+#endif
+#if PLATFORM(MAC)
+    void setDragPasteboardName(const String& pasteboardName) { m_page->setDragPasteboardName(pasteboardName); }
 #endif
 #endif
 
@@ -1535,8 +1539,11 @@ public:
     void gestureEvent(WebCore::FrameIdentifier, const WebGestureEvent&, CompletionHandler<void(std::optional<WebEventType>, bool, std::optional<WebCore::RemoteUserInputEventData>)>&&);
 #endif
 
-#if PLATFORM(IOS_FAMILY)
+#if ENABLE(ORIENTATION_EVENTS)
     void setDeviceOrientation(WebCore::IntDegrees);
+#endif
+
+#if PLATFORM(IOS_FAMILY)
     void dynamicViewportSizeUpdate(const DynamicViewportSizeUpdate&);
     bool scaleWasSetByUIProcess() const { return m_scaleWasSetByUIProcess; }
     void willStartUserTriggeredZooming();
@@ -1697,6 +1704,8 @@ public:
     void connectInspector(Inspector::FrontendChannel::ConnectionType);
     void disconnectInspector();
     void sendMessageToTargetBackend(const String& message);
+    void resumeInspectorIfPausedInNewWindow();
+    void didAddWebPageToWebProcess();
 
     void insertNewlineInQuotedContent();
 
@@ -2135,6 +2144,7 @@ public:
     void showContextMenuFromFrame(const FrameInfoData&, const ContextMenuContextData&, const UserData&);
 #endif
     void loadRequest(LoadParameters&&);
+    void loadRequestInFrameForInspector(LoadParameters&&, WebCore::FrameIdentifier);
 
     void setObscuredContentInsets(const WebCore::FloatBoxExtent&);
 
@@ -2357,6 +2367,7 @@ private:
     void updatePotentialTapSecurityOrigin(const WebTouchEvent&, bool wasHandled);
 #elif ENABLE(TOUCH_EVENTS)
     void touchEvent(const WebTouchEvent&, CompletionHandler<void(std::optional<WebEventType>, bool)>&&);
+    void fakeTouchTap(const WebCore::IntPoint& position, uint8_t modifiers, CompletionHandler<void()>&& completionHandler);
 #endif
 
     void cancelPointer(WebCore::PointerID, const WebCore::IntPoint&);
@@ -3189,6 +3200,7 @@ private:
     bool m_isAppNapEnabled { true };
 
     Markable<WebCore::NavigationIdentifier> m_pendingNavigationID;
+    Markable<WebCore::NavigationIdentifier> m_pendingFrameNavigationID;
 
     bool m_mainFrameProgressCompleted { false };
     bool m_shouldDispatchFakeMouseMoveEvents { true };

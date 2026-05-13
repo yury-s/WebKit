@@ -93,6 +93,7 @@
 #include "MixedContentChecker.h"
 #include "Navigator.h"
 #include "NodeList.h"
+#include "NodeRenderStyle.h"
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "PaymentSession.h"
@@ -229,6 +230,7 @@ LocalFrame::LocalFrame(Page& page, ClientCreator&& clientCreator, FrameIdentifie
 
 void LocalFrame::init()
 {
+    InspectorInstrumentation::frameAttached(this);
     loader().init();
 }
 
@@ -461,7 +463,7 @@ void LocalFrame::orientationChanged()
 IntDegrees LocalFrame::orientation() const
 {
     if (RefPtr page = this->page())
-        return page->chrome().client().deviceOrientation();
+        return page->orientation();
     return 0;
 }
 #endif // ENABLE(ORIENTATION_EVENTS)
@@ -1650,7 +1652,6 @@ String LocalFrame::frameURLProtocol() const
     return ""_s;
 }
 
-#if PLATFORM(COCOA)
 
 static bool nodeIsMouseFocusable(Node& node)
 {
@@ -1886,7 +1887,7 @@ RefPtr<Node> LocalFrame::nodeRespondingToDoubleClickEvent(const FloatPoint& view
         for (; node && node != terminationNode; node = node->parentInComposedTree()) {
             if (!node->hasEventListeners(eventNames().dblclickEvent))
                 continue;
-#if ENABLE(TOUCH_EVENTS)
+#if ENABLE(TWO_PHASE_CLICKS)
             if (!node->allowsDoubleTapGesture())
                 continue;
 #endif
@@ -1900,7 +1901,6 @@ RefPtr<Node> LocalFrame::nodeRespondingToDoubleClickEvent(const FloatPoint& view
     return qualifyingNodeAtViewportLocation(viewportLocation, adjustedViewportLocation, WTF::move(ancestorRespondingToDoubleClickEvent), ShouldApproximate::Yes);
 }
 
-#endif // PLATFORM(COCOA)
 
 } // namespace WebCore
 
