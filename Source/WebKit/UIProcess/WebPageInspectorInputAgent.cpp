@@ -278,13 +278,13 @@ void WebPageInspectorInputAgent::dispatchMouseEvent(const String& type, int x, i
     // to prevent them from creating actual drags in the host
     // operating system. This is turned off in the callback.
     m_page.setInterceptDrags(true);
+    MonotonicTime timestamp = MonotonicTime::now();
 #if PLATFORM(MAC)
     UNUSED_VARIABLE(eventType);
     UNUSED_VARIABLE(eventButton);
     UNUSED_VARIABLE(eventClickCount);
-    platformDispatchMouseEvent(type, x, y, WTF::move(modifiers), button, WTF::move(clickCount), eventButtons);
+    platformDispatchMouseEvent(type, x, y, WTF::move(modifiers), button, WTF::move(clickCount), eventButtons, timestamp);
 #elif PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN)
-    MonotonicTime timestamp = MonotonicTime::now();
     NativeWebMouseEvent event(
         eventType,
         eventButton,

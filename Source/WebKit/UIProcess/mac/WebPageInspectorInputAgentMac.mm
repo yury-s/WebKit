@@ -39,7 +39,7 @@ namespace WebKit {
 
 using namespace WebCore;
 
-void WebPageInspectorInputAgent::platformDispatchMouseEvent(const String& type, int x, int y, std::optional<int>&& optionalModifiers, const String& button, std::optional<int>&& optionalClickCount, unsigned short buttons) {
+void WebPageInspectorInputAgent::platformDispatchMouseEvent(const String& type, int x, int y, std::optional<int>&& optionalModifiers, const String& button, std::optional<int>&& optionalClickCount, unsigned short buttons, MonotonicTime monotonicTimestamp) {
     IntPoint locationInWindow(x, y);
 
     NSEventModifierFlags modifiers = 0;
@@ -56,7 +56,10 @@ void WebPageInspectorInputAgent::platformDispatchMouseEvent(const String& type, 
     }
     int clickCount = optionalClickCount ? *optionalClickCount : 0;
 
-    NSTimeInterval timestamp = [NSDate timeIntervalSinceReferenceDate];
+    // NSEvent.timestamp must be raw seconds matching MonotonicTime so that
+    // WebEventFactory::createWebMouseEvent's MonotonicTime::fromRawSeconds round-trips
+    // and DOM event.timeStamp comes out as a sensible DOMHighResTimeStamp.
+    NSTimeInterval timestamp = monotonicTimestamp.secondsSinceEpoch().value();
     NSWindow *window = m_page.platformWindow();
     NSInteger windowNumber = window.windowNumber;
 

@@ -68,7 +68,7 @@ public:
 private:
     void platformDispatchKeyEvent(WebEventType type, const String& text, const String& unmodifiedText, const String& key, const String& code, const String& keyIdentifier, int windowsVirtualKeyCode, int nativeVirtualKeyCode, bool isAutoRepeat, bool isKeypad, bool isSystemKey, OptionSet<WebEventModifier> modifiers, Vector<String>& commands, MonotonicTime timestamp);
 #if PLATFORM(MAC)
-    void platformDispatchMouseEvent(const String& type, int x, int y, std::optional<int>&& modifier, const String& button, std::optional<int>&& clickCount, unsigned short buttons);
+    void platformDispatchMouseEvent(const String& type, int x, int y, std::optional<int>&& modifier, const String& button, std::optional<int>&& clickCount, unsigned short buttons, MonotonicTime timestamp);
 #endif
 
     Ref<Inspector::InputBackendDispatcher> m_backendDispatcher;
