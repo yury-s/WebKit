@@ -65,6 +65,12 @@
             "description": "Coordinate system used by supplied coordinates."
         },
         {
+            "id": "ImageFormat",
+            "type": "string",
+            "enum": ["png", "jpeg", "webp"],
+            "description": "Image format used to encode a captured snapshot."
+        },
+        {
             "id": "CookieSameSitePolicy",
             "type": "string",
             "enum": ["None", "Lax", "Strict"],
@@ -360,10 +366,12 @@
                 { "name": "width", "type": "integer", "description": "Rectangle width" },
                 { "name": "height", "type": "integer", "description": "Rectangle height" },
                 { "name": "coordinateSystem", "$ref": "CoordinateSystem", "description": "Indicates the coordinate system of the supplied rectangle." },
-                { "name": "omitDeviceScaleFactor", "type": "boolean", "optional": true, "description": "By default, screenshot is inflated by device scale factor to avoid blurry image. This flag disables it." }
+                { "name": "omitDeviceScaleFactor", "type": "boolean", "optional": true, "description": "By default, screenshot is inflated by device scale factor to avoid blurry image. This flag disables it." },
+                { "name": "format", "$ref": "ImageFormat", "optional": true, "description": "Image format of the resulting snapshot. Defaults to \"png\"." },
+                { "name": "quality", "type": "integer", "optional": true, "description": "Compression quality from 0 to 100 (ignored for the \"png\" format). Defaults to 80." }
             ],
             "returns": [
-                { "name": "dataURL", "type": "string", "description": "Base64-encoded image data (PNG)." }
+                { "name": "dataURL", "type": "string", "description": "Base64-encoded image data." }
             ]
         },
         {

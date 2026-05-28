@@ -106,7 +106,7 @@ public:
     Inspector::Protocol::ErrorStringOr<void> setTimeZone(const String&);
     Inspector::Protocol::ErrorStringOr<void> setTouchEmulationEnabled(bool);
     Inspector::Protocol::ErrorStringOr<String> snapshotNode(Inspector::Protocol::DOM::NodeId);
-    Inspector::Protocol::ErrorStringOr<String> snapshotRect(int x, int y, int width, int height, Inspector::Protocol::Page::CoordinateSystem, std::optional<bool>&& omitDeviceScaleFactor);
+    Inspector::Protocol::ErrorStringOr<String> snapshotRect(int x, int y, int width, int height, Inspector::Protocol::Page::CoordinateSystem, std::optional<bool>&& omitDeviceScaleFactor, std::optional<Inspector::Protocol::Page::ImageFormat>&& format, std::optional<int>&& quality);
 #if ENABLE(WEB_ARCHIVE) && USE(CF)
     Inspector::Protocol::ErrorStringOr<String> archive();
 #endif

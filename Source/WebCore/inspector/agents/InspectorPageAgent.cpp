@@ -1131,8 +1131,11 @@ Inspector::Protocol::ErrorStringOr<String> InspectorPageAgent::snapshotNode(Insp
     return encodeDataURL(WTF::move(snapshot), "image/png"_s);
 }
 
-Inspector::Protocol::ErrorStringOr<String> InspectorPageAgent::snapshotRect(int x, int y, int width, int height, Inspector::Protocol::Page::CoordinateSystem coordinateSystem, std::optional<bool>&& omitDeviceScaleFactor)
+Inspector::Protocol::ErrorStringOr<String> InspectorPageAgent::snapshotRect(int x, int y, int width, int height, Inspector::Protocol::Page::CoordinateSystem coordinateSystem, std::optional<bool>&& omitDeviceScaleFactor, std::optional<Inspector::Protocol::Page::ImageFormat>&& format, std::optional<int>&& quality)
 {
+    if (quality && (*quality < 0 || *quality > 100))
+        return makeUnexpected("Quality must be between 0 and 100"_s);
+
     SnapshotOptions options { { }, PixelFormat::BGRA8, DestinationColorSpace::SRGB() };
     if (coordinateSystem == Inspector::Protocol::Page::CoordinateSystem::Viewport)
         options.flags.add(SnapshotFlags::InViewCoordinates);
@@ -1147,7 +1150,23 @@ Inspector::Protocol::ErrorStringOr<String> InspectorPageAgent::snapshotRect(int 
 
     if (!snapshot)
         return makeUnexpected("Could not capture snapshot"_s);
-    return encodeDataURL(WTF::move(snapshot), "image/png"_s);
+
+    String mimeType;
+    std::optional<double> encodingQuality;
+    switch (format.value_or(Inspector::Protocol::Page::ImageFormat::Png)) {
+    case Inspector::Protocol::Page::ImageFormat::Png:
+        mimeType = "image/png"_s;
+        break;
+    case Inspector::Protocol::Page::ImageFormat::Jpeg:
+        mimeType = "image/jpeg"_s;
+        encodingQuality = quality.value_or(80) / 100.0;
+        break;
+    case Inspector::Protocol::Page::ImageFormat::Webp:
+        mimeType = "image/webp"_s;
+        encodingQuality = quality.value_or(80) / 100.0;
+        break;
+    }
+    return encodeDataURL(WTF::move(snapshot), mimeType, encodingQuality);
 }
 
 Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::setForcedColors(std::optional<Inspector::Protocol::Page::ForcedColors>&& forcedColors)
