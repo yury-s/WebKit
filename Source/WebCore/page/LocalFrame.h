@@ -29,6 +29,7 @@
 
 #include <WebCore/DOMPasteAccess.h>
 #include <WebCore/Frame.h>
+#include <WebCore/IntDegrees.h>
 #include <WebCore/HitTestRequest.h>
 #include <WebCore/ScrollbarMode.h>
 #include <wtf/HashSet.h>
@@ -126,9 +127,7 @@ enum {
 enum OverflowScrollAction { DoNotPerformOverflowScroll, PerformOverflowScroll };
 #endif
 
-#if PLATFORM(COCOA)
 using NodeQualifier = Function<RefPtr<Node> (const HitTestResult&, Node* terminationNode, IntRect* nodeBounds)>;
-#endif
 
 class LocalFrame final : public Frame {
 public:
@@ -229,7 +228,6 @@ public:
     WEBCORE_EXPORT DataDetectionResultsStorage& dataDetectionResults() LIFETIME_BOUND;
 #endif
 
-#if PLATFORM(COCOA)
     RefPtr<Node> betterApproximateNode(const IntPoint& testPoint, const NodeQualifier&, Node* best, Node* failedNode, IntPoint& bestPoint, IntRect& bestRect, const IntRect& testRect);
 
     WEBCORE_EXPORT RefPtr<Node> nodeRespondingToInteraction(const FloatPoint& viewportLocation, FloatPoint& adjustedViewportLocation);
@@ -243,7 +241,6 @@ public:
     WEBCORE_EXPORT RefPtr<Node> nodeRespondingToDoubleClickEvent(const FloatPoint& viewportLocation, FloatPoint& adjustedViewportLocation);
 
     static bool nodeWillRespondToMouseEvents(Node&);
-#endif // PLATFORM(COCOA)
 
 #if PLATFORM(IOS_FAMILY)
     const ViewportArguments& viewportArguments() const LIFETIME_BOUND;
@@ -321,6 +318,7 @@ public:
 
     WEBCORE_EXPORT FloatSize screenSize() const;
     void setOverrideScreenSize(FloatSize&&);
+    bool hasScreenSizeOverride() const { return !!m_overrideScreenSize; }
 
     void NODELETE selfOnlyRef();
     void selfOnlyDeref();
