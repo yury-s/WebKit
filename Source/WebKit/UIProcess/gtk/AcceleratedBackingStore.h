@@ -42,6 +42,7 @@
 #include <wtf/unix/UnixFileDescriptor.h>
 
 typedef void *EGLImage;
+typedef struct _cairo_surface cairo_surface_t;
 
 #if USE(GBM)
 struct gbm_bo;
@@ -85,6 +86,7 @@ public:
     void unrealize();
     RendererBufferDescription bufferDescription() const;
     RefPtr<WebCore::NativeImage> bufferAsNativeImageForTesting() const;
+    cairo_surface_t* surface();
 
 private:
     explicit AcceleratedBackingStore(WebPageProxy&);
@@ -267,6 +269,10 @@ private:
     RefPtr<Buffer> m_committedBuffer;
     Rects m_pendingDamageRects;
     HashMap<uint64_t, RefPtr<Buffer>> m_buffers;
+// Playwright begin
+    RefPtr<cairo_surface_t> m_flippedSurface;
+// Playwright end
+
 };
 
 } // namespace WebKit

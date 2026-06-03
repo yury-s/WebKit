@@ -114,6 +114,13 @@ using namespace WebCore;
 
 WTF_MAKE_TZONE_ALLOCATED_IMPL(PageClientImpl);
 
+static bool _headless = false;
+
+// static
+void PageClientImpl::setHeadless(bool headless) {
+    _headless = headless;
+}
+
 PageClientImpl::PageClientImpl(NSView *view, WKWebView *webView)
     : PageClientImplCocoa(webView)
     , m_view(view)
@@ -173,6 +180,9 @@ NSWindow *PageClientImpl::activeWindow() const
 
 bool PageClientImpl::isViewWindowActive()
 {
+    if (_headless)
+        return true;
+
     ASSERT(hasProcessPrivilege(ProcessPrivilege::CanCommunicateWithWindowServer));
     RetainPtr activeViewWindow = activeWindow();
     return activeViewWindow.get().isKeyWindow || (activeViewWindow && [NSApp keyWindow] == activeViewWindow.get());
@@ -180,6 +190,9 @@ bool PageClientImpl::isViewWindowActive()
 
 bool PageClientImpl::isViewFocused()
 {
+    if (_headless)
+        return true;
+
     // FIXME: This is called from the WebPageProxy constructor before we have a WebViewImpl.
     // Once WebViewImpl and PageClient merge, this won't be a problem.
     if (CheckedPtr impl = m_impl.get())
@@ -203,6 +216,9 @@ void PageClientImpl::makeFirstResponder()
     
 bool PageClientImpl::isViewVisible(NSView *view, NSWindow *viewWindow) const
 {
+    if (_headless)
+        return true;
+
     auto windowIsOccluded = [&]()->bool {
         return m_impl && m_impl->windowOcclusionDetectionEnabled() && (viewWindow.occlusionState & NSWindowOcclusionStateVisible) != NSWindowOcclusionStateVisible;
     };
@@ -301,7 +317,8 @@ void PageClientImpl::didRelaunchProcess()
 
 void PageClientImpl::preferencesDidChange()
 {
-    protect(m_impl)->preferencesDidChange();
+    if (CheckedPtr impl = m_impl.get())
+        impl->preferencesDidChange();
 }
 
 void PageClientImpl::toolTipChanged(const String& oldToolTip, const String& newToolTip)
@@ -546,6 +563,8 @@ IntRect PageClientImpl::rootViewToAccessibilityScreen(const IntRect& rect)
 
 void PageClientImpl::doneWithKeyEvent(const NativeWebKeyboardEvent& event, bool eventWasHandled)
 {
+    if (!event.nativeEvent())
+        return;
     protect(m_impl)->doneWithKeyEvent(RetainPtr { event.nativeEvent() }.get(), eventWasHandled);
 }
 
@@ -565,6 +584,8 @@ void PageClientImpl::computeHasVisualSearchResults(const URL& imageURL, Shareabl
 
 RefPtr<WebPopupMenuProxy> PageClientImpl::createPopupMenuProxy(WebPageProxy& page)
 {
+    if (_headless)
+        return nullptr;
     return WebPopupMenuProxyMac::create(m_view.get().get(), protect(page.popupMenuClient()));
 }
 
@@ -689,6 +710,12 @@ CALayer *PageClientImpl::footerBannerLayer() const
 {
     return m_impl->footerBannerLayer();
 }
+
+// Paywright begin
+RetainPtr<CGImageRef> PageClientImpl::takeSnapshotForAutomation() {
+    return m_impl->takeSnapshotForAutomation();
+}
+// Paywright begin
 
 RefPtr<ViewSnapshot> PageClientImpl::takeViewSnapshot(std::optional<WebCore::IntRect>&&)
 {
@@ -911,6 +938,13 @@ void PageClientImpl::beganExitFullScreen(const IntRect& initialFrame, const IntR
 
 #endif // ENABLE(FULLSCREEN_API)
 
+#if ENABLE(TOUCH_EVENTS)
+void PageClientImpl::doneWithTouchEvent(const WebTouchEvent& event, bool wasEventHandled)
+{
+    notImplemented();
+}
+#endif // ENABLE(TOUCH_EVENTS)
+
 void PageClientImpl::navigationGestureDidBegin()
 {
     protect(m_impl)->dismissContentRelativeChildWindowsWithAnimation(true);
@@ -1091,6 +1125,9 @@ void PageClientImpl::requestScrollToRect(const WebCore::FloatRect& targetRect, c
 
 bool PageClientImpl::windowIsFrontWindowUnderMouse(const NativeWebMouseEvent& event)
 {
+    // Simulated event.
+    if (!event.nativeEvent())
+        return false;
     return protect(m_impl)->windowIsFrontWindowUnderMouse(RetainPtr { event.nativeEvent() }.get());
 }
 
