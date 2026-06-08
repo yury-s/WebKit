@@ -871,22 +871,35 @@ cairo_surface_t* AcceleratedBackingStore::surface()
     if (!buffer)
         return nullptr;
 
-    RefPtr<cairo_surface_t> surface = buffer->surface();
-    if (!surface)
-        return nullptr;
-
-    // The original surface is upside down, so we flip it to match orientation in other accelerated backing stores.
-    m_flippedSurface = adoptRef(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, cairo_image_surface_get_width(surface.get()), cairo_image_surface_get_height(surface.get())));
-    {
-        RefPtr<cairo_t> cr = adoptRef(cairo_create(m_flippedSurface.get()));
-        cairo_matrix_t transform;
-        cairo_matrix_init(&transform, 1, 0, 0, -1, 0, cairo_image_surface_get_height(surface.get()) / buffer->deviceScaleFactor());
-        cairo_transform(cr.get(), &transform);
-        cairo_set_source_surface(cr.get(), surface.get(), 0, 0);
-        cairo_paint(cr.get());
+    if (RefPtr<cairo_surface_t> surface = buffer->surface()) {
+        // The original surface is upside down, so we flip it to match orientation in other accelerated backing stores.
+        m_flippedSurface = adoptRef(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, cairo_image_surface_get_width(surface.get()), cairo_image_surface_get_height(surface.get())));
+        {
+            RefPtr<cairo_t> cr = adoptRef(cairo_create(m_flippedSurface.get()));
+            cairo_matrix_t transform;
+            cairo_matrix_init(&transform, 1, 0, 0, -1, 0, cairo_image_surface_get_height(surface.get()) / buffer->deviceScaleFactor());
+            cairo_transform(cr.get(), &transform);
+            cairo_set_source_surface(cr.get(), surface.get(), 0, 0);
+            cairo_paint(cr.get());
+        }
+        cairo_surface_flush(m_flippedSurface.get());
+        return m_flippedSurface.get();
     }
-    cairo_surface_flush(m_flippedSurface.get());
-    return m_flippedSurface.get();
+
+    // Since GTK 4.16 the backing store buffers (GBM, SHM, DMA-BUF and EGLImage) are
+    // exposed as a GdkTexture rather than a mappable cairo surface, so buffer->surface()
+    // is null. Download the texture into an image surface instead. gdk_texture_download()
+    // produces premultiplied BGRA (matching CAIRO_FORMAT_ARGB32 on little-endian) already
+    // in top-down orientation, matching what the cairo path returns above, so the caller's
+    // flip stays correct.
+    if (GdkTexture* texture = buffer->texture()) {
+        m_flippedSurface = adoptRef(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, gdk_texture_get_width(texture), gdk_texture_get_height(texture)));
+        gdk_texture_download(texture, cairo_image_surface_get_data(m_flippedSurface.get()), cairo_image_surface_get_stride(m_flippedSurface.get()));
+        cairo_surface_mark_dirty(m_flippedSurface.get());
+        return m_flippedSurface.get();
+    }
+
+    return nullptr;
 }
 // Playwright end
 
