@@ -66,6 +66,7 @@ WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_BEGIN
 IGNORE_CLANG_WARNINGS_BEGIN("cast-align")
 #include <skia/core/SkBitmap.h>
 #include <skia/core/SkColorSpace.h>
+#include <skia/core/SkPixmap.h>
 IGNORE_CLANG_WARNINGS_END
 WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_END
 
@@ -578,7 +579,24 @@ RendererBufferDescription AcceleratedBackingStore::BufferGBM::description() cons
 
 RefPtr<NativeImage> AcceleratedBackingStore::BufferGBM::asNativeImageForTesting() const
 {
-    return nullptr;
+#if GTK_CHECK_VERSION(4, 16, 0)
+    return nativeImageFromGdkTexture(m_texture.get());
+#else
+    if (!m_surface)
+        return nullptr;
+
+    auto imageInfo = SkImageInfo::MakeN32Premul(cairo_image_surface_get_width(m_surface.get()), cairo_image_surface_get_height(m_surface.get()), SkColorSpace::MakeSRGB());
+    SkBitmap bitmap;
+    if (!bitmap.tryAllocPixels(imageInfo))
+        return nullptr;
+
+    SkPixmap pixmap(imageInfo, cairo_image_surface_get_data(m_surface.get()), cairo_image_surface_get_stride(m_surface.get()));
+    if (!bitmap.writePixels(pixmap))
+        return nullptr;
+
+    bitmap.setImmutable();
+    return NativeImage::create(bitmap.asImage());
+#endif
 }
 
 void AcceleratedBackingStore::BufferGBM::release()
@@ -863,31 +881,5 @@ RefPtr<NativeImage> AcceleratedBackingStore::bufferAsNativeImageForTesting() con
 
     return m_committedBuffer->asNativeImageForTesting();
 }
-
-// Playwright begin
-cairo_surface_t* AcceleratedBackingStore::surface()
-{
-    RefPtr<Buffer> buffer = m_committedBuffer.get();
-    if (!buffer)
-        return nullptr;
-
-    RefPtr<cairo_surface_t> surface = buffer->surface();
-    if (!surface)
-        return nullptr;
-
-    // The original surface is upside down, so we flip it to match orientation in other accelerated backing stores.
-    m_flippedSurface = adoptRef(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, cairo_image_surface_get_width(surface.get()), cairo_image_surface_get_height(surface.get())));
-    {
-        RefPtr<cairo_t> cr = adoptRef(cairo_create(m_flippedSurface.get()));
-        cairo_matrix_t transform;
-        cairo_matrix_init(&transform, 1, 0, 0, -1, 0, cairo_image_surface_get_height(surface.get()) / buffer->deviceScaleFactor());
-        cairo_transform(cr.get(), &transform);
-        cairo_set_source_surface(cr.get(), surface.get(), 0, 0);
-        cairo_paint(cr.get());
-    }
-    cairo_surface_flush(m_flippedSurface.get());
-    return m_flippedSurface.get();
-}
-// Playwright end
 
 } // namespace WebKit

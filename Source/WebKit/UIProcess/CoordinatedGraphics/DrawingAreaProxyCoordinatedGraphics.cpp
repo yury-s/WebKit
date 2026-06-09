@@ -45,6 +45,7 @@
 
 #if PLATFORM(GTK)
 #include "WebKitWebViewBasePrivate.h"
+#include <WebCore/NativeImage.h>
 #include <cairo.h>
 #include <skia/core/SkImage.h>
 #include <skia/core/SkSurface.h>
@@ -252,44 +253,22 @@ void DrawingAreaProxyCoordinatedGraphics::updateAcceleratedCompositingMode(uint6
 #if PLATFORM(GTK)
 void DrawingAreaProxyCoordinatedGraphics::captureFrame()
 {
-    RefPtr<cairo_surface_t> surface;
-    if (isInAcceleratedCompositingMode()) {
-        AcceleratedBackingStore* backingStore = webkitWebViewBaseGetAcceleratedBackingStore(WEBKIT_WEB_VIEW_BASE(protect(page())->viewWidget()));
-        if (!backingStore)
-            return;
-
-        surface = backingStore->surface();
-    }
-
-    if (!surface)
+    if (!isInAcceleratedCompositingMode())
         return;
 
-    if (cairo_surface_get_type(surface.get()) != CAIRO_SURFACE_TYPE_IMAGE)
+    AcceleratedBackingStore* backingStore = webkitWebViewBaseGetAcceleratedBackingStore(WEBKIT_WEB_VIEW_BASE(protect(page())->viewWidget()));
+    if (!backingStore)
         return;
 
-    // The original surface is upside down, so we flip it to match orientation in other accelerated backing stores.
-    auto flippedSurface = adoptRef(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, cairo_image_surface_get_width(surface.get()), cairo_image_surface_get_height(surface.get())));
-    {
-        RefPtr<cairo_t> cr = adoptRef(cairo_create(flippedSurface.get()));
-        cairo_matrix_t transform;
-        cairo_matrix_init(&transform, 1, 0, 0, -1, 0, cairo_image_surface_get_height(surface.get()));
-        cairo_transform(cr.get(), &transform);
-        cairo_set_source_surface(cr.get(), surface.get(), 0, 0);
-        cairo_paint(cr.get());
-    }
-    cairo_surface_flush(flippedSurface.get());
+    // Reuse the backing store's snapshot path (also used by the test runner). It
+    // returns the committed buffer's contents as a NativeImage in the natural
+    // top-down orientation for every buffer type (GBM, SHM, DMA-BUF, EGLImage),
+    // including on GTK 4.16+ where buffers are backed by a GdkTexture.
+    RefPtr<NativeImage> image = backingStore->bufferAsNativeImageForTesting();
+    if (!image)
+        return;
 
-    unsigned char* data   = cairo_image_surface_get_data(flippedSurface.get());
-    int width             = cairo_image_surface_get_width(flippedSurface.get());
-    int height            = cairo_image_surface_get_height(flippedSurface.get());
-    int stride            = cairo_image_surface_get_stride(flippedSurface.get());
-
-    SkImageInfo info = SkImageInfo::Make(
-        width, height,
-        kBGRA_8888_SkColorType,  // matches CAIRO_FORMAT_ARGB32 on LE
-        kPremul_SkAlphaType
-    );
-    sk_sp<SkImage> skImage = SkImages::RasterFromData(info, SkData::MakeWithCopy(data, height * stride), stride);
+    sk_sp<SkImage> skImage = image->platformImage();
     if (!skImage)
         return;
 
