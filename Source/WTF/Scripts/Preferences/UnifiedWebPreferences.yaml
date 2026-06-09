@@ -5831,6 +5831,7 @@ MuteCameraOnMicrophoneInterruptionEnabled:
     WebCore:
       default: false
 
+# Playwright: also enable on Windows to align with other platforms.
 NavigationAPIEnabled:
   type: bool
   status: stable
@@ -5841,10 +5842,10 @@ NavigationAPIEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)": true
+      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN)": true
       default: false
     WebCore:
-      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)": true
+      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN)": true
       default: false
 
 NavigatorUserAgentDataJavaScriptAPIEnabled:
