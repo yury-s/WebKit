@@ -428,10 +428,10 @@ void WebProcessPool::setAutomationClient(std::unique_ptr<API::AutomationClient>&
 
 void WebProcessPool::setOverrideLanguages(Vector<String>&& languages)
 {
-    WebKit::setOverrideLanguages(WTF::move(languages));
+    m_configuration->setOverrideLanguages(WTF::move(languages));
 
     LOG_WITH_STREAM(Language, stream << "WebProcessPool is setting OverrideLanguages: " << languages);
-    sendToAllProcesses(Messages::WebProcess::UserPreferredLanguagesChanged(overrideLanguages()));
+    sendToAllProcesses(Messages::WebProcess::UserPreferredLanguagesChanged(m_configuration->overrideLanguages()));
 
 #if ENABLE(GPU_PROCESS)
     if (RefPtr gpuProcess = GPUProcessProxy::singletonIfCreated())
@@ -439,9 +439,10 @@ void WebProcessPool::setOverrideLanguages(Vector<String>&& languages)
 #endif
 #if USE(SOUP)
     for (Ref networkProcess : NetworkProcessProxy::allNetworkProcesses())
-        networkProcess->send(Messages::NetworkProcess::UserPreferredLanguagesChanged(overrideLanguages()), 0);
+        networkProcess->send(Messages::NetworkProcess::UserPreferredLanguagesChanged(m_configuration->overrideLanguages()), 0);
 #endif
 }
+/* end playwright revert fb205fb */
 
 void WebProcessPool::fullKeyboardAccessModeChanged(bool fullKeyboardAccessEnabled)
 {
@@ -987,7 +988,7 @@ void WebProcessPool::initializeNewWebProcess(WebProcessProxy& process, WebsiteDa
 #endif
 
     parameters.cacheModel = LegacyGlobalSettings::singleton().cacheModel();
-    parameters.overrideLanguages = overrideLanguages();
+    parameters.overrideLanguages = configuration().overrideLanguages(); /* playwright revert fb205fb */
     LOG_WITH_STREAM(Language, stream << "WebProcessPool is initializing a new web process with overrideLanguages: " << parameters.overrideLanguages);
 
     parameters.urlSchemesRegisteredAsSecure = copyToVector(LegacyGlobalSettings::singleton().schemesToRegisterAsSecure());
@@ -1069,7 +1070,7 @@ void WebProcessPool::initializeNewWebProcess(WebProcessProxy& process, WebsiteDa
     if (!injectedBundleInitializationUserData)
         injectedBundleInitializationUserData = m_injectedBundleInitializationUserData;
     parameters.initializationUserData = UserData(process.transformObjectsToHandles(injectedBundleInitializationUserData.get()));
-    
+
     if (websiteDataStore)
         parameters.websiteDataStoreParameters = webProcessDataStoreParameters(process, *websiteDataStore);
 
@@ -1163,14 +1164,14 @@ void WebProcessPool::processDidFinishLaunching(WebProcessProxy& process)
     // Sometimes the memorySampler gets initialized after process initialization has happened but before the process has finished launching
     // so check if it needs to be started here
     if (m_memorySamplerEnabled) {
-        SandboxExtension::Handle sampleLogSandboxHandle;        
+        SandboxExtension::Handle sampleLogSandboxHandle;
         WallTime now = WallTime::now();
         auto sampleLogFilePath = makeString("WebProcess"_s, now.secondsSinceEpoch().secondsAs<uint64_t>(), "pid"_s, process.processID());
         if (auto handleAndFilePath = SandboxExtension::createHandleForTemporaryFile(sampleLogFilePath, SandboxExtension::Type::ReadWrite)) {
             sampleLogSandboxHandle = WTF::move(handleAndFilePath->first);
             sampleLogFilePath = WTF::move(handleAndFilePath->second);
         }
-        
+
         process.send(Messages::WebProcess::StartMemorySampler(WTF::move(sampleLogSandboxHandle), sampleLogFilePath, m_memorySamplerInterval), 0);
     }
 
@@ -1342,6 +1343,12 @@ Ref<WebPageProxy> WebProcessPool::createWebPage(PageClient& pageClient, Ref<API:
     auto enhancedSecurity = (protect(pageConfiguration->preferences())->forceEnhancedSecurity() || pageConfiguration->isEnhancedSecurityEnabled() || useEnhancedSecurityFallback) ? EnhancedSecurity::EnabledPolicy : EnhancedSecurity::Disabled;
 
     RefPtr relatedPage = pageConfiguration->relatedPage();
+
+    // Fix WPE/GTK crashes after 310806@main. upstream-status (pending). See issue https://github.com/microsoft/playwright-browsers/issues/2171
+    // Ensure popups inherit the StorageBlockingPolicy of the parent so they stay compatible for same-process popup creation.
+    if (relatedPage)
+        pageConfiguration->preferences().setStorageBlockingPolicy(relatedPage->preferences().storageBlockingPolicy());
+
     bool siteIsolationEnabled = protect(pageConfiguration->preferences())->siteIsolationEnabled();
     if (siteIsolationEnabled) {
         // These preferences are coupled to Site Isolation here. WebKitTestRunner must
@@ -1380,9 +1387,9 @@ Ref<WebPageProxy> WebProcessPool::createWebPage(PageClient& pageClient, Ref<API:
     }
 
     Ref userContentController = pageConfiguration->userContentController();
-    
+
     ASSERT(process);
-    
+
     process->setAllowTestOnlyIPC(pageConfiguration->allowTestOnlyIPC());
 
     auto page = process->createWebPage(pageClient, WTF::move(pageConfiguration));
@@ -1763,18 +1770,18 @@ void WebProcessPool::setEnhancedAccessibility(bool flag)
 {
     sendToAllProcesses(Messages::WebProcess::SetEnhancedAccessibility(flag));
 }
-    
+
 void WebProcessPool::startMemorySampler(const double interval)
-{    
+{
     // For new WebProcesses we will also want to start the Memory Sampler
     m_memorySamplerEnabled = true;
     m_memorySamplerInterval = interval;
-    
+
     // For UIProcess
 #if ENABLE(MEMORY_SAMPLER)
     WebMemorySampler::singleton()->start(interval);
 #endif
-    
+
     for (auto& process : m_processes) {
         if (!process->canSendMessage())
             continue;
@@ -1793,10 +1800,10 @@ void WebProcessPool::startMemorySampler(const double interval)
 }
 
 void WebProcessPool::stopMemorySampler()
-{    
+{
     // For WebProcess
     m_memorySamplerEnabled = false;
-    
+
     // For UIProcess
 #if ENABLE(MEMORY_SAMPLER)
     WebMemorySampler::singleton()->stop();
@@ -1848,7 +1855,7 @@ void WebProcessPool::setAutomationSession(RefPtr<WebAutomationSession>&& automat
 {
     if (RefPtr previousSession = m_automationSession)
         previousSession->setProcessPool(nullptr);
-    
+
     m_automationSession = WTF::move(automationSession);
 
 #if ENABLE(REMOTE_INSPECTOR)
@@ -2435,7 +2442,7 @@ std::tuple<Ref<WebProcessProxy>, RefPtr<SuspendedPageProxy>, ASCIILiteral> WebPr
     }
 
     auto reason = "Navigation is cross-site"_s;
-    
+
     if (m_configuration->alwaysKeepAndReuseSwappedProcesses()) {
         LOG(ProcessSwapping, "(ProcessSwapping) Considering re-use of a previously cached process for domain %s", targetSite.domain().string().utf8().data());
 
@@ -2540,7 +2547,7 @@ void WebProcessPool::setDomainsWithUserInteraction(HashSet<WebCore::RegistrableD
 }
 
 void WebProcessPool::setDomainsWithCrossPageStorageAccess(HashMap<TopFrameDomain, Vector<SubResourceDomain>>&& domains, CompletionHandler<void()>&& completionHandler)
-{    
+{
     Ref callbackAggregator = CallbackAggregator::create(WTF::move(completionHandler));
 
     for (Ref process : borrow(this->processes()).get())
