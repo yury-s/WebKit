@@ -113,7 +113,6 @@ private:
         gsize messageSize;
         gconstpointer messageData = g_bytes_get_data(message, &messageSize);
         String messageString = String::fromUTF8(std::span<const char8_t>(static_cast<const char8_t*>(messageData), messageSize));
-        fprintf(stderr, "WebSocket message received: %s\n", messageString.utf8().data());
         m_playwrightAgent.dispatchMessageFromFrontend(messageString);
     }
 

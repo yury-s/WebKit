@@ -57,6 +57,7 @@ static const char* profileDirectory;
 static gboolean automationMode;
 static gboolean ignoreTLSErrors;
 static gboolean inspectorPipe;
+static gint remoteDebuggingPort = -1;
 static gboolean noStartupWindow;
 static const char* userDataDir;
 static const char* contentFilter;
@@ -145,6 +146,7 @@ static const GOptionEntry commandLineOptions[] =
     { "size", 's', 0, G_OPTION_ARG_CALLBACK, reinterpret_cast<gpointer>(parseWindowSize), "Specify the window size to use, e.g. --size=\"800x600\"", nullptr },
     { "version", 'v', 0, G_OPTION_ARG_NONE, &printVersion, "Print the WPE version", nullptr },
     { "inspector-pipe", 'v', 0, G_OPTION_ARG_NONE, &inspectorPipe, "Expose remote debugging protocol over pipe", nullptr },
+    { "remote-debugging-port", 0, 0, G_OPTION_ARG_INT, &remoteDebuggingPort, "Start remote debugging server on the specified port", NULL },
     { "user-data-dir", 0, 0, G_OPTION_ARG_STRING, &userDataDir, "Default profile persistence folder location", "FILE" },
     { "no-startup-window", 0, 0, G_OPTION_ARG_NONE, &noStartupWindow, "Do not open default page", nullptr },
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &uriArguments, nullptr, "[URL]" },
@@ -601,6 +603,14 @@ static void configureBrowserInspector(GApplication* application)
     webkit_browser_inspector_initialize_pipe(proxy, ignoreHosts);
 }
 
+static void configureBrowserInspectorPort(GApplication* application)
+{
+    WebKitBrowserInspector* browserInspector = webkit_browser_inspector_get_default();
+    g_signal_connect(browserInspector, "create-new-page", G_CALLBACK(createNewPage), NULL);
+    g_signal_connect(browserInspector, "quit-application", G_CALLBACK(quitBroserApplication), application);
+    webkit_browser_inspector_initialize_web_socket(remoteDebuggingPort, proxy, ignoreHosts);
+}
+
 static void activate(GApplication* application, WPEToolingBackends::ViewBackend* backend)
 #else
 static void activate(GApplication* application, gpointer)
@@ -615,7 +625,7 @@ static void activate(GApplication* application, gpointer)
         if (userDataDir) {
             networkSession = webkit_network_session_new(userDataDir, userDataDir);
             cookiesFile = g_build_filename(userDataDir, "cookies.txt", nullptr);
-        } else if (inspectorPipe || privateMode || automationMode) {
+        } else if (inspectorPipe || remoteDebuggingPort != -1 || privateMode || automationMode) {
             networkSession = webkit_network_session_new_ephemeral();
         } else if (profileDirectory) {
             g_autofree char* dataDirectory = g_build_filename(profileDirectory, "data", nullptr);
@@ -657,7 +667,7 @@ static void activate(GApplication* application, gpointer)
     if (userDataDir) {
         manager = webkit_website_data_manager_new("base-data-directory", userDataDir, "base-cache-directory", userDataDir, NULL);
         cookiesFile = g_build_filename(userDataDir, "cookies.txt", NULL);
-    } else if (inspectorPipe || privateMode || automationMode) {
+    } else if (inspectorPipe || remoteDebuggingPort != -1 || privateMode || automationMode) {
         manager = webkit_website_data_manager_new_ephemeral();
     } else if (profileDirectory) {
         g_autofree char* dataDirectory = g_build_filename(profileDirectory, "data", nullptr);
@@ -977,6 +987,8 @@ int main(int argc, char *argv[])
 
     if (inspectorPipe)
         configureBrowserInspector(application);
+    else if (remoteDebuggingPort != -1)
+        configureBrowserInspectorPort(application);
 
     g_application_run(application, 0, nullptr);
     g_object_unref(application);
