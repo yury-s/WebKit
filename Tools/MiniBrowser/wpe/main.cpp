@@ -354,14 +354,14 @@ static void webViewClose(WebKitWebView* webView, gpointer user_data)
 
 static gboolean scriptDialog(WebKitWebView*, WebKitScriptDialog* dialog, gpointer)
 {
-    if (inspectorPipe)
+    if (inspectorPipe || remoteDebuggingPort != -1)
         webkit_script_dialog_ref(dialog);
     return TRUE;
 }
 
 static gboolean scriptDialogHandled(WebKitWebView*, WebKitScriptDialog* dialog, gpointer)
 {
-    if (inspectorPipe)
+    if (inspectorPipe || remoteDebuggingPort != -1)
         webkit_script_dialog_unref(dialog);
     return TRUE;
 }
@@ -879,7 +879,7 @@ static void activate(GApplication* application, gpointer)
     if (uriArguments) {
         // Playwright: avoid weird url transformation like http://trac.webkit.org/r240840
         webkit_web_view_load_uri(webView, uriArguments[0]);
-    } else if (automationMode || inspectorPipe)
+    } else if (automationMode || inspectorPipe || remoteDebuggingPort != -1)
         webkit_web_view_load_uri(webView, "about:blank");
     else
         webkit_web_view_load_uri(webView, "https://wpewebkit.org");
