@@ -645,9 +645,9 @@ void ViewPlatform::callAfterNextPresentationUpdate(CompletionHandler<void()>&& c
     }
 }
 
-Expected<Ref<ViewSnapshot>, String> ViewPlatform::takeViewSnapshot(std::optional<WebCore::IntRect>&& clipRect)
+Expected<Ref<ViewSnapshot>, String> ViewPlatform::takeViewSnapshot(std::optional<WebCore::IntRect>&& clipRect, bool nominalResolution)
 {
-    return m_backingStore->takeSnapshot(WTF::move(clipRect));
+    return m_backingStore->takeSnapshot(WTF::move(clipRect), nominalResolution);
 }
 
 } // namespace WKWPE
