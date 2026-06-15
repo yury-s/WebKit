@@ -95,6 +95,7 @@ private:
     int m_screencastToolbarHeight = 0;
     int m_screencastGeneration = 0;
     int m_screencastFramesInFlight = 0;
+    bool m_captureInFlight = false;
 };
 
 } // namespace WebKit

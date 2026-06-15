@@ -273,8 +273,20 @@ void InspectorScreencastAgent::encodeFrame()
     if (!m_screencast)
         return;
 
-    if (auto* drawingArea = m_page.drawingArea())
-        static_cast<DrawingAreaProxyCoordinatedGraphics*>(drawingArea)->captureFrame();
+    // Headless capture is asynchronous (it repaints in the web process). Keep a single capture
+    // in flight so frames are handed to the frontend strictly in order -- otherwise an early
+    // snapshot can complete after a later one and deliver a stale frame last. For headed pages
+    // the completion runs synchronously, so this never skips a tick.
+    if (m_captureInFlight)
+        return;
+
+    if (auto* drawingArea = m_page.drawingArea()) {
+        m_captureInFlight = true;
+        static_cast<DrawingAreaProxyCoordinatedGraphics*>(drawingArea)->captureFrame([weakThis = WeakPtr { *this }] {
+            if (weakThis)
+                weakThis->m_captureInFlight = false;
+        });
+    }
 }
 #endif
 

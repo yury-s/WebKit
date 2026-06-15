@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include <memory>
 #include <wtf/CompletionHandler.h>
 #include <wtf/Forward.h>
 #include <wtf/TZoneMalloc.h>
@@ -75,6 +76,12 @@ private:
     WebFrameProxy* m_frameWritingToClipboard { nullptr };
 #endif
     int64_t m_changeCount { 0 };
+
+    // Headless mode (no GdkDisplay): an in-process clipboard sufficient for automation
+    // copy/paste within the session.
+    bool m_headless { false };
+    Type m_type { Type::Clipboard };
+    std::unique_ptr<WebCore::SelectionData> m_headlessData;
 };
 
 } // namespace WebKit

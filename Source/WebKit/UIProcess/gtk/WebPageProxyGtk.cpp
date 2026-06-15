@@ -61,6 +61,9 @@ GtkWidget* WebPageProxy::viewWidget()
 
 void WebPageProxy::bindAccessibilityTree(const String& plugID)
 {
+    // Headless spike: no widget to bind the accessibility tree to.
+    if (!viewWidget())
+        return;
 #if USE(GTK4)
     if (!isInsideFlatpak() || checkFlatpakPortalVersion(7))
         webkitWebViewBaseSetPlugID(WEBKIT_WEB_VIEW_BASE(viewWidget()), plugID);
@@ -83,6 +86,9 @@ void WebPageProxy::didUpdateEditorState(const EditorState&, const EditorState& n
 
 void WebPageProxy::setInputMethodState(std::optional<InputMethodState>&& state)
 {
+    // Headless spike: no widget, no input method.
+    if (!viewWidget())
+        return;
     webkitWebViewBaseSetInputMethodState(WEBKIT_WEB_VIEW_BASE(viewWidget()), WTF::move(state));
 }
 
@@ -172,6 +178,9 @@ void WebPageProxy::callAfterNextPresentationUpdate(CompletionHandler<void()>&& c
     Ref aggregator = CallbackAggregator::create([weakThis = WeakPtr { *this }, callback = WTF::move(callback)]() mutable {
         RefPtr protectedThis = weakThis.get();
         if (!protectedThis)
+            return callback();
+        // Headless spike: no widget; frames are presented synchronously when the fence signals.
+        if (!protectedThis->viewWidget())
             return callback();
         webkitWebViewBaseCallAfterNextPresentationUpdate(WEBKIT_WEB_VIEW_BASE(protectedThis->viewWidget()), WTF::move(callback));
     });

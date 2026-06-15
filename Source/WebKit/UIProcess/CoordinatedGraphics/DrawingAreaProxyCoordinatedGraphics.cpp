@@ -40,12 +40,15 @@
 #include "WebProcessProxy.h"
 #include <WebCore/Region.h>
 #include <optional>
+#include <wtf/Scope.h>
 #include <wtf/TZoneMallocInlines.h>
 #include <wtf/Vector.h>
 
 #if PLATFORM(GTK)
+#include "WebKitHeadlessView.h"
 #include "WebKitWebViewBasePrivate.h"
 #include <WebCore/NativeImage.h>
+#include <WebCore/ShareableBitmap.h>
 #include <cairo.h>
 #include <skia/core/SkImage.h>
 #include <skia/core/SkSurface.h>
@@ -251,12 +254,40 @@ void DrawingAreaProxyCoordinatedGraphics::updateAcceleratedCompositingMode(uint6
 }
 
 #if PLATFORM(GTK)
-void DrawingAreaProxyCoordinatedGraphics::captureFrame()
+void DrawingAreaProxyCoordinatedGraphics::captureFrame(CompletionHandler<void()>&& completionHandler)
 {
     if (!isInAcceleratedCompositingMode())
-        return;
+        return completionHandler();
 
-    AcceleratedBackingStore* backingStore = webkitWebViewBaseGetAcceleratedBackingStore(WEBKIT_WEB_VIEW_BASE(protect(page())->viewWidget()));
+    auto page = protect(this->page());
+
+    // Headless pages have no GtkWidget and thus no frame clock driving the compositor, so the
+    // committed backing-store buffer goes stale and never reflects content changes after the
+    // initial frame. Repaint the current contents into a fresh bitmap in the web process
+    // (software GraphicsContext) instead -- the same pixel-correct path used for headless
+    // screenshots -- and hand the result to the screencast as an SkImage.
+    if (!page->viewWidget()) {
+        // Match the exact pixel size InspectorScreencastAgent::didPaint expects (drawing area
+        // size in device pixels); a mismatch makes it silently drop the frame.
+        WebCore::IntSize size = this->size();
+        if (size.isEmpty())
+            return completionHandler();
+        WebCore::IntSize bitmapSize = size;
+        bitmapSize.scale(page->deviceScaleFactor());
+        page->takeSnapshotLegacy(WebCore::IntRect { { }, size }, bitmapSize, { }, [page, completionHandler = WTF::move(completionHandler)](std::optional<WebCore::ShareableBitmap::Handle>&& handle) mutable {
+            auto bitmap = handle ? WebCore::ShareableBitmap::create(WTF::move(*handle), WebCore::SharedMemory::Protection::ReadOnly) : nullptr;
+            if (bitmap) {
+                if (sk_sp<SkImage> skImage = bitmap->createPlatformImage())
+                    page->inspectorController().didPaint(WTF::move(skImage));
+            }
+            completionHandler();
+        });
+        return;
+    }
+
+    auto scopeExit = makeScopeExit(WTF::move(completionHandler));
+
+    AcceleratedBackingStore* backingStore = webkitWebViewBaseGetAcceleratedBackingStore(WEBKIT_WEB_VIEW_BASE(page->viewWidget()));
     if (!backingStore)
         return;
 
@@ -272,7 +303,7 @@ void DrawingAreaProxyCoordinatedGraphics::captureFrame()
     if (!skImage)
         return;
 
-    protect(page())->inspectorController().didPaint(WTF::move(skImage));
+    page->inspectorController().didPaint(WTF::move(skImage));
 }
 #endif // PLATFORM(GTK)
 

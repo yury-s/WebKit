@@ -803,6 +803,69 @@ static void configureBrowserInspectorPort()
     webkit_browser_inspector_initialize_web_socket(remoteDebuggingPort, proxy, ignoreHosts);
 }
 
+// Headless mode: switch the library into headless page creation (widget-less, no display)
+// and run the remote inspector without ever touching GTK/GtkApplication.
+extern void webkit_headless_set_enabled(int enabled);
+extern void webkit_headless_create_default_page(WebKitWebContext *context, WebKitNetworkSession *session, const char *startupURL);
+
+static GMainLoop* headlessMainLoop = NULL;
+
+static void quitHeadlessMainLoop(WebKitBrowserInspector* browserInspector)
+{
+    if (headlessMainLoop)
+        g_main_loop_quit(headlessMainLoop);
+}
+
+static void runHeadless(void)
+{
+    webkit_headless_set_enabled(TRUE);
+
+    // Persistent context mode (launchPersistentContext passes --user-data-dir without
+    // --no-startup-window). Create a persistent network session + web context so the
+    // automation agent finds a default context backed by a persistent data store.
+    if (userDataDir) {
+        g_autofree char *dataDirectory = g_build_filename(userDataDir, "data", NULL);
+        g_autofree char *cacheDirectory = g_build_filename(userDataDir, "cache", NULL);
+        // Leaked intentionally: these live for the lifetime of the browser process so the
+        // persistent data store stays registered as the default context.
+        WebKitNetworkSession *persistentSession = webkit_network_session_new(dataDirectory, cacheDirectory);
+        // Route through the proxy if one was given (e.g. Playwright's local client-certificate
+        // proxy), mirroring how the windowed persistent session is configured.
+        if (proxy) {
+            WebKitNetworkProxySettings *proxySettings = webkit_network_proxy_settings_new(proxy, ignoreHosts);
+            webkit_network_session_set_proxy_settings(persistentSession, WEBKIT_NETWORK_PROXY_MODE_CUSTOM, proxySettings);
+            webkit_network_proxy_settings_free(proxySettings);
+        }
+        WebKitWebContext *persistentContext = g_object_new(WEBKIT_TYPE_WEB_CONTEXT, "time-zone-override", timeZone, NULL);
+        webkit_web_context_set_automation_allowed(persistentContext, TRUE);
+        webkit_web_context_set_network_session_for_automation(persistentContext, persistentSession);
+        // Create the default context's initial page; launchPersistentContext waits for it.
+        // A startup URL may be passed on the command line (e.g. launching with
+        // ignoreDefaultArgs and a URL); load it instead of about:blank.
+        const char *startupURL = (uriArguments && uriArguments[0]) ? uriArguments[0] : NULL;
+        webkit_headless_create_default_page(persistentContext, persistentSession, startupURL);
+    }
+
+    // No "create-new-page" handler: in headless mode the library creates widget-less pages
+    // directly, bypassing the WebKitWebView/window path.
+    WebKitBrowserInspector* browserInspector = webkit_browser_inspector_get_default();
+    g_signal_connect(browserInspector, "quit-application", G_CALLBACK(quitHeadlessMainLoop), NULL);
+
+    if (inspectorPipe)
+        webkit_browser_inspector_initialize_pipe(proxy, ignoreHosts);
+    else if (remoteDebuggingPort != -1)
+        webkit_browser_inspector_initialize_web_socket(remoteDebuggingPort, proxy, ignoreHosts);
+    else {
+        g_printerr("Headless mode requires --remote-debugging-port or --inspector-pipe\n");
+        return;
+    }
+
+    headlessMainLoop = g_main_loop_new(NULL, FALSE);
+    g_main_loop_run(headlessMainLoop);
+    g_main_loop_unref(headlessMainLoop);
+    headlessMainLoop = NULL;
+}
+
 static void startup(GApplication *application)
 {
     const char *actionAccels[] = {
@@ -1103,16 +1166,34 @@ int main(int argc, char *argv[])
     g_setenv("WEBKIT_INJECTED_BUNDLE_PATH", WEBKIT_INJECTED_BUNDLE_PATH, FALSE);
 #endif
 
+    // Detect headless before gtk_init(): in headless mode we never connect to a display,
+    // so we must not call gtk_init() (which would fail) or create a GtkApplication.
+    gboolean headlessRequested = FALSE;
+    for (int i = 1; i < argc; i++) {
+        if (!g_strcmp0(argv[i], "--headless")) {
+            headlessRequested = TRUE;
+            break;
+        }
+    }
+
+    // Enable headless before any WebPreferences are created (createPlaywrightSettings below),
+    // since the renderer buffer transport mode is computed once and must pick SHM headless.
+    if (headlessRequested)
+        webkit_headless_set_enabled(TRUE);
+
+    if (!headlessRequested) {
 #if GTK_CHECK_VERSION(3, 98, 0)
-    gtk_init();
+        gtk_init();
 #else
-    gtk_init(&argc, &argv);
+        gtk_init(&argc, &argv);
 #endif
+    }
 
     GOptionContext *context = g_option_context_new(NULL);
     g_option_context_add_main_entries(context, commandLineOptions, 0);
 #if !GTK_CHECK_VERSION(3, 98, 0)
-    g_option_context_add_group(context, gtk_get_option_group(TRUE));
+    if (!headlessRequested)
+        g_option_context_add_group(context, gtk_get_option_group(TRUE));
 #endif
 #if !USE_GSTREAMER_FULL && (ENABLE_WEB_AUDIO || ENABLE_VIDEO)
     g_option_context_add_group(context, gst_init_get_option_group());
@@ -1166,6 +1247,14 @@ int main(int argc, char *argv[])
         g_print("\n");
         g_clear_object(&webkitSettings);
 
+        return 0;
+    }
+
+    if (headlessRequested) {
+        // The library builds its own page preferences for headless pages.
+        g_clear_object(&webkitSettings);
+        runHeadless();
+        g_clear_object(&interfaceSettings);
         return 0;
     }
 

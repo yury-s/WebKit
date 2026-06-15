@@ -29,6 +29,7 @@
 #if USE(GTK4)
 
 #include "GtkUtilities.h"
+#include "WebKitHeadlessView.h"
 #include "WebPasteboardProxy.h"
 #include <WebCore/PasteboardCustomData.h>
 #include <WebCore/SelectionData.h>
@@ -42,8 +43,14 @@
 namespace WebKit {
 
 Clipboard::Clipboard(Type type)
-    : m_clipboard(type == Type::Clipboard ? gdk_display_get_clipboard(gdk_display_get_default()) : gdk_display_get_primary_clipboard(gdk_display_get_default()))
+    : m_clipboard(webkitHeadlessIsEnabled() ? nullptr : (type == Type::Clipboard ? gdk_display_get_clipboard(gdk_display_get_default()) : gdk_display_get_primary_clipboard(gdk_display_get_default())))
+    , m_headless(webkitHeadlessIsEnabled())
+    , m_type(type)
 {
+    // Headless: no GdkClipboard to wire up; reads/writes use the in-memory store.
+    if (m_headless)
+        return;
+
     if (type == Type::Primary) {
         g_signal_connect(m_clipboard, "notify::local", G_CALLBACK(+[](GdkClipboard* clipboard, GParamSpec*, gpointer) {
             if (!gdk_clipboard_is_local(clipboard))
@@ -58,16 +65,70 @@ Clipboard::Clipboard(Type type)
 
 Clipboard::~Clipboard()
 {
-    g_signal_handlers_disconnect_by_data(m_clipboard, this);
+    if (!m_headless)
+        g_signal_handlers_disconnect_by_data(m_clipboard, this);
 }
 
 Clipboard::Type Clipboard::type() const
 {
+    if (m_headless)
+        return m_type;
     return m_clipboard == gdk_display_get_primary_clipboard(gdk_display_get_default()) ? Type::Primary : Type::Clipboard;
+}
+
+static constexpr ASCIILiteral textPlainType = "text/plain;charset=utf-8"_s;
+static constexpr ASCIILiteral textHTMLType = "text/html"_s;
+static constexpr ASCIILiteral uriListType = "text/uri-list"_s;
+
+static Vector<String> headlessFormats(const WebCore::SelectionData* data)
+{
+    Vector<String> formats;
+    if (!data)
+        return formats;
+    if (data->hasText())
+        formats.append(textPlainType);
+    if (data->hasMarkup())
+        formats.append(textHTMLType);
+    if (data->hasURIList())
+        formats.append(uriListType);
+    if (data->hasCustomData())
+        formats.append(WebCore::PasteboardCustomData::gtkType());
+    for (const auto& it : data->buffers())
+        formats.append(it.key);
+    return formats;
+}
+
+static Ref<WebCore::SharedBuffer> headlessBuffer(const WebCore::SelectionData* data, const String& format)
+{
+    auto fromString = [](const String& string) {
+        CString utf8 = string.utf8();
+        return WebCore::SharedBuffer::create(utf8.span());
+    };
+    if (data) {
+        if (format == textHTMLType && data->hasMarkup())
+            return fromString(data->markup());
+        if (format == uriListType && data->hasURIList())
+            return fromString(data->uriList());
+        if (format.startsWith("text/plain"_s) && data->hasText())
+            return fromString(data->text());
+        if (format == WebCore::PasteboardCustomData::gtkType() && data->hasCustomData())
+            return *data->customData();
+        for (const auto& it : data->buffers()) {
+            if (it.key == format)
+                return it.value.copyRef();
+        }
+    }
+    return WebCore::SharedBuffer::create();
 }
 
 void Clipboard::formats(CompletionHandler<void(Vector<String>&&)>&& completionHandler)
 {
+    if (m_headless) {
+        auto f = headlessFormats(m_headlessData.get());
+        completionHandler(WTF::move(f));
+        return;
+    }
+
     gsize mimeTypesCount;
     const char* const* mimeTypesPointer = gdk_content_formats_get_mime_types(gdk_clipboard_get_formats(m_clipboard), &mimeTypesCount);
     auto mimeTypes = unsafeMakeSpan(mimeTypesPointer, mimeTypesCount);
@@ -233,26 +294,48 @@ private:
 
 void Clipboard::readText(CompletionHandler<void(String&&)>&& completionHandler, ReadMode readMode)
 {
+    if (m_headless) {
+        completionHandler(m_headlessData ? String { m_headlessData->text() } : String());
+        return;
+    }
     ClipboardTask::create(m_clipboard, readMode)->readText(WTF::move(completionHandler));
 }
 
 void Clipboard::readFilePaths(CompletionHandler<void(Vector<String>&&)>&& completionHandler, ReadMode readMode)
 {
+    if (m_headless) {
+        completionHandler({ });
+        return;
+    }
     ClipboardTask::create(m_clipboard, readMode)->readFilePaths(WTF::move(completionHandler));
 }
 
 void Clipboard::readBuffer(const char* format, CompletionHandler<void(Ref<WebCore::SharedBuffer>&&)>&& completionHandler, ReadMode readMode)
 {
+    if (m_headless) {
+        completionHandler(headlessBuffer(m_headlessData.get(), String::fromUTF8(format)));
+        return;
+    }
     ClipboardTask::create(m_clipboard, readMode)->readBuffer(format, WTF::move(completionHandler));
 }
 
 void Clipboard::readURL(CompletionHandler<void(String&& url, String&& title)>&& completionHandler, ReadMode readMode)
 {
+    if (m_headless) {
+        completionHandler(m_headlessData ? String { m_headlessData->uriList() } : String(), { });
+        return;
+    }
     ClipboardTask::create(m_clipboard, readMode)->readURL(WTF::move(completionHandler));
 }
 
 void Clipboard::write(WebCore::SelectionData&& selectionData, CompletionHandler<void(int64_t)>&& completionHandler)
 {
+    if (m_headless) {
+        m_headlessData = makeUnique<WebCore::SelectionData>(WTF::move(selectionData));
+        completionHandler(++m_changeCount);
+        return;
+    }
+
     Vector<GdkContentProvider*> providers;
     if (selectionData.hasMarkup()) {
         CString markup = selectionData.markup().utf8();
@@ -302,6 +385,11 @@ void Clipboard::write(WebCore::SelectionData&& selectionData, CompletionHandler<
 
 void Clipboard::clear()
 {
+    if (m_headless) {
+        m_headlessData = nullptr;
+        ++m_changeCount;
+        return;
+    }
     gdk_clipboard_set_content(m_clipboard, nullptr);
 }
 

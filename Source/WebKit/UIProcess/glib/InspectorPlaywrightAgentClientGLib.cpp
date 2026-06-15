@@ -28,6 +28,7 @@
 
 #if ENABLE(REMOTE_INSPECTOR)
 
+#include "ImageOptions.h"
 #include "InspectorPlaywrightAgent.h"
 #include "PageClient.h"
 #include "ViewSnapshotStore.h"
@@ -37,6 +38,12 @@
 #include "WebKitWebsiteDataManagerPrivate.h"
 #include "WebKitWebViewPrivate.h"
 #include "WebPageProxy.h"
+#include "WebProcessPool.h"
+#include "WebsiteDataStore.h"
+#include <WebCore/ShareableBitmap.h>
+#if PLATFORM(GTK)
+#include "WebKitHeadlessView.h"
+#endif
 #include <wtf/HashMap.h>
 #include <wtf/RefPtr.h>
 #include <wtf/text/Base64.h>
@@ -87,6 +94,19 @@ RefPtr<WebPageProxy> InspectorPlaywrightAgentClientGlib::createPage(WTF::String&
         error = "Context with provided id not found"_s;
         return nullptr;
     }
+
+#if PLATFORM(GTK)
+    // In headless mode there is no GtkWidget/window to host the page; create a widget-less
+    // page directly from the context's process pool and data store.
+    if (webkitHeadlessIsEnabled()) {
+        RefPtr<WebPageProxy> headlessPage = webkitHeadlessCreatePage(*browserContext.processPool, *browserContext.dataStore);
+        if (!headlessPage) {
+            error = "Failed to create new headless page in the context"_s;
+            return nullptr;
+        }
+        return headlessPage;
+    }
+#endif
 
     RefPtr<WebPageProxy> page = webkitBrowserInspectorCreateNewPageInContext(context);
     if (page == nullptr) {
@@ -146,6 +166,29 @@ void InspectorPlaywrightAgentClientGlib::deleteBrowserContext(WTF::String& error
 void InspectorPlaywrightAgentClientGlib::takePageScreenshot(WebPageProxy& page, WebCore::IntRect&& clip, bool nominalResolution, CompletionHandler<void(const String&, const String&)>&& completionHandler)
 {
     page.callAfterNextPresentationUpdate([protectedPage = Ref{ page }, clip = WTF::move(clip), nominalResolution, completionHandler = WTF::move(completionHandler)]() mutable {
+#if PLATFORM(GTK)
+        // Headless pages have no widget to snapshot. Repaint the page into a fresh bitmap in
+        // the web process (software GraphicsContext) -- the same path the headless screenshot
+        // spike validated as pixel-correct -- and PNG-encode the resulting ShareableBitmap.
+        if (webkitHeadlessIsEnabled()) {
+            float deviceScale = nominalResolution ? 1 : protectedPage->deviceScaleFactor();
+            WebCore::IntSize bitmapSize = clip.size();
+            bitmapSize.scale(deviceScale);
+            OptionSet<SnapshotOption> options;
+            if (nominalResolution)
+                options.add(SnapshotOption::ExcludeDeviceScaleFactor);
+            protectedPage->takeSnapshotLegacy(clip, bitmapSize, options, [completionHandler = WTF::move(completionHandler)](std::optional<WebCore::ShareableBitmap::Handle>&& handle) mutable {
+                if (handle) {
+                    if (auto data = WebAutomationSession::platformGetBase64EncodedPNGData(WTF::move(*handle))) {
+                        completionHandler(emptyString(), makeString("data:image/png;base64,"_s, *data));
+                        return;
+                    }
+                }
+                completionHandler("Failed to take screenshot"_s, emptyString());
+            });
+            return;
+        }
+#endif
 #if PLATFORM(GTK) || (PLATFORM(WPE) && USE(SKIA))
         RefPtr<ViewSnapshot> viewSnapshot = protectedPage->pageClient()->takeViewSnapshot(WTF::move(clip), nominalResolution);
         if (viewSnapshot) {

@@ -42,6 +42,9 @@ PlatformDisplayID ScreenManager::generatePlatformDisplayID(GdkMonitor*)
 ScreenManager::ScreenManager()
 {
     auto* display = gdk_display_get_default();
+    // Headless spike: tolerate running without a GDK display.
+    if (!display)
+        return;
 #if USE(GTK4)
     auto* monitors = gdk_display_get_monitors(display);
     auto monitorsCount = g_list_model_get_n_items(monitors);
@@ -82,6 +85,10 @@ ScreenManager::ScreenManager()
 void ScreenManager::updatePrimaryDisplayID()
 {
     auto* display = gdk_display_get_default();
+    if (!display) {
+        m_primaryDisplayID = 0;
+        return;
+    }
 #if USE(GTK4)
     // GTK4 doesn't have the concept of primary monitor, so we always use the first one.
     auto* monitors = gdk_display_get_monitors(display);
@@ -119,8 +126,10 @@ ScreenProperties ScreenManager::collectScreenProperties() const
     properties.primaryDisplayID = m_primaryDisplayID;
 
 #if ENABLE(TOUCH_EVENTS)
-    if (auto* seat = gdk_display_get_default_seat(gdk_display_get_default()))
-        properties.screenHasTouchDevice = gdk_seat_get_capabilities(seat) & GDK_SEAT_CAPABILITY_TOUCH;
+    if (auto* displayForSeat = gdk_display_get_default()) {
+        if (auto* seat = gdk_display_get_default_seat(displayForSeat))
+            properties.screenHasTouchDevice = gdk_seat_get_capabilities(seat) & GDK_SEAT_CAPABILITY_TOUCH;
+    }
 #endif
 
     for (const auto& iter : m_screenToDisplayIDMap) {

@@ -47,6 +47,25 @@ static bool windowHasManyTabs(GtkWidget* widget) {
 void WebPageInspectorEmulationAgent::platformSetSize(int width, int height, Function<void (const String& error)>&& callback)
 {
     WebCore::IntSize viewSize(width, height);
+
+    // Headless pages have no GtkWidget/window to resize; drive the drawing area directly.
+    if (!m_page.viewWidget()) {
+        auto* headlessDrawingArea = static_cast<DrawingAreaProxyCoordinatedGraphics*>(m_page.drawingArea());
+        if (!headlessDrawingArea) {
+            callback("No backing store for headless page"_s);
+            return;
+        }
+        if (viewSize == headlessDrawingArea->size()) {
+            callback(String());
+            return;
+        }
+        headlessDrawingArea->waitForSizeUpdate([callback = WTF::move(callback), viewSize](const DrawingAreaProxyCoordinatedGraphics& drawingArea) mutable {
+            callback(viewSize == drawingArea.size() ? String() : "Failed to resize headless page"_s);
+        });
+        headlessDrawingArea->setSize(viewSize);
+        return;
+    }
+
     GtkWidget* viewWidget = m_page.viewWidget();
     GtkWidget* window = gtk_widget_get_toplevel(viewWidget);
     if (!window) {

@@ -30,6 +30,7 @@
 #include "AcceleratedSurfaceMessages.h"
 #include "DRMMainDevice.h"
 #include "Display.h"
+#include "WebKitHeadlessView.h"
 #include "HardwareAccelerationManager.h"
 #include "LayerTreeContext.h"
 #include "RendererBufferTransportMode.h"
@@ -92,6 +93,11 @@ OptionSet<RendererBufferTransportMode> AcceleratedBackingStore::rendererBufferTr
 
         mode.add(RendererBufferTransportMode::SharedMemory);
 
+        // Headless has no GdkDisplay to import DMA-BUF buffers into (building a GdkTexture
+        // requires a display), so use shared-memory transport only.
+        if (webkitHeadlessIsEnabled())
+            return;
+
         const char* forceSHM = getenv("WEBKIT_DMABUF_RENDERER_FORCE_SHM");
         if (forceSHM && g_strcmp0(forceSHM, "0"))
             return;
@@ -117,6 +123,12 @@ static bool gtkCanUseHardwareAcceleration()
     static bool canUseHardwareAcceleration;
     static std::once_flag onceFlag;
     std::call_once(onceFlag, [] {
+        // Headless: without a GDK display the UI process never touches GL; rendering
+        // capability is determined by the web process EGL display (surfaceless/GBM).
+        if (!gdk_display_get_default()) {
+            canUseHardwareAcceleration = true;
+            return;
+        }
         GUniqueOutPtr<GError> error;
 #if USE(GTK4)
         canUseHardwareAcceleration = gdk_display_prepare_gl(gdk_display_get_default(), &error.outPtr());
@@ -196,8 +208,16 @@ Ref<AcceleratedBackingStore> AcceleratedBackingStore::create(WebPageProxy& webPa
 AcceleratedBackingStore::AcceleratedBackingStore(WebPageProxy& webPage)
     : m_webPage(webPage)
     , m_fenceMonitor([this] {
-        if (m_webPage)
-            gtk_widget_queue_draw(m_webPage->viewWidget());
+        if (!m_webPage)
+            return;
+        if (auto* widget = m_webPage->viewWidget()) {
+            gtk_widget_queue_draw(widget);
+            return;
+        }
+        // Headless: no widget to schedule a draw on. Swap the rendered frame and
+        // acknowledge it immediately so the web process keeps producing frames.
+        if (swapBuffersIfNeeded())
+            frameDone();
     })
     , m_legacyMainFrameProcess(webPage.legacyMainFrameProcess())
 {

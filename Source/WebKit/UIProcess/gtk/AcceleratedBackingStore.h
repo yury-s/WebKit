@@ -33,6 +33,7 @@
 #include <WebCore/IntSize.h>
 #include <WebCore/RefPtrCairo.h>
 #include <gtk/gtk.h>
+#include <wtf/Function.h>
 #include <wtf/HashMap.h>
 #include <wtf/OptionSet.h>
 #include <wtf/RefCounted.h>

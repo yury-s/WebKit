@@ -334,6 +334,8 @@ public:
     void didDestroyFrame(WebCore::FrameIdentifier);
 
     static std::optional<String> platformGetBase64EncodedPNGData(const ViewSnapshot&);
+    // Get base64-encoded PNG data from a bitmap (used by the headless screenshot path).
+    static std::optional<String> platformGetBase64EncodedPNGData(WebCore::ShareableBitmap::Handle&&);
 
     RefPtr<WebPageProxy> webPageProxyForHandle(const String&);
     String effectiveHandleForWebFrameProxy(const WebFrameProxy&);
@@ -399,9 +401,6 @@ private:
 #if ENABLE(WEBDRIVER_WHEEL_INTERACTIONS)
     void platformSimulateWheelInteraction(WebPageProxy&, const WebCore::IntPoint& locationInViewport, const WebCore::IntSize& delta);
 #endif // ENABLE(WEBDRIVER_WHEEL_INTERACTIONS)
-
-    // Get base64-encoded PNG data from a bitmap.
-    static std::optional<String> platformGetBase64EncodedPNGData(WebCore::ShareableBitmap::Handle&&);
 
     // Save base64-encoded file contents to a local file path and return the path.
     // This reuses the basename of the remote file path so that the filename exposed to DOM API remains the same.

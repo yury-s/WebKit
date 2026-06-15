@@ -63,7 +63,11 @@ public:
     const LayerTreeContext& layerTreeContext() const LIFETIME_BOUND { return m_layerTreeContext; }
     void waitForSizeUpdate(Function<void (const DrawingAreaProxyCoordinatedGraphics&)>&&);
 #if !PLATFORM(WPE)
-    void captureFrame();
+    // Captures a screencast frame. For headed pages this is synchronous and the completion
+    // runs before returning; for headless pages it repaints asynchronously and the completion
+    // runs once the frame has been handed to the inspector. The completion lets the caller
+    // keep a single capture in flight so async frames are delivered in order.
+    void captureFrame(CompletionHandler<void()>&& = [] { });
 #endif
 
     void dispatchAfterEnsuringDrawing(CompletionHandler<void()>&&);
