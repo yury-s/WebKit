@@ -1163,7 +1163,8 @@ Inspector::Protocol::ErrorStringOr<String> InspectorPageAgent::snapshotRect(int 
         break;
     case Inspector::Protocol::Page::ImageFormat::Webp:
         mimeType = "image/webp"_s;
-        encodingQuality = quality.value_or(80) / 100.0;
+        // A quality of 1.0 (100) selects lossless WebP; default to it when omitted.
+        encodingQuality = quality.value_or(100) / 100.0;
         break;
     }
     return encodeDataURL(WTF::move(snapshot), mimeType, encodingQuality);

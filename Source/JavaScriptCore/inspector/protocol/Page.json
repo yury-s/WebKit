@@ -368,7 +368,7 @@
                 { "name": "coordinateSystem", "$ref": "CoordinateSystem", "description": "Indicates the coordinate system of the supplied rectangle." },
                 { "name": "omitDeviceScaleFactor", "type": "boolean", "optional": true, "description": "By default, screenshot is inflated by device scale factor to avoid blurry image. This flag disables it." },
                 { "name": "format", "$ref": "ImageFormat", "optional": true, "description": "Image format of the resulting snapshot. Defaults to \"png\"." },
-                { "name": "quality", "type": "integer", "optional": true, "description": "Compression quality from 0 to 100 (ignored for the \"png\" format). Defaults to 80." }
+                { "name": "quality", "type": "integer", "optional": true, "description": "Compression quality from 0 to 100 (ignored for the \"png\" format). For \"jpeg\" it defaults to 80. For \"webp\", omitting the quality or setting it to 100 produces a lossless image; any other value uses lossy compression at that quality." }
             ],
             "returns": [
                 { "name": "dataURL", "type": "string", "description": "Base64-encoded image data." }
