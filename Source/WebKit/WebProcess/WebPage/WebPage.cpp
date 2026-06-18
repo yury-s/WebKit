@@ -6626,7 +6626,10 @@ void WebPage::failedToShowPopupMenu()
     auto activePopupMenu = std::exchange(m_activePopupMenu, nullptr);
     if (auto* popupClient = activePopupMenu->client()) {
 #if PLATFORM(WPE)
-        popupClient->showFallbackPopupMenu();
+        if (isControlledByAutomation())
+            popupClient->popupDidHide();
+        else
+            popupClient->showFallbackPopupMenu();
 #else
         popupClient->popupDidHide();
 #endif
