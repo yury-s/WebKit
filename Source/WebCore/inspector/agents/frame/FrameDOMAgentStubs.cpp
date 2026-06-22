@@ -186,7 +186,7 @@ Inspector::CommandResult<void> FrameDOMAgent::hideFlexOverlay(std::optional<int>
     return makeUnexpected("Not supported for frame targets"_s);
 }
 
-Inspector::CommandResult<Ref<Inspector::Protocol::Runtime::RemoteObject>> FrameDOMAgent::resolveNode(int, const String&)
+Inspector::CommandResult<Ref<Inspector::Protocol::Runtime::RemoteObject>> FrameDOMAgent::resolveNode(std::optional<int>&&, const String&, const String&, std::optional<int>&&, const String&)
 {
     return makeUnexpected("Not yet implemented for frame targets"_s);
 }
@@ -224,6 +224,25 @@ Inspector::CommandResult<void> FrameDOMAgent::setInspectedNode(int)
 Inspector::CommandResult<Ref<Inspector::Protocol::DOM::MediaStats>> FrameDOMAgent::getMediaStats(int)
 {
     return makeUnexpected("Not supported for frame targets"_s);
+}
+
+Inspector::CommandResultOf<String, String> FrameDOMAgent::describeNode(const String&)
+{
+    return makeUnexpected("Not supported for frame targets"_s);
+}
+
+Inspector::CommandResult<void> FrameDOMAgent::scrollIntoViewIfNeeded(const String&, RefPtr<JSON::Object>&&)
+{
+    return makeUnexpected("Not supported for frame targets"_s);
+}
+
+Inspector::CommandResult<Ref<JSON::ArrayOf<Inspector::Protocol::DOM::Quad>>> FrameDOMAgent::getContentQuads(const String&)
+{
+    return makeUnexpected("Not supported for frame targets"_s);
+}
+
+void FrameDOMAgent::setInputFiles(const String&, Ref<JSON::Array>&&, Ref<Inspector::DOMBackendDispatcherHandler::SetInputFilesCallback>&&)
+{
 }
 
 } // namespace WebCore
