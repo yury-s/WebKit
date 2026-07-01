@@ -1779,6 +1779,9 @@ public:
 
     void backForwardRemovedItem(WebCore::BackForwardFrameItemIdentifier);
 
+    // Playwright: true while the inspector input agent is dispatching synthetic mouse input.
+    void setSimulatingUserInput(bool);
+
 #if ENABLE(DRAG_SUPPORT)    
     // Drag and drop support.
     void dragEntered(WebCore::DragData&, const String& dragStorageName = String());
@@ -4039,6 +4042,9 @@ private:
     unsigned m_pendingLearnOrIgnoreWordMessageCount { 0 };
 
     bool m_mainFrameHasCustomContentProvider { false };
+
+    // Playwright: true while the inspector input agent is dispatching synthetic mouse input.
+    bool m_simulatingUserInput { false };
 
 #if ENABLE(DRAG_SUPPORT)
     // Current drag destination details are delivered as an asynchronous response,

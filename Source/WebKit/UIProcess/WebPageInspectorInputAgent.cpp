@@ -102,6 +102,7 @@ void WebPageInspectorInputAgent::didProcessAllPendingKeyboardEvents()
 void WebPageInspectorInputAgent::didProcessAllPendingMouseEvents()
 {
     m_page.setInterceptDrags(false);
+    m_page.setSimulatingUserInput(false);
     m_mouseCallbacks->sendSuccess();
 }
 
@@ -278,6 +279,7 @@ void WebPageInspectorInputAgent::dispatchMouseEvent(const String& type, int x, i
     // to prevent them from creating actual drags in the host
     // operating system. This is turned off in the callback.
     m_page.setInterceptDrags(true);
+    m_page.setSimulatingUserInput(true);
     MonotonicTime timestamp = MonotonicTime::now();
 #if PLATFORM(MAC)
     UNUSED_VARIABLE(eventType);

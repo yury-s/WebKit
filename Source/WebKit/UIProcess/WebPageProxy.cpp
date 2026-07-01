@@ -4516,6 +4516,11 @@ void WebPageProxy::setInterceptDrags(bool shouldIntercept) {
 }
 #endif
 
+void WebPageProxy::setSimulatingUserInput(bool simulating)
+{
+    m_simulatingUserInput = simulating;
+}
+
 void WebPageProxy::didStartDrag(const std::optional<FrameIdentifier>& targetFrameID)
 {
     if (!hasRunningProcess())
@@ -12357,6 +12362,15 @@ void WebPageProxy::showContextMenu(FrameInfoData&& frameInfo, ContextMenuContext
         if (m_controlledByAutomation && automationSession->isSimulatingUserInteraction())
             return;
     }
+
+    // Playwright sets controlledByAutomation via WKPageSetControlledByAutomation but does not create a
+    // WebAutomationSession, so the check above never fires for it. While the inspector input agent is
+    // dispatching synthetic mouse input, suppress the native context menu: on Windows/Mac it runs a nested
+    // modal runloop that swallows the following synthetic click (e.g. a left click after a right click).
+    // The DOM 'contextmenu' event has already been dispatched in the WebProcess, so only the native UI is
+    // skipped. See https://github.com/microsoft/playwright/issues/39246.
+    if (m_controlledByAutomation && m_simulatingUserInput)
+        return;
 
 #if ENABLE(CONTEXT_MENUS)
     m_waitingForContextMenuToShow = true;
