@@ -231,7 +231,7 @@ Inspector::Protocol::Playwright::CookieSameSitePolicy cookieSameSitePolicy(WebCo
 
 Ref<Inspector::Protocol::Playwright::Cookie> buildObjectForCookie(const WebCore::Cookie& cookie)
 {
-    return Inspector::Protocol::Playwright::Cookie::create()
+    auto result = Inspector::Protocol::Playwright::Cookie::create()
         .setName(cookie.name)
         .setValue(cookie.value)
         .setDomain(cookie.domain)
@@ -242,6 +242,9 @@ Ref<Inspector::Protocol::Playwright::Cookie> buildObjectForCookie(const WebCore:
         .setSession(cookie.session)
         .setSameSite(cookieSameSitePolicy(cookie.sameSite))
         .release();
+    if (!cookie.partitionKey.isEmpty())
+        result->setPartitionKey(cookie.partitionKey);
+    return result;
 }
 
 void adjustInspectedPagePreferences(WebPreferences& preferences, std::optional<bool> enableStoragePartitioning)
@@ -843,6 +846,10 @@ void InspectorPlaywrightAgent::setCookies(const String& browserContextID, Ref<JS
             callback->sendFailure("Invalid file payload format"_s);
             return;
         }
+
+        String partitionKey;
+        if (obj->getString("partitionKey"_s, partitionKey))
+            cookie.partitionKey = partitionKey;
 
         std::optional<double> expires = obj->getDouble("expires"_s);
         if (expires && *expires != -1)
