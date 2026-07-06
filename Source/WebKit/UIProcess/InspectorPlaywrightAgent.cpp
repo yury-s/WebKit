@@ -723,7 +723,6 @@ void InspectorPlaywrightAgent::navigate(const String& url, const String& pagePro
 
 Inspector::Protocol::ErrorStringOr<void> InspectorPlaywrightAgent::grantFileReadAccess(const String& pageProxyID, Ref<JSON::Array>&& paths)
 {
-#if ENABLE(SANDBOX_EXTENSIONS)
     auto* pageProxyChannel = m_pageProxyChannels.get(pageProxyID);
     if (!pageProxyChannel)
         return makeUnexpected("Unknown pageProxyID"_s);
@@ -732,11 +731,15 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPlaywrightAgent::grantFileRead
     for (const auto& value : paths.get()) {
         String path;
         if (!value->asString(path))
-            return makeUnexpected("Filr path must be a string"_s);
+            return makeUnexpected("File path must be a string"_s);
 
         files.append(path);
     }
 
+    for (const auto& file : files)
+        pageProxyChannel->page().legacyMainFrameProcess().addPreviouslyApprovedFileURL(URL::fileURLWithFileSystemPath(file));
+
+#if ENABLE(SANDBOX_EXTENSIONS)
     auto sandboxExtensionHandles = SandboxExtension::createReadOnlyHandlesForFiles("InspectorPlaywrightAgent::grantFileReadAccess"_s, files);
     pageProxyChannel->page().legacyMainFrameProcess().send(Messages::WebPage::ExtendSandboxForFilesFromOpenPanel(WTF::move(sandboxExtensionHandles)), pageProxyChannel->page().webPageIDInMainFrameProcess());
 #endif
