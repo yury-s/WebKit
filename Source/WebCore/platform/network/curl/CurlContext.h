@@ -328,6 +328,8 @@ private:
     };
 
     void enableRequestHeaders();
+    void appendProxyRequestHeader(String&&);
+    void enableProxyRequestHeaders();
 
     static CURLcode willSetupSslCtxCallback(CURL*, void* sslCtx, void* userData);
     CURLcode willSetupSslCtx(void* sslCtx);
@@ -340,6 +342,7 @@ private:
     URL m_url;
     CurlSList m_localhostAlias;
     CurlSList m_requestHeaders;
+    CurlSList m_proxyRequestHeaders;
 
     std::unique_ptr<CurlSSLVerifier> m_sslVerifier;
     std::unique_ptr<TLSConnectionInfo> m_tlsConnectionInfo;
