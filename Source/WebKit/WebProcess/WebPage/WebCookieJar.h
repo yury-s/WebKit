@@ -81,6 +81,8 @@ public:
     void setOptInCookiePartitioningEnabled(bool);
 #endif
 
+    void setCookieFromResponse(WebCore::ResourceLoader&, const String& setCookieValue);
+
 private:
     WebCookieJar();
 
