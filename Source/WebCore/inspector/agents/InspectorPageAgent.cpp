@@ -277,6 +277,10 @@ Inspector::Protocol::ErrorStringOr<void> InspectorPageAgent::overrideSetting(Ins
         return { };
 #endif
 
+    case Inspector::Protocol::Page::Setting::PushAPIEnabled:
+        inspectedPageSettings.setPushAPIEnabled(value.value_or(false));
+        return { };
+
     case Inspector::Protocol::Page::Setting::ICECandidateFilteringEnabled:
         inspectedPageSettings.setICECandidateFilteringEnabledInspectorOverride(value);
         return { };

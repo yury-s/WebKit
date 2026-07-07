@@ -25,7 +25,6 @@
 
 [
     Conditional=DEVICE_ORIENTATION,
-    EnabledBySetting=DeviceOrientationEventEnabled,
     Exposed=Window,
     SecureContext
 ] interface DeviceOrientationEvent : Event {
