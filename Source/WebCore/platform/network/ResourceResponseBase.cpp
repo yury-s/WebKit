@@ -942,6 +942,7 @@ void Coder<WebCore::ResourceResponseData>::encodeForPersistence(Encoder& encoder
     encoder << data.httpStatusText;
     encoder << data.httpVersion;
     encoder << data.httpHeaderFields;
+    encoder << data.httpRequestHeaderFields;
     encoder << data.httpStatusCode;
     encoder << data.certificateInfo;
     encoder << data.source;
