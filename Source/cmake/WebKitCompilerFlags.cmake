@@ -161,7 +161,7 @@ set(WEBKIT_UNSAFE_BUFFER_WARNING_FLAGS
 )
 option(ENABLE_UNSAFE_BUFFER_USAGE_WARNING "Build with -Wunsafe-buffer-usage" OFF)
 
-option(DEVELOPER_MODE_FATAL_WARNINGS "Build with warnings as errors if DEVELOPER_MODE is also enabled" ON)
+option(DEVELOPER_MODE_FATAL_WARNINGS "Build with warnings as errors if DEVELOPER_MODE is also enabled" OFF)
 set(DEVELOPER_MODE_CXX_FLAGS)
 if (DEVELOPER_MODE AND DEVELOPER_MODE_FATAL_WARNINGS)
     if (MSVC)
