@@ -27,14 +27,33 @@
 #include "PageInspectorTargetProxy.h"
 
 #include "WebPageProxy.h"
+
+#if ENABLE(WPE_PLATFORM)
+#include <wpe/wpe-platform.h>
+#endif
+
+#if USE(LIBWPE)
 #include <wpe/wpe.h>
+#endif
 
 namespace WebKit {
 
 void PageInspectorTargetProxy::platformActivate(String& error) const
 {
+    UNUSED_PARAM(error);
+#if ENABLE(WPE_PLATFORM)
+    // WPEPlatform path: there is no libwpe view backend; focusing the WPEView marks it as
+    // focused, and visible/in-window activity states are derived from its toplevel.
+    if (auto* wpeView = m_page->wpeView()) {
+        wpe_view_focus_in(wpeView);
+        return;
+    }
+#endif
+
+#if USE(LIBWPE)
     struct wpe_view_backend* backend = m_page->viewBackend();
     wpe_view_backend_add_activity_state(backend, wpe_view_activity_state_visible | wpe_view_activity_state_focused | wpe_view_activity_state_in_window);
+#endif
 }
 
 } // namespace WebKit

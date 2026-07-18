@@ -316,6 +316,11 @@ void WebPageInspectorController::didPaint(sk_sp<SkImage>&& surface)
 }
 #endif
 
+bool WebPageInspectorController::screencastActive() const
+{
+    return m_screecastAgent && m_screecastAgent->isActive();
+}
+
 
 void WebPageInspectorController::navigate(WebCore::ResourceRequest&& request, WebFrameProxy* frame, NavigationHandler&& completionHandler)
 {

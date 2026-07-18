@@ -44,7 +44,10 @@
 #endif
 
 WTF_IGNORE_WARNINGS_IN_THIRD_PARTY_CODE_BEGIN
+#include <skia/core/SkBitmap.h>
+#include <skia/core/SkCanvas.h>
 #include <skia/core/SkColorSpace.h>
+#include <skia/core/SkImage.h>
 #include <skia/core/SkPixmap.h>
 #include <skia/core/SkStream.h>
 #include <skia/encode/SkPngEncoder.h>
@@ -229,7 +232,7 @@ static Expected<SkImageInfo, String> getImageInfoFromBuffer(const  GRefPtr<WPEBu
     return makeUnexpected("Failed to extract snapshot pixel information"_s);
 }
 
-static Expected<Ref<ViewSnapshot>, String> saveBufferSnapshot(const GRefPtr<WPEBuffer>& buffer, std::optional<WebCore::IntRect>&& clipRect, bool nominalResolution)
+static Expected<Ref<ViewSnapshot>, String> saveBufferSnapshot(const GRefPtr<WPEBuffer>& buffer, std::optional<WebCore::IntRect>&& clipRect, bool nominalResolution, WebPageProxy& page)
 {
     GUniqueOutPtr<GError> error;
     GBytes* pixels = wpe_buffer_import_to_pixels(buffer.get(), &error.outPtr());
@@ -239,6 +242,9 @@ static Expected<Ref<ViewSnapshot>, String> saveBufferSnapshot(const GRefPtr<WPEB
         return makeUnexpected("Failed to read current WPEBuffer for snapshot"_s);
     }
 
+    // wpe_buffer_import_to_pixels() returns memory owned by the WPEBuffer (transfer none), which
+    // may be recycled once a newer frame is committed. Copy it into a GBytes owned by the SkImage
+    // so snapshots (including per-frame screencast captures) can safely outlive the buffer.
     gsize pixelsDataSize;
     const auto* pixelsData = g_bytes_get_data(pixels, &pixelsDataSize);
     GRefPtr<GBytes> bytes = adoptGRef(g_bytes_new(pixelsData, pixelsDataSize));
@@ -247,13 +253,18 @@ static Expected<Ref<ViewSnapshot>, String> saveBufferSnapshot(const GRefPtr<WPEB
     if (!info)
         return makeUnexpected(info.error());
 
-    sk_sp<SkImage> fullScreenshot = SkImage::MakeRasterDirect(info, pixelsData, info->minRowBytes());
+    SkPixmap pixmap(info.value(), g_bytes_get_data(bytes.get(), nullptr), info->minRowBytes());
+    sk_sp<SkImage> fullScreenshot = SkImages::RasterFromPixmap(pixmap, [](const void*, void* context) {
+        g_bytes_unref(static_cast<GBytes*>(context));
+    }, bytes.leakRef());
+    if (!fullScreenshot)
+        return makeUnexpected("Failed to create snapshot image"_s);
 
-    float deviceScale = m_view.page().deviceScaleFactor();
+    float deviceScale = page.deviceScaleFactor();
     if (!clipRect && (!nominalResolution || deviceScale == 1))
         return { ViewSnapshot::create(WTF::move(fullScreenshot)) };
 
-    WebCore::IntSize size = clipRect ? clipRect->size() : m_view.page().viewSize();
+    WebCore::IntSize size = clipRect ? clipRect->size() : page.viewSize();
     if (!nominalResolution) {
         size.scale(deviceScale);
         if (clipRect)
@@ -271,7 +282,7 @@ static Expected<Ref<ViewSnapshot>, String> saveBufferSnapshot(const GRefPtr<WPEB
     if (nominalResolution)
         canvas.scale(1/deviceScale, 1/deviceScale);
     canvas.drawImage(fullScreenshot, 0, 0);
-    return { ViewSnapshot::create(WTF::move(bitmap.asImage())) };
+    return { ViewSnapshot::create(bitmap.asImage()) };
 }
 
 Expected<Ref<ViewSnapshot>, String> AcceleratedBackingStore::takeSnapshot(std::optional<WebCore::IntRect>&& clipRect, bool nominalResolution)
@@ -279,7 +290,11 @@ Expected<Ref<ViewSnapshot>, String> AcceleratedBackingStore::takeSnapshot(std::o
     if (!m_committedBuffer && !m_pendingBuffer) [[unlikely]]
         return makeUnexpected("No buffer to create snapshot from"_s);
 
-    return saveBufferSnapshot(m_committedBuffer ? m_committedBuffer : m_pendingBuffer, WTF::move(clipRect), nominalResolution);
+    RefPtr page = m_webPage.get();
+    if (!page)
+        return makeUnexpected("No page to create snapshot from"_s);
+
+    return saveBufferSnapshot(m_committedBuffer ? m_committedBuffer : m_pendingBuffer, WTF::move(clipRect), nominalResolution, *page);
 }
 
 void AcceleratedBackingStore::renderPendingBuffer()

@@ -28,7 +28,14 @@
 
 #include "DrawingAreaProxyCoordinatedGraphics.h"
 #include "WebPageProxy.h"
+
+#if ENABLE(WPE_PLATFORM)
+#include <wpe/wpe-platform.h>
+#endif
+
+#if USE(LIBWPE)
 #include <wpe/wpe.h>
+#endif
 
 namespace WebKit {
 
@@ -40,14 +47,33 @@ void WebPageInspectorEmulationAgent::platformSetSize(int width, int height, Func
         return;
     }
 
+    auto waitForSizeUpdate = [this, callback = WTF::move(callback)]() mutable {
+        if (auto* drawingArea = static_cast<DrawingAreaProxyCoordinatedGraphics*>(m_page.drawingArea())) {
+            drawingArea->waitForSizeUpdate([callback = WTF::move(callback)](const DrawingAreaProxyCoordinatedGraphics&) mutable {
+                callback(String());
+            });
+        } else
+            callback(String());
+    };
+
+#if ENABLE(WPE_PLATFORM)
+    // WPEPlatform path: there is no libwpe view backend, so resize the WPEView's toplevel, which
+    // propagates the new size to the web process via WKWPE::ViewPlatform's "resized" signal. Note
+    // this only works reliably on displays where the client controls the toplevel size (e.g. the
+    // headless display); on Wayland the compositor's configure event may override the request.
+    if (auto* wpeView = m_page.wpeView()) {
+        if (auto* toplevel = wpe_view_get_toplevel(wpeView))
+            wpe_toplevel_resize(toplevel, viewSize.width(), viewSize.height());
+        waitForSizeUpdate();
+        return;
+    }
+#endif
+
+#if USE(LIBWPE)
     struct wpe_view_backend* backend = m_page.viewBackend();
     wpe_view_backend_dispatch_set_size(backend, viewSize.width(), viewSize.height());
-    if (auto* drawingArea = static_cast<DrawingAreaProxyCoordinatedGraphics*>(m_page.drawingArea())) {
-        drawingArea->waitForSizeUpdate([callback = WTF::move(callback)](const DrawingAreaProxyCoordinatedGraphics&) mutable {
-            callback(String());
-        });
-    } else
-        callback(String());
+#endif
+    waitForSizeUpdate();
 }
 
 } // namespace WebKit

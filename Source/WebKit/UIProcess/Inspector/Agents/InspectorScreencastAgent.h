@@ -71,6 +71,8 @@ public:
     void didPaint(sk_sp<SkImage>&& surface);
 #endif
 
+    bool isActive() const { return m_screencast; }
+
     Inspector::Protocol::ErrorStringOr<int /* generation */> startScreencast(int width, int height, int toolbarHeight, int quality) override;
     Inspector::Protocol::ErrorStringOr<void> screencastFrameAck(int generation) override;
     Inspector::Protocol::ErrorStringOr<void> stopScreencast() override;

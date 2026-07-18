@@ -85,6 +85,9 @@ static const char* configFile;
 static gboolean useLegacyAPI;
 #endif
 static const char* defaultWindowTitle = "WPEWebKit MiniBrowser";
+// Playwright begin
+static WPEDisplay* browserDisplay;
+// Playwright end
 #endif
 
 static gboolean parseWindowSize(const char*, const char* value, gpointer, GError** error)
@@ -315,6 +318,19 @@ static gboolean decidePermissionRequest(WebKitWebView *, WebKitPermissionRequest
 }
 
 #if defined(USE_LIBWPE) && USE_LIBWPE
+// Playwright begin
+// viewBackend is null in WPEPlatform mode, frames are captured from the WPEView's committed buffer then.
+static void setHeadlessScreenshotCallback(WebKitWebViewBackend* viewBackend)
+{
+    if (!headlessMode || !viewBackend)
+        return;
+    webkit_web_view_backend_set_screenshot_callback(viewBackend,
+        [](gpointer data) {
+            return static_cast<WPEToolingBackends::HeadlessViewBackend*>(data)->snapshot();
+        });
+}
+// Playwright end
+
 static std::unique_ptr<WPEToolingBackends::ViewBackend> createViewBackend(uint32_t width, uint32_t height)
 {
 #if ENABLE_WPE_PLATFORM
@@ -389,12 +405,9 @@ static WebKitWebView* createWebViewImpl(WebKitWebView* webView, WebKitWebContext
 #endif
 
 // Playwright begin
-    if (headlessMode) {
-        webkit_web_view_backend_set_screenshot_callback(viewBackend,
-            [](gpointer data) {
-                return static_cast<WPEToolingBackends::HeadlessViewBackend*>(data)->snapshot();
-            });
-    }
+#if defined(USE_LIBWPE) && USE_LIBWPE
+    setHeadlessScreenshotCallback(viewBackend);
+#endif
 // Playwright end
     WebKitWebView* newWebView;
     if (webView) {
@@ -408,6 +421,10 @@ static WebKitWebView* createWebViewImpl(WebKitWebView* webView, WebKitWebContext
         newWebView = WEBKIT_WEB_VIEW(g_object_new(WEBKIT_TYPE_WEB_VIEW,
 #if defined(USE_LIBWPE) && USE_LIBWPE
             "backend", viewBackend,
+#endif
+#if ENABLE_WPE_PLATFORM
+            // Playwright: never fall back to the default native display.
+            "display", browserDisplay,
 #endif
             "web-context", webContext,
             "is-controlled-by-automation", TRUE,
@@ -520,7 +537,6 @@ static void loadConfigFile(WebKitSettings* webkitSettings
 #endif
 }
 
-#if defined(USE_LIBWPE) && USE_LIBWPE
 static WebKitWebView* createWebView(WebKitWebView* webView, WebKitNavigationAction*, gpointer user_data)
 {
     return createWebViewImpl(webView, nullptr, user_data);
@@ -567,8 +583,18 @@ static gboolean webViewDecidePolicy(WebKitWebView *webView, WebKitPolicyDecision
         return FALSE;
 
     guint modifiers = webkit_navigation_action_get_modifiers(navigationAction);
+    // The modifier values depend on the API in use, see toPlatformModifiers() in WebKitPrivate.cpp.
+#if defined(USE_LIBWPE) && USE_LIBWPE
+    guint ctrlShiftMask = wpe_input_keyboard_modifier_control | wpe_input_keyboard_modifier_shift;
+#if ENABLE_WPE_PLATFORM
+    if (!useLegacyAPI)
+        ctrlShiftMask = WPE_MODIFIER_KEYBOARD_CONTROL | WPE_MODIFIER_KEYBOARD_SHIFT;
+#endif
+#else
+    const guint ctrlShiftMask = WPE_MODIFIER_KEYBOARD_CONTROL | WPE_MODIFIER_KEYBOARD_SHIFT;
+#endif
     if (webkit_navigation_action_get_mouse_button(navigationAction) != 2 /* GDK_BUTTON_MIDDLE */ &&
-        (webkit_navigation_action_get_mouse_button(navigationAction) != 1 /* GDK_BUTTON_PRIMARY */ || (modifiers & (wpe_input_keyboard_modifier_control | wpe_input_keyboard_modifier_shift)) == 0))
+        (webkit_navigation_action_get_mouse_button(navigationAction) != 1 /* GDK_BUTTON_PRIMARY */ || (modifiers & ctrlShiftMask) == 0))
         return FALSE;
 
     /* Open a new tab if link clicked with the middle button, shift+click or ctrl+click. */
@@ -612,6 +638,7 @@ static void configureBrowserInspectorPort(GApplication* application)
     webkit_browser_inspector_initialize_web_socket(remoteDebuggingPort, proxy, ignoreHosts);
 }
 
+#if defined(USE_LIBWPE) && USE_LIBWPE
 static void activate(GApplication* application, WPEToolingBackends::ViewBackend* backend)
 #else
 static void activate(GApplication* application, gpointer)
@@ -776,12 +803,7 @@ static void activate(GApplication* application, gpointer)
 #endif
 
 #if ENABLE_WPE_PLATFORM_HEADLESS
-#if defined(USE_LIBWPE) && USE_LIBWPE
-    const bool useHeadlessMode = headlessMode && !useLegacyAPI;
-#else
-    const bool useHeadlessMode = headlessMode;
-#endif
-    WPEDisplay* wpeDisplay = useHeadlessMode ? wpe_display_headless_new() : nullptr;
+    WPEDisplay* wpeDisplay = browserDisplay;
 #endif
 
     webkit_web_context_set_automation_allowed(webContext, automationMode);
@@ -791,12 +813,9 @@ static void activate(GApplication* application, gpointer)
         nullptr);
 
 // Playwright begin
-    if (headlessMode) {
-        webkit_web_view_backend_set_screenshot_callback(viewBackend,
-            [](gpointer data) {
-                return static_cast<WPEToolingBackends::HeadlessViewBackend*>(data)->snapshot();
-            });
-    }
+#if defined(USE_LIBWPE) && USE_LIBWPE
+    setHeadlessScreenshotCallback(viewBackend);
+#endif
 // Playwright end
 
     auto* webView = WEBKIT_WEB_VIEW(g_object_new(WEBKIT_TYPE_WEB_VIEW,
@@ -817,9 +836,6 @@ static void activate(GApplication* application, gpointer)
         nullptr));
     g_object_unref(settings);
     g_object_unref(defaultWebsitePolicies);
-#if ENABLE_WPE_PLATFORM_HEADLESS
-    g_clear_object(&wpeDisplay);
-#endif
 
 #if defined(USE_LIBWPE) && USE_LIBWPE
     if (backend) {
@@ -915,6 +931,16 @@ int main(int argc, char *argv[])
     }
     g_option_context_free(context);
 
+// Playwright begin
+    if (headlessMode) {
+        // Render in software, as with libwpe: wpe_display_get_drm_device() returns NULL under this
+        // env var, keeping web processes on shared-memory buffers instead of the desktop GPU.
+        g_setenv("LIBGL_ALWAYS_SOFTWARE", "true", FALSE);
+        // The Skia DMABuf atlas crashes the web process on the software rendering path.
+        g_setenv("WEBKIT_DISABLE_DMABUF_ATLAS", "1", FALSE);
+    }
+// Playwright end
+
     if (printVersion) {
         g_print("WPE WebKit %u.%u.%u",
             webkit_get_major_version(),
@@ -975,6 +1001,25 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
+#endif
+
+#if ENABLE_WPE_PLATFORM_HEADLESS
+// Playwright begin
+#if defined(USE_LIBWPE) && USE_LIBWPE
+    const bool useHeadlessMode = headlessMode && !useLegacyAPI;
+#else
+    const bool useHeadlessMode = headlessMode;
+#endif
+    if (useHeadlessMode) {
+        // Shared headless display passed explicitly to every view; a view without a display would
+        // fall back to wpe_display_get_default() and open a real window on the native display.
+        browserDisplay = wpe_display_headless_new();
+        // Declare mouse + keyboard (headless has none by default) so CSS media features report
+        // hover and a fine pointer, like a desktop browser.
+        wpe_display_set_available_input_devices(browserDisplay,
+            static_cast<WPEAvailableInputDevices>(WPE_AVAILABLE_INPUT_DEVICE_MOUSE | WPE_AVAILABLE_INPUT_DEVICE_KEYBOARD));
+    }
+// Playwright end
 #endif
 
     openViews = g_hash_table_new_full(nullptr, nullptr, g_object_unref, nullptr);

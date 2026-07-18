@@ -29,7 +29,6 @@
 #include "NativeWebKeyboardEvent.h"
 #include "WebPageProxy.h"
 #include <WebCore/PlatformKeyboardEvent.h>
-#include <wpe/wpe.h>
 
 namespace WebKit {
 

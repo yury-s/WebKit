@@ -127,6 +127,7 @@ public:
 #if USE(SKIA)
     void didPaint(sk_sp<SkImage>&&);
 #endif
+    bool screencastActive() const;
     using NavigationHandler = Function<void(const String&, Markable<WebCore::NavigationIdentifier>)>;
     void navigate(WebCore::ResourceRequest&&, WebFrameProxy*, NavigationHandler&&);
     void didReceivePolicyDecision(WebCore::PolicyAction action, std::optional<WebCore::NavigationIdentifier> navigationID);

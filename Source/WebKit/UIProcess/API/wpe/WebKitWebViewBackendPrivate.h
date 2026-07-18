@@ -31,6 +31,6 @@ WTF_DECLARE_GREF_TRAITS(WebKitWebViewBackend)
 
 void webkitWebViewBackendUnref(WebKitWebViewBackend*);
 
-#endif // USE(LIBWPE)
-
 PlatformImage webkitWebViewBackendTakeScreenshot(WebKitWebViewBackend*);
+
+#endif // USE(LIBWPE)

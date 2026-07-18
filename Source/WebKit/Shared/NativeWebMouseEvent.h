@@ -91,7 +91,7 @@ public:
     NativeWebMouseEvent(HWND, UINT message, WPARAM, LPARAM, bool, float deviceScaleFactor);
 #endif
 
-#if PLATFORM(GTK) || USE(LIBWPE) || PLATFORM(WIN)
+#if PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN)
     NativeWebMouseEvent(WebEventType type, WebMouseEventButton button, unsigned short buttons, const WebCore::IntPoint& position, const WebCore::IntPoint& globalPosition, float deltaX, float deltaY, float deltaZ, int clickCount, OptionSet<WebEventModifier> modifiers, MonotonicTime timestamp)
         : WebMouseEvent({type, modifiers, timestamp}, button, buttons, position, globalPosition, deltaX, deltaY, deltaZ, clickCount, 0, WebEventInputSource::UserDriven) { }
 #endif

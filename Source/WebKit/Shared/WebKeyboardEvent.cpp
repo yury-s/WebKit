@@ -173,7 +173,7 @@ WebKeyboardEvent::WebKeyboardEvent(WebEvent&& event, const String& text, const S
 
 #endif
 
-#if PLATFORM(WIN) || USE(LIBWPE)
+#if PLATFORM(WIN) || USE(LIBWPE) || ENABLE(WPE_PLATFORM)
 
 WebKeyboardEvent::WebKeyboardEvent(WebEventType type, const String& text, const String& unmodifiedText, const String& key, const String& code, const String& keyIdentifier, int windowsVirtualKeyCode, int nativeVirtualKeyCode, bool isAutoRepeat, bool isKeypad, bool isSystemKey, OptionSet<WebEventModifier> modifiers, MonotonicTime timestamp)
     : WebEvent(type, modifiers, timestamp)
