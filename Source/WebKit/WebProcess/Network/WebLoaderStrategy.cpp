@@ -389,6 +389,8 @@ static void addParametersShared(const LocalFrame* frame, NetworkResourceLoadPara
     parameters.crossOriginAccessControlCheckEnabled = CrossOriginAccessControlCheckDisabler::singleton().crossOriginAccessControlCheckEnabled();
     parameters.hadMainFrameMainResourcePrivateRelayed = WebProcess::singleton().hadMainFrameMainResourcePrivateRelayed();
 
+    WebProcess::singleton().applyOverrideLanguagesToRequest(parameters.request);
+
     if (!frame)
         return;
 

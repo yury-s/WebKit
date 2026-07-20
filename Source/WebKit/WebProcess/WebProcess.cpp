@@ -632,7 +632,8 @@ void WebProcess::initializeWebProcess(WebProcessCreationParameters&& parameters,
 
     if (!parameters.overrideLanguages.isEmpty()) {
         LOG_WITH_STREAM(Language, stream << "Web Process initialization is setting overrideLanguages: " << parameters.overrideLanguages);
-        overrideUserPreferredLanguages(parameters.overrideLanguages);
+        m_overrideLanguages = parameters.overrideLanguages;
+        overrideUserPreferredLanguages(m_overrideLanguages);
     } else
         LOG(Language, "Web process initialization is not setting overrideLanguages");
 
@@ -1010,10 +1011,18 @@ void WebProcess::setDisableFontSubpixelAntialiasingForTesting(bool disable)
     WebCore::FontCascade::setDisableFontSubpixelAntialiasingForTesting(disable);
 }
 
-void WebProcess::userPreferredLanguagesChanged(const Vector<String>& languages) const
+void WebProcess::userPreferredLanguagesChanged(const Vector<String>& languages)
 {
     LOG_WITH_STREAM(Language, stream << "The web process's userPreferredLanguagesChanged: " << languages);
-    overrideUserPreferredLanguages(languages);
+    m_overrideLanguages = languages;
+    overrideUserPreferredLanguages(m_overrideLanguages);
+}
+
+void WebProcess::applyOverrideLanguagesToRequest(ResourceRequest& request) const
+{
+    if (m_overrideLanguages.isEmpty() || request.hasHTTPHeaderField(HTTPHeaderName::AcceptLanguage))
+        return;
+    request.setHTTPHeaderField(HTTPHeaderName::AcceptLanguage, makeStringByJoining(m_overrideLanguages.span(), ", "_s));
 }
 
 void WebProcess::fullKeyboardAccessModeChanged(bool fullKeyboardAccessEnabled)
