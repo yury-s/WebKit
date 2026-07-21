@@ -64,6 +64,7 @@ class CachedResource;
 class Document;
 class DocumentLoader;
 class DocumentThreadableLoader;
+class FormData;
 class NetworkLoadMetrics;
 class NetworkResourcesData;
 class ResourceError;
@@ -91,6 +92,7 @@ public:
     Inspector::Protocol::ErrorStringOr<void> enable() override;
     Inspector::Protocol::ErrorStringOr<void> disable() final;
     Inspector::Protocol::ErrorStringOr<void> setExtraHTTPHeaders(Ref<JSON::Object>&&) final;
+    void getRequestPostData(const Inspector::Protocol::Network::RequestId&, Ref<GetRequestPostDataCallback>&&) final;
     void getResponseBody(const Inspector::Protocol::Network::RequestId&, Ref<GetResponseBodyCallback>&&) final;
     Inspector::Protocol::ErrorStringOr<void> setResourceCachingDisabled(bool) final;
     Inspector::Protocol::ErrorStringOr<void> setClearResourceDataOnNavigate(bool) final;
@@ -161,6 +163,8 @@ protected:
     virtual bool shouldForceBufferingNetworkResourceData() const = 0;
 
 private:
+    class RequestBodyResolver;
+
     void willSendRequest(ResourceLoaderIdentifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, Inspector::ResourceType, ResourceLoader*);
 
     bool shouldIntercept(URL, Inspector::Protocol::Network::NetworkStage);
@@ -185,6 +189,14 @@ private:
 
     MemoryCompactRobinHoodHashMap<String, String> m_extraRequestHeaders;
     HashSet<ResourceLoaderIdentifier> m_hiddenRequestIdentifiers;
+
+    // Blob-backed request bodies, kept so that getRequestPostData can resolve them on demand.
+    struct PendingRequestBody {
+        RefPtr<Document> document;
+        RefPtr<FormData> formData;
+    };
+    MemoryCompactRobinHoodHashMap<String, PendingRequestBody> m_pendingRequestBodies;
+    Vector<Ref<RequestBodyResolver>> m_requestBodyResolvers;
 
     Vector<Inspector::Intercept> m_intercepts;
     MemoryCompactRobinHoodHashMap<String, std::unique_ptr<Inspector::PendingInterceptRequest>> m_pendingInterceptRequests;

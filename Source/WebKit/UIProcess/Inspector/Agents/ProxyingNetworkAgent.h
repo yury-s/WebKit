@@ -79,6 +79,7 @@ public:
     CommandResult<void> enable() final;
     CommandResult<void> disable() final;
     CommandResult<void> setExtraHTTPHeaders(Ref<JSON::Object>&&) final;
+    void getRequestPostData(const Protocol::Network::RequestId&, Ref<GetRequestPostDataCallback>&&) final;
     void getResponseBody(const Protocol::Network::RequestId&, Ref<GetResponseBodyCallback>&&) final;
     CommandResult<void> setResourceCachingDisabled(bool) final;
     CommandResult<void> setClearResourceDataOnNavigate(bool) final;

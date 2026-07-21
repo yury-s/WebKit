@@ -321,6 +321,12 @@ CommandResult<void> ProxyingNetworkAgent::setExtraHTTPHeaders(Ref<JSON::Object>&
     return { };
 }
 
+void ProxyingNetworkAgent::getRequestPostData(const Protocol::Network::RequestId& requestId, Ref<GetRequestPostDataCallback>&& callback)
+{
+    // FIXME: proxy to the web process once this architecture tracks blob-backed request bodies.
+    callback->sendFailure("Not supported"_s);
+}
+
 void ProxyingNetworkAgent::getResponseBody(const Protocol::Network::RequestId& requestId, Ref<GetResponseBodyCallback>&& callback)
 {
     auto parsed = IdentifierRegistry::parseProtocolRequestId(requestId);

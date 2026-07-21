@@ -40,6 +40,7 @@
 #include "CertificateInfo.h"
 #include "CertificateSummary.h"
 #include "CookieJar.h"
+#include "BlobLoader.h"
 #include "DocumentInlines.h"
 #include "DocumentLoader.h"
 #include "DocumentThreadableLoader.h"
@@ -132,6 +133,79 @@ InspectorNetworkAgent::InspectorNetworkAgent(WebAgentContext& context, const Net
 }
 
 InspectorNetworkAgent::~InspectorNetworkAgent() = default;
+
+// Reads the contents of a request body that references blobs, so that the full body bytes
+// can be reported to the frontend. Files are skipped, matching FormData::flatten().
+class InspectorNetworkAgent::RequestBodyResolver : public RefCounted<RequestBodyResolver> {
+public:
+    using CompletionHandler = Function<void(RequestBodyResolver&, std::optional<Vector<uint8_t>>&&)>;
+
+    static Ref<RequestBodyResolver> create(Document& document, FormData& formData, CompletionHandler&& completionHandler)
+    {
+        return adoptRef(*new RequestBodyResolver(document, formData, WTF::move(completionHandler)));
+    }
+
+    void start() { readNextElement(); }
+
+    void cancel()
+    {
+        m_completionHandler = nullptr;
+        if (RefPtr blobLoader = std::exchange(m_blobLoader, nullptr))
+            blobLoader->cancel();
+    }
+
+private:
+    RequestBodyResolver(Document& document, FormData& formData, CompletionHandler&& completionHandler)
+        : m_document(document)
+        , m_formData(formData)
+        , m_completionHandler(WTF::move(completionHandler))
+    {
+    }
+
+    void complete(std::optional<Vector<uint8_t>>&& data)
+    {
+        if (auto completionHandler = std::exchange(m_completionHandler, nullptr))
+            completionHandler(*this, WTF::move(data));
+    }
+
+    void readNextElement()
+    {
+        auto& elements = m_formData->elements();
+        while (m_index < elements.size()) {
+            auto& element = elements[m_index++];
+            if (auto* bytes = std::get_if<Vector<uint8_t>>(&element.data))
+                m_data.append(bytes->span());
+            else if (auto* blobData = std::get_if<FormDataElement::EncodedBlobData>(&element.data)) {
+                m_blobLoader = BlobLoader::create([this, protectedThis = Ref { *this }](BlobLoader& blobLoader) {
+                    didLoadBlob(blobLoader);
+                });
+                protect(m_blobLoader)->start(blobData->url, m_document.get(), FileReaderLoader::ReadAsArrayBuffer);
+                return;
+            }
+        }
+        complete(WTF::move(m_data));
+    }
+
+    void didLoadBlob(BlobLoader& blobLoader)
+    {
+        m_blobLoader = nullptr;
+        if (blobLoader.errorCode()) {
+            complete(std::nullopt);
+            return;
+        }
+        if (RefPtr buffer = blobLoader.arrayBufferResult())
+            m_data.append(buffer->span());
+        readNextElement();
+    }
+
+    const RefPtr<Document> m_document;
+    const Ref<FormData> m_formData;
+    size_t m_index { 0 };
+    Vector<uint8_t> m_data;
+    RefPtr<BlobLoader> m_blobLoader;
+    CompletionHandler m_completionHandler;
+};
+
 
 void InspectorNetworkAgent::didCreateFrontendAndBackend()
 {
@@ -421,13 +495,23 @@ void InspectorNetworkAgent::willSendRequest(ResourceLoaderIdentifier identifier,
     auto protocolResourceType = ResourceUtilities::resourceTypeToProtocol(type);
 
     RefPtr document = loader && loader->frame() ? loader->frame()->document() : nullptr;
-    auto initiatorObject = buildInitiatorObject(document, &request);
+    auto initiatorObject = buildInitiatorObject(document.get(), &request);
 
-    auto& url = loader ? loader->url().string() : request.url().string();
+    String url = loader ? loader->url().string() : request.url().string();
     std::optional<Inspector::Protocol::Page::ResourceType> typePayload;
     if (type != ResourceType::Other)
         typePayload = protocolResourceType;
-    m_frontendDispatcher->requestWillBeSent(requestId, frameId, loaderId, url, buildObjectForResourceRequest(request, resourceLoader), sendTimestamp, walltime.secondsSinceEpoch().seconds(), WTF::move(initiatorObject), buildObjectForResourceResponse(redirectResponse, nullptr), WTF::move(typePayload), targetId);
+    auto requestObject = buildObjectForResourceRequest(request, resourceLoader);
+
+    // The bytes of blob-backed request bodies live in the network process and can only be retrieved
+    // asynchronously with getRequestPostData, so only mark their presence on the request object.
+    RefPtr httpBody = request.httpBody();
+    if (httpBody && httpBody->containsBlobElement() && document) {
+        requestObject->setHasPostData(true);
+        m_pendingRequestBodies.set(requestId, PendingRequestBody { document, httpBody });
+    }
+
+    m_frontendDispatcher->requestWillBeSent(requestId, frameId, loaderId, url, WTF::move(requestObject), sendTimestamp, walltime.secondsSinceEpoch().seconds(), WTF::move(initiatorObject), buildObjectForResourceResponse(redirectResponse, nullptr), WTF::move(typePayload), targetId);
 }
 
 static ResourceType resourceTypeForCachedResource(const CachedResource* resource)
@@ -861,6 +945,11 @@ Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::disable()
     m_extraRequestHeaders.clear();
     m_stoppingLoadingDueToProcessSwap = false;
 
+    for (auto& resolver : m_requestBodyResolvers)
+        resolver->cancel();
+    m_requestBodyResolvers.clear();
+    m_pendingRequestBodies.clear();
+
     continuePendingRequests();
     continuePendingResponses();
 
@@ -927,6 +1016,28 @@ Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::setExtraHTTPHead
     }
 
     return { };
+}
+
+void InspectorNetworkAgent::getRequestPostData(const Inspector::Protocol::Network::RequestId& requestId, Ref<GetRequestPostDataCallback>&& callback)
+{
+    auto it = m_pendingRequestBodies.find(requestId);
+    if (it == m_pendingRequestBodies.end()) {
+        callback->sendFailure("No pending request body for given requestId"_s);
+        return;
+    }
+
+    Ref resolver = RequestBodyResolver::create(*it->value.document, *it->value.formData, [this, callback = WTF::move(callback)](RequestBodyResolver& resolver, std::optional<Vector<uint8_t>>&& data) mutable {
+        m_requestBodyResolvers.removeFirstMatching([&resolver](auto& entry) {
+            return entry.ptr() == &resolver;
+        });
+        if (!data) {
+            callback->sendFailure("Failed to read request body"_s);
+            return;
+        }
+        callback->sendSuccess(base64EncodeToString(*data));
+    });
+    m_requestBodyResolvers.append(resolver.copyRef());
+    resolver->start();
 }
 
 void InspectorNetworkAgent::getResponseBody(const Inspector::Protocol::Network::RequestId& requestId, Ref<GetResponseBodyCallback>&& callback)
@@ -1160,7 +1271,10 @@ void InspectorNetworkAgent::interceptRequest(ResourceLoader& loader, Function<vo
         return;
     }
     m_pendingInterceptRequests.set(requestId, makeUnique<PendingInterceptRequest>(&loader, WTF::move(handler)));
-    m_frontendDispatcher->requestIntercepted(requestId, buildObjectForResourceRequest(loader.request(), &loader));
+    auto requestObject = buildObjectForResourceRequest(loader.request(), &loader);
+    if (m_pendingRequestBodies.contains(requestId))
+        requestObject->setHasPostData(true);
+    m_frontendDispatcher->requestIntercepted(requestId, WTF::move(requestObject));
 }
 
 void InspectorNetworkAgent::interceptResponse(const ResourceResponse& response, ResourceLoaderIdentifier identifier, CompletionHandler<void(const ResourceResponse&, RefPtr<FragmentedSharedBuffer>)>&& handler)
@@ -1455,6 +1569,7 @@ void InspectorNetworkAgent::mainFrameNavigated(DocumentLoader& loader)
 {
     if (m_clearResourceDataOnNavigate)
         m_resourcesData->clear(loaderIdentifier(&loader));
+    m_pendingRequestBodies.clear();
 }
 
 } // namespace WebCore

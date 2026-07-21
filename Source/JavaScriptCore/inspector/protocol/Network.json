@@ -78,6 +78,7 @@
                 { "name": "method", "type": "string", "description": "HTTP request method." },
                 { "name": "headers", "$ref": "Headers", "description": "HTTP request headers." },
                 { "name": "postData", "type": "string", "optional": true, "description": "HTTP POST request data." },
+                { "name": "hasPostData", "type": "boolean", "optional": true, "description": "True when the request has a body which is not included in postData, e.g. because it references blobs. The body can be retrieved with getRequestPostData." },
                 { "name": "referrerPolicy", "$ref": "ReferrerPolicy", "optional": true, "description": "The level of included referrer information." },
                 { "name": "integrity", "type": "string", "optional": true, "description": "The base64 cryptographic hash of the resource." }
             ]
@@ -210,6 +211,17 @@
             "returns": [
                 { "name": "body", "type": "string", "description": "Response body." },
                 { "name": "base64Encoded", "type": "boolean", "description": "True, if content was sent as base64." }
+            ]
+        },
+        {
+            "name": "getRequestPostData",
+            "description": "Returns post data sent with the request. Returns an error when no data was sent with the request.",
+            "async": true,
+            "parameters": [
+                { "name": "requestId", "$ref": "RequestId", "description": "Identifier of the network request to get content for." }
+            ],
+            "returns": [
+                { "name": "postData", "type": "string", "description": "Base64-encoded request body." }
             ]
         },
         {
