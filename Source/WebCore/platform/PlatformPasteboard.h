@@ -64,6 +64,9 @@ enum class PasteboardDataLifetime : bool { Persistent, Ephemeral };
 class PlatformPasteboard {
 public:
     WEBCORE_EXPORT explicit PlatformPasteboard(const String& pasteboardName);
+#if PLATFORM(MAC)
+    WEBCORE_EXPORT static void setIsolated(bool);
+#endif
 #if PLATFORM(IOS_FAMILY) || USE(LIBWPE)
     WEBCORE_EXPORT PlatformPasteboard();
     WEBCORE_EXPORT void updateSupportedTypeIdentifiers(const Vector<String>& types);
