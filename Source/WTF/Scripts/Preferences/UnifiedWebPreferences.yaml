@@ -185,6 +185,7 @@ AccentColorEnabled:
       "PLATFORM(COCOA) || USE(THEME_ADWAITA)": true
       default: false
 
+# Playwright: enable on all platforms to align with Safari.
 AccessHandleEnabled:
   type: bool
   status: mature
@@ -196,7 +197,7 @@ AccessHandleEnabled:
       default: false
     WebKit:
       "PLATFORM(COCOA)" : true
-      default: false
+      default: true
     WebCore:
       "PLATFORM(COCOA)" : true
       default: false
@@ -3232,6 +3233,7 @@ FileReaderAPIEnabled:
       default: true
   disableInLockdownMode: true
 
+# Playwright: enable on all platforms to align with Safari.
 FileSystemEnabled:
   type: bool
   status: mature
@@ -3243,13 +3245,14 @@ FileSystemEnabled:
       default: false
     WebKit:
       "PLATFORM(COCOA)" : true
-      default: false
+      default: true
     WebCore:
       "PLATFORM(COCOA)" : true
       default: false
   disableInLockdownMode: true
   sharedPreferenceForWebProcess: true
 
+# Playwright: enable on all platforms to align with Safari.
 FileSystemHandleSerializationEnabled:
   type: bool
   status: stable
@@ -3261,13 +3264,14 @@ FileSystemHandleSerializationEnabled:
       default: false
     WebKit:
       "PLATFORM(COCOA)" : true
-      default: false
+      default: true
     WebCore:
       "PLATFORM(COCOA)" : true
       default: false
   disableInLockdownMode: true
   sharedPreferenceForWebProcess: true
 
+# Playwright: enable on all platforms to align with Safari.
 FileSystemWritableStreamEnabled:
   type: bool
   status: stable
@@ -3279,7 +3283,7 @@ FileSystemWritableStreamEnabled:
       default: false
     WebKit:
       "PLATFORM(COCOA)" : true
-      default: false
+      default: true
     WebCore:
       "PLATFORM(COCOA)" : true
       default: false
@@ -8434,6 +8438,7 @@ StandardFontFamily:
     WebCore:
       default: '""_str'
 
+# Playwright: enable on all platforms to align with Safari.
 StorageAPIEnabled:
   type: bool
   status: stable
@@ -8445,11 +8450,12 @@ StorageAPIEnabled:
       default: false
     WebKit:
       "PLATFORM(COCOA)" : true
-      default: false
+      default: true
     WebCore:
       "PLATFORM(COCOA)" : true
       default: false
 
+# Playwright: enable on all platforms to align with Safari.
 StorageAPIEstimateEnabled:
   type: bool
   status: stable
@@ -8461,7 +8467,7 @@ StorageAPIEstimateEnabled:
       default: false
     WebKit:
       "PLATFORM(COCOA)" : true
-      default: false
+      default: true
     WebCore:
       "PLATFORM(COCOA)" : true
       default: false
