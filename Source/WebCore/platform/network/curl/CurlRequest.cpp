@@ -544,6 +544,9 @@ int CurlRequest::didReceiveDebugInfo(curl_infotype type, std::span<const char> d
 
 void CurlRequest::appendAcceptLanguageHeader(HTTPHeaderMap& header)
 {
+    if (header.contains(HTTPHeaderName::AcceptLanguage))
+        return;
+
     for (const auto& language : userPreferredLanguages())
         header.add(HTTPHeaderName::AcceptLanguage, language);
 }
