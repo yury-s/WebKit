@@ -563,16 +563,9 @@ void WebKitWebViewClient::frameDisplayed(WKWPE::View&)
     // Only capture the frame when the screencast is recording: with WPEPlatform the capture reads
     // the frame back into CPU memory, which is too expensive to do on every frame for nothing.
     if (getPage(m_webView).inspectorController().screencastActive()) {
-        sk_sp<SkImage> surface;
-        // Under WPEPlatform this returns the view's committed buffer (there is no libwpe backend).
+        // This returns the view's committed buffer.
         if (RefPtr snapshot = getPage(m_webView).pageClient()->takeViewSnapshot(std::nullopt))
-            surface = sk_ref_sp(snapshot->image());
-#if USE(LIBWPE)
-        if (!surface && m_webView->priv->backend)
-            surface = sk_sp<SkImage>(webkitWebViewBackendTakeScreenshot(m_webView->priv->backend.get()));
-#endif
-        if (surface)
-            getPage(m_webView).inspectorController().didPaint(WTF::move(surface));
+            getPage(m_webView).inspectorController().didPaint(sk_ref_sp(snapshot->image()));
     }
 #endif
 

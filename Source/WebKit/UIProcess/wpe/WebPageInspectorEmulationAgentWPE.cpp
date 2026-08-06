@@ -33,10 +33,6 @@
 #include <wpe/wpe-platform.h>
 #endif
 
-#if USE(LIBWPE)
-#include <wpe/wpe.h>
-#endif
-
 namespace WebKit {
 
 void WebPageInspectorEmulationAgent::platformSetSize(int width, int height, Function<void (const String& error)>&& callback)
@@ -67,11 +63,6 @@ void WebPageInspectorEmulationAgent::platformSetSize(int width, int height, Func
         waitForSizeUpdate();
         return;
     }
-#endif
-
-#if USE(LIBWPE)
-    struct wpe_view_backend* backend = m_page.viewBackend();
-    wpe_view_backend_dispatch_set_size(backend, viewSize.width(), viewSize.height());
 #endif
     waitForSizeUpdate();
 }

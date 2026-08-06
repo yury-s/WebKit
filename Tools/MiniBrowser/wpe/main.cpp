@@ -322,19 +322,6 @@ static gboolean decidePermissionRequest(WebKitWebView *, WebKitPermissionRequest
 }
 
 #if defined(USE_LIBWPE) && USE_LIBWPE
-// Playwright begin
-// viewBackend is null in WPEPlatform mode, frames are captured from the WPEView's committed buffer then.
-static void setHeadlessScreenshotCallback(WebKitWebViewBackend* viewBackend)
-{
-    if (!headlessMode || !viewBackend)
-        return;
-    webkit_web_view_backend_set_screenshot_callback(viewBackend,
-        [](gpointer data) {
-            return static_cast<WPEToolingBackends::HeadlessViewBackend*>(data)->snapshot();
-        });
-}
-// Playwright end
-
 static std::unique_ptr<WPEToolingBackends::ViewBackend> createViewBackend(uint32_t width, uint32_t height)
 {
 #if ENABLE_WPE_PLATFORM
@@ -408,11 +395,6 @@ static WebKitWebView* createWebViewImpl(WebKitWebView* webView, WebKitWebContext
     }
 #endif
 
-// Playwright begin
-#if defined(USE_LIBWPE) && USE_LIBWPE
-    setHeadlessScreenshotCallback(viewBackend);
-#endif
-// Playwright end
     WebKitWebView* newWebView;
     if (webView) {
         newWebView = WEBKIT_WEB_VIEW(g_object_new(WEBKIT_TYPE_WEB_VIEW,
@@ -601,14 +583,10 @@ static gboolean webViewDecidePolicy(WebKitWebView *webView, WebKitPolicyDecision
 
     guint modifiers = webkit_navigation_action_get_modifiers(navigationAction);
     // The modifier values depend on the API in use, see toPlatformModifiers() in WebKitPrivate.cpp.
-#if defined(USE_LIBWPE) && USE_LIBWPE
-    guint ctrlShiftMask = wpe_input_keyboard_modifier_control | wpe_input_keyboard_modifier_shift;
 #if ENABLE_WPE_PLATFORM
-    if (!useLegacyAPI)
-        ctrlShiftMask = WPE_MODIFIER_KEYBOARD_CONTROL | WPE_MODIFIER_KEYBOARD_SHIFT;
-#endif
-#else
     const guint ctrlShiftMask = WPE_MODIFIER_KEYBOARD_CONTROL | WPE_MODIFIER_KEYBOARD_SHIFT;
+#else
+    const guint ctrlShiftMask = wpe_input_keyboard_modifier_control | wpe_input_keyboard_modifier_shift;
 #endif
     if (webkit_navigation_action_get_mouse_button(navigationAction) != 2 /* GDK_BUTTON_MIDDLE */ &&
         (webkit_navigation_action_get_mouse_button(navigationAction) != 1 /* GDK_BUTTON_PRIMARY */ || (modifiers & ctrlShiftMask) == 0))
@@ -842,12 +820,6 @@ static void activate(GApplication* application, gpointer)
     auto* defaultWebsitePolicies = webkit_website_policies_new_with_policies(
         "autoplay", WEBKIT_AUTOPLAY_ALLOW,
         nullptr);
-
-// Playwright begin
-#if defined(USE_LIBWPE) && USE_LIBWPE
-    setHeadlessScreenshotCallback(viewBackend);
-#endif
-// Playwright end
 
     auto* webView = WEBKIT_WEB_VIEW(g_object_new(WEBKIT_TYPE_WEB_VIEW,
 #if defined(USE_LIBWPE) && USE_LIBWPE
