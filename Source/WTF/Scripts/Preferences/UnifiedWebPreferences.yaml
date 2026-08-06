@@ -686,7 +686,6 @@ AsyncAudioSessionActivationEnabled:
   sharedPreferenceForWebProcess: true
 
 # FIXME: This is on by default in WebKit2 PLATFORM(COCOA). Perhaps we should consider turning it on for WebKitLegacy as well.
-# Playwright: enable on all platforms to align with Safari.
 AsyncClipboardAPIEnabled:
   type: bool
   status: mature
@@ -696,7 +695,6 @@ AsyncClipboardAPIEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-<<<<<<< HEAD
       "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN)" : true
       default: false
     WebCore:
@@ -713,13 +711,6 @@ AsyncClipboardRichContentEnabled:
     WebKit:
       "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)": true
       default: false
-||||||| parent of 162356ce5ae7 (chore(webkit): bootstrap build #2343)
-      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)" : true
-      default: false
-=======
-      "PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(WPE)" : true
-      default: true
->>>>>>> 162356ce5ae7 (chore(webkit): bootstrap build #2343)
     WebCore:
       default: false
 
@@ -2448,7 +2439,6 @@ DOMAudioSessionFullEnabled:
     WebCore:
       default: false
 
-# Playwright: enable on all platforms to align with Safari.
 DOMPasteAccessRequestsEnabled:
   type: bool
   status: internal
@@ -2459,16 +2449,8 @@ DOMPasteAccessRequestsEnabled:
     WebKitLegacy:
       default: false
     WebKit:
-<<<<<<< HEAD
       "PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(WIN) || PLATFORM(VISION)": true
       default: false
-||||||| parent of 162356ce5ae7 (chore(webkit): bootstrap build #2343)
-      "PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(VISION)": true
-      default: false
-=======
-      "PLATFORM(IOS) || PLATFORM(MAC) || PLATFORM(GTK) || PLATFORM(WPE) || PLATFORM(VISION)": true
-      default: true
->>>>>>> 162356ce5ae7 (chore(webkit): bootstrap build #2343)
     WebCore:
       default: false
 

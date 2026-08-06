@@ -395,14 +395,10 @@ private:
     COMPtr<IDataObject> m_dataObject;
     COMPtr<WCDataObject> m_writableDataObject;
     DragDataMap m_dragDataMap;
-<<<<<<< HEAD
     // Drag and drop pasteboards use their own data object, so only the copy and paste pasteboard is backed by the clipboard.
     bool m_forCopyAndPaste { false };
+    bool m_forDrag { false };
     int64_t m_changeCount { 0 };
-||||||| parent of 162356ce5ae7 (chore(webkit): bootstrap build #2343)
-=======
-    bool m_forDrag = false;
->>>>>>> 162356ce5ae7 (chore(webkit): bootstrap build #2343)
 #endif
 };
 
