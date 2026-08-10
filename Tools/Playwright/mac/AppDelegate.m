@@ -213,6 +213,7 @@ const NSActivityOptions ActivityOptions =
             [configuration _setWebSQLDatabaseDirectory:webSqlDirectory];
         }
         [configuration setProxyConfiguration:[self proxyConfiguration:_proxyServer WithBypassList:_proxyBypassList]];
+        [configuration setPreventsSystemHTTPProxyAuthentication:YES];
         dataStore = [[WKWebsiteDataStore alloc] _initWithConfiguration:configuration];
     }
 
@@ -366,6 +367,7 @@ const NSActivityOptions ActivityOptions =
     if (!proxyBypassList || ![proxyBypassList length])
         proxyBypassList = _proxyBypassList;
     [dataStoreConfiguration setProxyConfiguration:[self proxyConfiguration:proxyServer WithBypassList:proxyBypassList]];
+    [dataStoreConfiguration setPreventsSystemHTTPProxyAuthentication:YES];
     browserContext.dataStore = [[[WKWebsiteDataStore alloc] _initWithConfiguration:dataStoreConfiguration] autorelease];
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"

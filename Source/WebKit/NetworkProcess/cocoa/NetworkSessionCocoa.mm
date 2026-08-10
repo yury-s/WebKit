@@ -60,6 +60,7 @@
 #import <WebCore/ThreadableWebSocketChannel.h>
 #import <WebCore/WebCoreURLResponse.h>
 #import <pal/spi/cf/CFNetworkSPI.h>
+#import <pal/spi/cocoa/NetworkSPI.h>
 #import <wtf/BlockPtr.h>
 #import <wtf/MainThread.h>
 #import <wtf/NeverDestroyed.h>
@@ -619,7 +620,14 @@ ALLOW_DEPRECATED_DECLARATIONS_END
         }
     }
 
-    sessionCocoa->continueDidReceiveChallenge(CheckedRef { *_sessionWrapper }, challenge, negotiatedLegacyTLS, taskIdentifier, [self existingTask:task], [completionHandler = makeBlockPtr(completionHandler)] (WebKit::AuthenticationChallengeDisposition disposition, const WebCore::Credential& credential) mutable {
+    sessionCocoa->continueDidReceiveChallenge(CheckedRef { *_sessionWrapper }, challenge, negotiatedLegacyTLS, taskIdentifier, [self existingTask:task], [completionHandler = makeBlockPtr(completionHandler), challenge = RetainPtr { challenge }] (WebKit::AuthenticationChallengeDisposition disposition, const WebCore::Credential& credential) mutable {
+        // Playwright: continue without credential to deliver the 401; with PerformDefaultHandling
+        // NWLoader would retry the failed credential in an infinite loop.
+        if (disposition == WebKit::AuthenticationChallengeDisposition::PerformDefaultHandling && [challenge previousFailureCount]) {
+            NSString *method = [challenge protectionSpace].authenticationMethod;
+            if (![method isEqualToString:NSURLAuthenticationMethodServerTrust] && ![method isEqualToString:NSURLAuthenticationMethodClientCertificate])
+                return completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
+        }
         completionHandler(toNSURLSessionAuthChallengeDisposition(disposition), RetainPtr { credential.nsCredential() }.get());
     });
 }
@@ -1176,9 +1184,7 @@ NetworkSessionCocoa::NetworkSessionCocoa(NetworkProcess& networkProcess, const N
 
 // FIXME: rdar://152673570 Stop using `_usesNWLoader` as it is deprecated
 ALLOW_DEPRECATED_DECLARATIONS_BEGIN
-    // Playwright: force the legacy CFNetwork loader.
-    // Several Playwright tests were failing after WebKit switched from 'CFNetwork loader' to 'NWLoader' in 318278@main.
-    configuration.get()._usesNWLoader = NO;
+    configuration.get()._usesNWLoader = linkedOnOrAfterSDKWithBehavior(SDKAlignedBehavior::UseCFNetworkNetworkLoader);
 ALLOW_DEPRECATED_DECLARATIONS_END
 
     if (parameters.allowsHSTSWithUntrustedRootCertificate && [configuration respondsToSelector:@selector(_allowsHSTSWithUntrustedRootCertificate)])
@@ -1661,6 +1667,46 @@ DMFWebsitePolicyMonitor *NetworkSessionCocoa::deviceManagementPolicyMonitor()
 #endif
 }
 
+#if HAVE(CFNETWORK_HOSTOVERRIDE)
+// Playwright: NWLoader never routes loopback destinations through a proxy. Overriding the
+// connection endpoint with a non-loopback TEST-NET-1 address makes the proxy apply again; the
+// proxy receives the original absolute-form URL and the override endpoint is never connected to.
+static bool isLoopbackHost(StringView host)
+{
+    if (equalLettersIgnoringASCIICase(host, "localhost"_s) || host.endsWithIgnoringASCIICase(".localhost"_s))
+        return true;
+    if (host == "[::1]"_s || host == "::1"_s)
+        return true;
+    return host.startsWith("127."_s);
+}
+
+RetainPtr<nw_endpoint_t> NetworkSessionCocoa::loopbackProxyHostOverrideForURL(const URL& url) const
+{
+    if (!m_proxyConfiguration)
+        return nullptr;
+    // With CONNECT tunneling (https, wss) and SOCKS the proxy would connect to the override endpoint.
+    if (!url.protocolIs("http"_s) && !url.protocolIs("ws"_s))
+        return nullptr;
+    if (![(__bridge NSDictionary *)m_proxyConfiguration.get() objectForKey:@"HTTPProxy"])
+        return nullptr;
+    auto host = url.host();
+    if (!isLoopbackHost(host))
+        return nullptr;
+    RetainPtr exceptions = dynamic_objc_cast<NSArray>([(__bridge NSDictionary *)m_proxyConfiguration.get() objectForKey:@"ExceptionsList"]);
+    for (NSString *entry in exceptions.get()) {
+        String pattern { entry };
+        if (pattern.startsWith('*'))
+            pattern = pattern.substring(1);
+        if (pattern.startsWith('.')) {
+            if (host.endsWithIgnoringASCIICase(pattern))
+                return nullptr;
+        } else if (equalIgnoringASCIICase(host, pattern))
+            return nullptr;
+    }
+    return adoptNS(nw_endpoint_create_host_with_numeric_port("192.0.2.1", url.port().value_or(0)));
+}
+#endif // HAVE(CFNETWORK_HOSTOVERRIDE)
+
 RefPtr<WebSocketTask> NetworkSessionCocoa::createWebSocketTask(WebPageProxyIdentifier webPageProxyID, std::optional<WebCore::FrameIdentifier> frameID, std::optional<WebCore::PageIdentifier> pageID, NetworkSocketChannel& channel, const WebCore::ResourceRequest& request, const String& protocol, const WebCore::ClientOrigin& clientOrigin, bool hadMainFrameMainResourcePrivateRelayed, bool allowPrivacyProxy, OptionSet<WebCore::AdvancedPrivacyProtections> advancedPrivacyProtections, WebCore::StoredCredentialsPolicy storedCredentialsPolicy, WebCore::IsInitiatedByDedicatedWorker isInitiatedByDedicatedWorker)
 {
     ASSERT(!request.hasHTTPHeaderField(WebCore::HTTPHeaderName::SecWebSocketProtocol));
@@ -1710,7 +1756,12 @@ RefPtr<WebSocketTask> NetworkSessionCocoa::createWebSocketTask(WebPageProxyIdent
 
     Ref sessionSet = sessionSetForPage(webPageProxyID);
     RetainPtr task = [sessionSet->sessionWithCredentialStorage->session webSocketTaskWithRequest:nsRequest.get()];
-    
+
+#if HAVE(CFNETWORK_HOSTOVERRIDE)
+    if (RetainPtr hostOverride = loopbackProxyHostOverrideForURL(request.url()))
+        task.get()._hostOverride = hostOverride.get();
+#endif
+
     // Although the WebSocket protocol allows full 64-bit lengths, Chrome and Firefox limit the length to 2^63 - 1.
     // Use NSIntegerMax instead of 2^63 - 1 for 32-bit systems.
     task.get().maximumMessageSize = NSIntegerMax;
