@@ -434,6 +434,8 @@ void NetworkDataTaskSoup::didSendRequest(GRefPtr<GInputStream>&& inputStream)
     else
         m_inputStream = WTF::move(inputStream);
 
+    auto& additionalMetrics = additionalNetworkLoadMetricsForWebInspector();
+    m_response.m_httpRequestHeaderFields = additionalMetrics.requestHeaders;
     dispatchDidReceiveResponse();
 }
 

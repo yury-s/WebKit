@@ -901,6 +901,14 @@ static NSDictionary<NSString *, id> *extractResolutionReport(NSError *error)
 
         resourceResponse.setDeprecatedNetworkLoadMetrics(WebCore::copyTimingData(taskMetrics.get(), networkDataTask->networkLoadMetrics()));
         resourceResponse.setProxyName(WTF::move(proxyName));
+
+        __block WebCore::HTTPHeaderMap requestHeaders;
+        NSURLSessionTaskTransactionMetrics *m = dataTask._incompleteTaskMetrics.transactionMetrics.lastObject;
+        [m.request.allHTTPHeaderFields enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSString *value, BOOL *) {
+            requestHeaders.set(String(name), String(value));
+        }];
+        resourceResponse.m_httpRequestHeaderFields = WTF::move(requestHeaders);
+
         networkDataTask->didReceiveResponse(WTF::move(resourceResponse), negotiatedLegacyTLS, privateRelayed, [completionHandler = makeBlockPtr(completionHandler), taskIdentifier](WebCore::PolicyAction policyAction) {
 #if !LOG_DISABLED
             LOG(NetworkSession, "%zu didReceiveResponse completionHandler (%s)", taskIdentifier, toString(policyAction).characters());
@@ -1168,7 +1176,9 @@ NetworkSessionCocoa::NetworkSessionCocoa(NetworkProcess& networkProcess, const N
 
 // FIXME: rdar://152673570 Stop using `_usesNWLoader` as it is deprecated
 ALLOW_DEPRECATED_DECLARATIONS_BEGIN
-    configuration.get()._usesNWLoader = linkedOnOrAfterSDKWithBehavior(SDKAlignedBehavior::UseCFNetworkNetworkLoader);
+    // Playwright: force the legacy CFNetwork loader.
+    // Several Playwright tests were failing after WebKit switched from 'CFNetwork loader' to 'NWLoader' in 318278@main.
+    configuration.get()._usesNWLoader = NO;
 ALLOW_DEPRECATED_DECLARATIONS_END
 
     if (parameters.allowsHSTSWithUntrustedRootCertificate && [configuration respondsToSelector:@selector(_allowsHSTSWithUntrustedRootCertificate)])
