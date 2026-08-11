@@ -59,6 +59,7 @@
 #import <WebCore/SharedBuffer.h>
 #import <WebCore/ThreadableWebSocketChannel.h>
 #import <WebCore/WebCoreURLResponse.h>
+#import <fnmatch.h>
 #import <pal/spi/cf/CFNetworkSPI.h>
 #import <pal/spi/cocoa/NetworkSPI.h>
 #import <wtf/BlockPtr.h>
@@ -625,7 +626,8 @@ ALLOW_DEPRECATED_DECLARATIONS_END
         // NWLoader would retry the failed credential in an infinite loop.
         if (disposition == WebKit::AuthenticationChallengeDisposition::PerformDefaultHandling && [challenge previousFailureCount]) {
             NSString *method = [challenge protectionSpace].authenticationMethod;
-            if (![method isEqualToString:NSURLAuthenticationMethodServerTrust] && ![method isEqualToString:NSURLAuthenticationMethodClientCertificate])
+            bool isPasswordBased = [method isEqualToString:NSURLAuthenticationMethodDefault] || [method isEqualToString:NSURLAuthenticationMethodHTTPBasic] || [method isEqualToString:NSURLAuthenticationMethodHTTPDigest] || [method isEqualToString:NSURLAuthenticationMethodNTLM] || [method isEqualToString:NSURLAuthenticationMethodNegotiate];
+            if (isPasswordBased)
                 return completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
         }
         completionHandler(toNSURLSessionAuthChallengeDisposition(disposition), RetainPtr { credential.nsCredential() }.get());
@@ -1680,6 +1682,25 @@ static bool isLoopbackHost(StringView host)
     return host.startsWith("127."_s);
 }
 
+// Over-matching is fine here: a matched loopback host is simply not routed through the proxy,
+// which is what the bypass list asks for.
+static bool proxyBypassPatternMatchesHost(NSString *entry, StringView host)
+{
+    String pattern { entry };
+    if (pattern.isEmpty())
+        return false;
+    // CIDR-style IP prefixes like "127/8" or "169.254/16".
+    if (size_t slash = pattern.find('/'); slash != notFound) {
+        String prefix = pattern.left(slash);
+        return equalIgnoringASCIICase(host, prefix) || host.startsWithIgnoringASCIICase(makeString(prefix, '.'));
+    }
+    if (pattern.contains('*') || pattern.contains('?'))
+        return !fnmatch(pattern.utf8().data(), host.utf8().data(), FNM_CASEFOLD);
+    if (pattern.startsWith('.'))
+        return host.endsWithIgnoringASCIICase(pattern);
+    return equalIgnoringASCIICase(host, pattern) || host.endsWithIgnoringASCIICase(makeString('.', pattern));
+}
+
 RetainPtr<nw_endpoint_t> NetworkSessionCocoa::loopbackProxyHostOverrideForURL(const URL& url) const
 {
     if (!m_proxyConfiguration)
@@ -1694,13 +1715,7 @@ RetainPtr<nw_endpoint_t> NetworkSessionCocoa::loopbackProxyHostOverrideForURL(co
         return nullptr;
     RetainPtr exceptions = dynamic_objc_cast<NSArray>([(__bridge NSDictionary *)m_proxyConfiguration.get() objectForKey:@"ExceptionsList"]);
     for (NSString *entry in exceptions.get()) {
-        String pattern { entry };
-        if (pattern.startsWith('*'))
-            pattern = pattern.substring(1);
-        if (pattern.startsWith('.')) {
-            if (host.endsWithIgnoringASCIICase(pattern))
-                return nullptr;
-        } else if (equalIgnoringASCIICase(host, pattern))
+        if (proxyBypassPatternMatchesHost(entry, host))
             return nullptr;
     }
     return adoptNS(nw_endpoint_create_host_with_numeric_port("192.0.2.1", url.port().value_or(0)));
