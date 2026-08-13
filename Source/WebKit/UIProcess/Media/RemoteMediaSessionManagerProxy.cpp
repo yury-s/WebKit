@@ -31,6 +31,7 @@
 #include "GPUProcessProxy.h"
 #include "MessageSenderInlines.h"
 #include "RemoteMediaSessionManagerMessages.h"
+#include "RemoteMediaSessionManager.h"
 #include "RemoteMediaSessionManagerProxyMessages.h"
 #include "RemoteMediaSessionProxy.h"
 #include "RemoteMediaSessionState.h"
