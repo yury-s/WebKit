@@ -199,10 +199,6 @@ private:
 
     RefPtr<ViewSnapshot> takeViewSnapshot(std::optional<WebCore::IntRect>&&, bool nominalResolution) override;
 
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
-    RefPtr<WebDateTimePicker> createDateTimePicker(WebPageProxy&) override;
-#endif
-
     WKWPE::View& m_view;
     DefaultUndoController m_undoController;
 #if ENABLE(FULLSCREEN_API)

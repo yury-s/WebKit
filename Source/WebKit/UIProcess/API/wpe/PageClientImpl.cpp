@@ -36,11 +36,9 @@
 #include "WPEWebViewLegacy.h"
 #include "WPEWebViewPlatform.h"
 #include "WebColorPicker.h"
-#include "WebDateTimePickerWPE.h"
 #include "WebContextMenuProxy.h"
 #include "WebContextMenuProxyWPE.h"
 #include "WebDataListSuggestionsDropdown.h"
-#include "WebDataListSuggestionsDropdownWPE.h"
 #include "WebDateTimePicker.h"
 #include "WebKitClipboardPermissionRequestPrivate.h"
 #include "WebKitColorChooser.h"
@@ -343,9 +341,9 @@ RefPtr<WebColorPicker> PageClientImpl::createColorPicker(WebPageProxy& page, con
     return WebKitColorChooser::create(m_view, page, frameID);
 }
 
-RefPtr<WebKit::WebDataListSuggestionsDropdown> PageClientImpl::createDataListSuggestionsDropdown(WebKit::WebPageProxy& page)
+RefPtr<WebDataListSuggestionsDropdown> PageClientImpl::createDataListSuggestionsDropdown(WebPageProxy&)
 {
-    return WebDataListSuggestionsDropdownWPE::create(page);
+    return nullptr;
 }
 
 RefPtr<WebDateTimePicker> PageClientImpl::createDateTimePicker(WebPageProxy& page)
@@ -629,12 +627,5 @@ RefPtr<ViewSnapshot> PageClientImpl::takeViewSnapshot(std::optional<WebCore::Int
 #endif
     return nullptr;
 }
-
-#if ENABLE(DATE_AND_TIME_INPUT_TYPES)
-RefPtr<WebDateTimePicker> PageClientImpl::createDateTimePicker(WebPageProxy& page)
-{
-    return WebDateTimePickerWPE::create(page);
-}
-#endif
 
 } // namespace WebKit
