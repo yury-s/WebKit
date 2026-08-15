@@ -26,7 +26,6 @@
 #include "config.h"
 #include "FileSystemStorageManager.h"
 
-#include "FileSystemStorageDiskBackend.h"
 #include "FileSystemStorageError.h"
 #include "FileSystemStorageHandleRegistry.h"
 #include "WebFileSystemStorageConnectionMessages.h"
@@ -43,7 +42,9 @@ Ref<FileSystemStorageManager> FileSystemStorageManager::create(String&& path, Fi
 }
 
 FileSystemStorageManager::FileSystemStorageManager(String&& path, FileSystemStorageHandleRegistry& registry, const WebCore::ClientOrigin& origin, QuotaCheckFunction&& quotaCheckFunction)
-    : m_backend(makeUniqueRef<FileSystemStorageDiskBackend>(WTF::move(path)))
+    : m_backend(FileSystemStorageBackend::create(WTF::move(path)))
+    // An ephemeral session has no storage directory, so the memory backend supplies a
+    // virtual root that the path helpers can build on but that never reaches disk.
     , m_path(m_backend->rootPath())
     , m_origin(origin)
     , m_registry(registry)
@@ -74,6 +75,16 @@ uint64_t FileSystemStorageManager::allocatedUnusedCapacity() const
         return 0;
 
     return result;
+}
+
+uint64_t FileSystemStorageManager::memoryUsage() const
+{
+    return m_backend->memoryUsage();
+}
+
+bool FileSystemStorageManager::hasDataInMemory() const
+{
+    return m_backend->hasDataInMemory();
 }
 
 Expected<std::pair<WebCore::FileSystemHandleGlobalIdentifier, WebCore::FileSystemHandleIdentifier>, FileSystemStorageError> FileSystemStorageManager::createHandle(IPC::Connection::UniqueID connection, FileSystemStorageHandle::Type type, String&& path, String&& name, bool createIfNecessary)

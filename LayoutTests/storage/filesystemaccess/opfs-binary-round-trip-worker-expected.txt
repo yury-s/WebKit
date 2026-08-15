@@ -1,0 +1,28 @@
+[Worker] This test checks that the origin private file system stores bytes exactly, including 0x00 and 0xFF, through both a writable stream and a sync access handle.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Starting worker: resources/opfs-binary-round-trip.js
+[Worker] Create a nested directory and a file in it:
+PASS [Worker] resolvedPath is "round-trip-dir/nested/binary.bin"
+[Worker] Write binary content with a writable stream and read it back with getFile():
+PASS [Worker] file.size is content.byteLength
+PASS [Worker] fileBytes is "0,1,127,128,254,255,0,65"
+[Worker] Read the same bytes back through a sync access handle:
+PASS [Worker] fileSize is content.byteLength
+PASS [Worker] readSize is content.byteLength
+PASS [Worker] readBytes is "0,1,127,128,254,255,0,65"
+[Worker] Write past the end of the file: the gap reads back as zeros:
+PASS [Worker] fileSize is content.byteLength + 3
+PASS [Worker] readBytes is "0,0,255"
+[Worker] Truncate back to the original content:
+PASS [Worker] fileSize is content.byteLength
+[Worker] The writable stream sees the truncated file too:
+PASS [Worker] fileBytes is "0,1,127,128,254,255,0,65"
+[Worker] Remove the tree recursively:
+PASS [Worker] names.indexOf('round-trip-dir') is -1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

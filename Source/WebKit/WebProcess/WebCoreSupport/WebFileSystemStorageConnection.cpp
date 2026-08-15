@@ -149,7 +149,7 @@ void WebFileSystemStorageConnection::resolve(WebCore::FileSystemHandleIdentifier
     });
 }
 
-void WebFileSystemStorageConnection::getFile(WebCore::FileSystemHandleIdentifier identifier, StringCallback&& completionHandler)
+void WebFileSystemStorageConnection::getFile(WebCore::FileSystemHandleIdentifier identifier, FileDataCallback&& completionHandler)
 {
     RefPtr connection = m_connection;
     if (!connection)
@@ -173,7 +173,63 @@ void WebFileSystemStorageConnection::createSyncAccessHandle(WebCore::FileSystemH
         if (!result)
             return completionHandler(convertToException(result.error()));
 
-        completionHandler(WebCore::FileSystemStorageConnection::SyncAccessHandleInfo { *result->identifier, result->handle.release(), result->capacity });
+        // An absent handle means the file lives in memory in the network process; the
+        // access handle will do its I/O over IPC rather than on a descriptor.
+        auto file = result->handle ? result->handle->release() : FileSystem::FileHandle { };
+        completionHandler(WebCore::FileSystemStorageConnection::SyncAccessHandleInfo { *result->identifier, WTF::move(file), result->capacity });
+    });
+}
+
+void WebFileSystemStorageConnection::readFromSyncAccessHandle(WebCore::FileSystemHandleIdentifier identifier, WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, uint64_t count, ReadCallback&& completionHandler)
+{
+    RefPtr connection = m_connection;
+    if (!connection)
+        return completionHandler(WebCore::Exception { WebCore::ExceptionCode::UnknownError, "Connection is lost"_s });
+
+    connection->sendWithAsyncReply(Messages::NetworkStorageManager::ReadFromSyncAccessHandle(identifier, accessHandleIdentifier, offset, count), [completionHandler = WTF::move(completionHandler)](auto result) mutable {
+        if (!result)
+            return completionHandler(convertToException(result.error()));
+
+        completionHandler(WTF::move(result.value()));
+    });
+}
+
+void WebFileSystemStorageConnection::writeToSyncAccessHandle(WebCore::FileSystemHandleIdentifier identifier, WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, std::span<const uint8_t> dataBytes, SizeCallback&& completionHandler)
+{
+    RefPtr connection = m_connection;
+    if (!connection)
+        return completionHandler(WebCore::Exception { WebCore::ExceptionCode::UnknownError, "Connection is lost"_s });
+
+    connection->sendWithAsyncReply(Messages::NetworkStorageManager::WriteToSyncAccessHandle(identifier, accessHandleIdentifier, offset, dataBytes), [completionHandler = WTF::move(completionHandler)](auto result) mutable {
+        if (!result)
+            return completionHandler(convertToException(result.error()));
+
+        completionHandler(result.value());
+    });
+}
+
+void WebFileSystemStorageConnection::truncateSyncAccessHandle(WebCore::FileSystemHandleIdentifier identifier, WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t size, VoidCallback&& completionHandler)
+{
+    RefPtr connection = m_connection;
+    if (!connection)
+        return completionHandler(WebCore::Exception { WebCore::ExceptionCode::UnknownError, "Connection is lost"_s });
+
+    connection->sendWithAsyncReply(Messages::NetworkStorageManager::TruncateSyncAccessHandle(identifier, accessHandleIdentifier, size), [completionHandler = WTF::move(completionHandler)](auto result) mutable {
+        completionHandler(convertToExceptionOr(result));
+    });
+}
+
+void WebFileSystemStorageConnection::getSizeOfSyncAccessHandle(WebCore::FileSystemHandleIdentifier identifier, WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, SizeCallback&& completionHandler)
+{
+    RefPtr connection = m_connection;
+    if (!connection)
+        return completionHandler(WebCore::Exception { WebCore::ExceptionCode::UnknownError, "Connection is lost"_s });
+
+    connection->sendWithAsyncReply(Messages::NetworkStorageManager::GetSizeOfSyncAccessHandle(identifier, accessHandleIdentifier), [completionHandler = WTF::move(completionHandler)](auto result) mutable {
+        if (!result)
+            return completionHandler(convertToException(result.error()));
+
+        completionHandler(result.value());
     });
 }
 

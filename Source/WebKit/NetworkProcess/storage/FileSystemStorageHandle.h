@@ -63,6 +63,11 @@ public:
     const String& path() const LIFETIME_BOUND { return m_path; }
     const String& name() const LIFETIME_BOUND { return m_name; }
     Type type() const { return m_type; }
+    bool fileExists() const;
+    // Whole contents of the file, for serving getFile() when there is no path to hand over.
+    std::optional<Vector<uint8_t>> readFile() const;
+    // True when the file lives only in memory, so there is no path for the web process to open.
+    bool isMemoryBacked() const;
     uint64_t allocatedUnusedCapacity();
     std::optional<WebCore::ClientOrigin> origin() const;
 
@@ -81,6 +86,11 @@ public:
     void requestNewCapacityForSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier, uint64_t newCapacity, CompletionHandler<void(std::optional<uint64_t>)>&&);
 
     Expected<FileSystemSyncAccessHandleInfo, FileSystemStorageError> createSyncAccessHandle();
+    // Used by sync access handles that have no file descriptor, i.e. memory-backed ones.
+    Expected<Vector<uint8_t>, FileSystemStorageError> readFromSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier, uint64_t offset, uint64_t count);
+    Expected<uint64_t, FileSystemStorageError> writeToSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier, uint64_t offset, std::span<const uint8_t>);
+    std::optional<FileSystemStorageError> truncateSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier, uint64_t size);
+    Expected<uint64_t, FileSystemStorageError> sizeOfSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier);
     std::optional<FileSystemStorageError> closeSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier);
     std::optional<WebCore::FileSystemSyncAccessHandleIdentifier> NODELETE activeSyncAccessHandle();
 

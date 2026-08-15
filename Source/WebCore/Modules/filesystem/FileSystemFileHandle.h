@@ -48,6 +48,11 @@ public:
     void createSyncAccessHandle(DOMPromiseDeferred<IDLInterface<FileSystemSyncAccessHandle>>&&);
     void closeSyncAccessHandle(FileSystemSyncAccessHandleIdentifier);
     std::optional<uint64_t> requestNewCapacityForSyncAccessHandle(FileSystemSyncAccessHandleIdentifier, uint64_t newCapacity);
+    // Blocking I/O for a sync access handle that has no file descriptor. Offsets are absolute.
+    std::optional<uint64_t> readFromSyncAccessHandle(FileSystemSyncAccessHandleIdentifier, uint64_t offset, std::span<uint8_t>);
+    std::optional<uint64_t> writeToSyncAccessHandle(FileSystemSyncAccessHandleIdentifier, uint64_t offset, std::span<const uint8_t>);
+    bool truncateSyncAccessHandle(FileSystemSyncAccessHandleIdentifier, uint64_t size);
+    std::optional<uint64_t> getSizeOfSyncAccessHandle(FileSystemSyncAccessHandleIdentifier);
     void registerSyncAccessHandle(FileSystemSyncAccessHandleIdentifier, FileSystemSyncAccessHandle&);
     void unregisterSyncAccessHandle(FileSystemSyncAccessHandleIdentifier);
 

@@ -121,6 +121,11 @@
 # [UnsafeWrapper] in single line format as they are all unique types
 [Legacy] MessageParamReply WebPageProxy.ModelElementSizeDidChange result Expected<MachSendRight, WebCore::ResourceError>
 [Legacy] MessageParamReply UserMediaCaptureManagerProxy.TakePhoto result Expected<std::pair<Vector<uint8_t>, String>, String>
+# Contents of an Origin Private File System file that the network process keeps in memory,
+# for a session with no storage directory. Encoded only in the network process, and only for
+# the origin that owns the file. GetFile answers with a path instead when the file is on disk.
+[NotSentFromWebContent] MessageParamReply NetworkStorageManager.ReadFromSyncAccessHandle result Expected<Vector<uint8_t>, WebKit::FileSystemStorageError>
+[NotSentFromWebContent] MessageParamReply NetworkStorageManager.GetFile result Expected<Variant<String, Vector<uint8_t>>, WebKit::FileSystemStorageError>
 [Legacy] MessageParam NetworkProcess.SetProxyConfigData proxyConfigurations Vector<std::pair<Vector<uint8_t>, std::optional<WTF::UUID>>>
 [Legacy] StructureParam WebKit::HTTPBody::Element.data Variant<Vector<uint8_t>, WebKit::HTTPBody::Element::FileData, String>
 [Legacy] StructureParam WebCore::SerializedPlatformDataCueValue::Data.value Variant<std::nullptr_t, RetainPtr<NSString>, RetainPtr<NSDate>, RetainPtr<NSNumber>, RetainPtr<NSData>>
@@ -156,6 +161,9 @@
     [Legacy] MessageParam NetworkSocketChannel.SendString message
 
     [Legacy] MessageParam NetworkStorageManager.ExecuteCommandForWritable dataBytes
+    # Bytes a worker writes through a sync access handle whose file the network process keeps
+    # in memory. Same shape and same trust boundary as ExecuteCommandForWritable above.
+    [NeedsReview] MessageParam NetworkStorageManager.WriteToSyncAccessHandle dataBytes
 
     [Legacy] MessageParam NetworkTransportSession.SendDatagram datagram
     [Legacy] MessageParam NetworkTransportSession.StreamSendBytes bytes

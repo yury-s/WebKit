@@ -1835,6 +1835,7 @@
 		9312BAD526F33C2600FDDF5F /* FileSystemStorageManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 931A075026F06310004474CD /* FileSystemStorageManager.h */; };
 		FB0F50000000000000001006 /* FileSystemStorageBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0F50000000000000001000 /* FileSystemStorageBackend.h */; };
 		FB0F50000000000000001008 /* FileSystemStorageDiskBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0F50000000000000001002 /* FileSystemStorageDiskBackend.h */; };
+		FB0F5000000000000000100A /* FileSystemStorageMemoryBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0F50000000000000001004 /* FileSystemStorageMemoryBackend.h */; };
 		9312BAD626F33C2900FDDF5F /* FileSystemStorageHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 931A075326F06AB4004474CD /* FileSystemStorageHandle.h */; };
 		931A1BE226F870090081A7E5 /* FileSystemStorageError.h in Headers */ = {isa = PBXBuildFile; fileRef = 931A1BE026F85C320081A7E5 /* FileSystemStorageError.h */; };
 		9321D5861A38EE3C008052BE /* WKImmediateActionController.h in Headers */ = {isa = PBXBuildFile; fileRef = 9321D5851A38EE3C008052BE /* WKImmediateActionController.h */; };
@@ -7442,8 +7443,11 @@
 		93122C852710CCDE001D819F /* SharedFileHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SharedFileHandle.h; sourceTree = "<group>"; };
 		931A075026F06310004474CD /* FileSystemStorageManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageManager.h; sourceTree = "<group>"; };
 		FB0F50000000000000001000 /* FileSystemStorageBackend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageBackend.h; sourceTree = "<group>"; };
+		FB0F50000000000000001001 /* FileSystemStorageBackend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemStorageBackend.cpp; sourceTree = "<group>"; };
 		FB0F50000000000000001002 /* FileSystemStorageDiskBackend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageDiskBackend.h; sourceTree = "<group>"; };
 		FB0F50000000000000001003 /* FileSystemStorageDiskBackend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemStorageDiskBackend.cpp; sourceTree = "<group>"; };
+		FB0F50000000000000001004 /* FileSystemStorageMemoryBackend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageMemoryBackend.h; sourceTree = "<group>"; };
+		FB0F50000000000000001005 /* FileSystemStorageMemoryBackend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemStorageMemoryBackend.cpp; sourceTree = "<group>"; };
 		931A075126F06310004474CD /* FileSystemStorageManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemStorageManager.cpp; sourceTree = "<group>"; };
 		931A075226F06AB4004474CD /* FileSystemStorageHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemStorageHandle.cpp; sourceTree = "<group>"; };
 		931A075326F06AB4004474CD /* FileSystemStorageHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageHandle.h; sourceTree = "<group>"; };
@@ -15439,6 +15443,7 @@
 				935BF8082936CA2F00B41326 /* CacheStorageRegistry.cpp */,
 				935BF8062936C9FC00B41326 /* CacheStorageRegistry.h */,
 				935BF7F52936BF1800B41326 /* CacheStorageStore.h */,
+				FB0F50000000000000001001 /* FileSystemStorageBackend.cpp */,
 				FB0F50000000000000001000 /* FileSystemStorageBackend.h */,
 				FB0F50000000000000001003 /* FileSystemStorageDiskBackend.cpp */,
 				FB0F50000000000000001002 /* FileSystemStorageDiskBackend.h */,
@@ -15451,6 +15456,8 @@
 				931A075126F06310004474CD /* FileSystemStorageManager.cpp */,
 				931A075026F06310004474CD /* FileSystemStorageManager.h */,
 				4105A0652D537C2B00EA2D19 /* FileSystemStorageManagerLock.h */,
+				FB0F50000000000000001005 /* FileSystemStorageMemoryBackend.cpp */,
+				FB0F50000000000000001004 /* FileSystemStorageMemoryBackend.h */,
 				93B631E327ABA5F700443A44 /* IDBStorageConnectionToClient.cpp */,
 				93B631E427ABA62700443A44 /* IDBStorageConnectionToClient.h */,
 				93B631E727ABA65C00443A44 /* IDBStorageManager.cpp */,
@@ -18437,6 +18444,7 @@
 				9312BAD626F33C2900FDDF5F /* FileSystemStorageHandle.h in Headers */,
 				935B579A26F51933008B48AC /* FileSystemStorageHandleRegistry.h in Headers */,
 				9312BAD526F33C2600FDDF5F /* FileSystemStorageManager.h in Headers */,
+				FB0F5000000000000000100A /* FileSystemStorageMemoryBackend.h in Headers */,
 				93B42F2F29834B2600DF1D45 /* FileSystemSyncAccessHandleInfo.h in Headers */,
 				00B9661A18E25AE100CE1F88 /* FindClient.h in Headers */,
 				1A90C1F41264FD71003E44D4 /* FindController.h in Headers */,

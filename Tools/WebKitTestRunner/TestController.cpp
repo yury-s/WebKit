@@ -1144,7 +1144,12 @@ WKRetainPtr<WKPageConfigurationRef> TestController::generatePageConfiguration(co
     WKPageConfigurationSetPreferences(pageConfiguration.get(), m_preferences.get());
     
     if (options.useEphemeralSession()) {
-        auto ephemeralDataStore = adoptWK(WKWebsiteDataStoreCreateNonPersistentDataStore());
+        // Give the ephemeral store the same quota as the persistent one, so tests that depend
+        // on hitting the quota behave the same in both session types.
+        auto dataStoreConfiguration = adoptWK(WKWebsiteDataStoreConfigurationCreateNonPersistent());
+        WKWebsiteDataStoreConfigurationSetPerOriginStorageQuota(dataStoreConfiguration.get(), 400 * 1024);
+        WKWebsiteDataStoreConfigurationSetOriginQuotaRatio(dataStoreConfiguration.get(), 0.6);
+        auto ephemeralDataStore = adoptWK(WKWebsiteDataStoreCreateWithConfiguration(dataStoreConfiguration.get()));
         WKPageConfigurationSetWebsiteDataStore(pageConfiguration.get(), ephemeralDataStore.get());
     }
 

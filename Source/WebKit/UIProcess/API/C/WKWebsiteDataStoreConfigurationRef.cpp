@@ -44,6 +44,11 @@ WKWebsiteDataStoreConfigurationRef WKWebsiteDataStoreConfigurationCreate()
     return toAPILeakingRef(WTF::move(configuration));
 }
 
+WKWebsiteDataStoreConfigurationRef WKWebsiteDataStoreConfigurationCreateNonPersistent()
+{
+    return toAPILeakingRef(WebKit::WebsiteDataStoreConfiguration::create(WebKit::IsPersistent::No));
+}
+
 WKStringRef WKWebsiteDataStoreConfigurationCopyNetworkCacheDirectory(WKWebsiteDataStoreConfigurationRef configuration)
 {
     return WebKit::toCopiedAPI(WebKit::toImpl(configuration)->networkCacheDirectory());

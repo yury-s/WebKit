@@ -33,7 +33,9 @@ namespace WebKit {
 
 struct FileSystemSyncAccessHandleInfo {
     Markable<WebCore::FileSystemSyncAccessHandleIdentifier> identifier;
-    IPC::SharedFileHandle handle;
+    // Absent when the file lives only in memory: there is no descriptor to share, and
+    // the web process performs its I/O over IPC instead.
+    std::optional<IPC::SharedFileHandle> handle;
     uint64_t capacity { 0 };
 };
 

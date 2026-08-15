@@ -287,7 +287,9 @@ bool OriginStorageManager::StorageBucket::isActive() const
 
 bool OriginStorageManager::StorageBucket::hasDataInMemory() const
 {
-    return (m_localStorageManager && m_localStorageManager->hasDataInMemory())
+    RefPtr fileSystemStorageManager = m_fileSystemStorageManager;
+    return (fileSystemStorageManager && fileSystemStorageManager->hasDataInMemory())
+        || (m_localStorageManager && m_localStorageManager->hasDataInMemory())
         || (m_sessionStorageManager && m_sessionStorageManager->hasDataInMemory())
         || (m_idbStorageManager && CheckedRef { *m_idbStorageManager }->hasDataInMemory())
         || (m_cacheStorageManager && m_cacheStorageManager->hasDataInMemory());
@@ -325,6 +327,12 @@ OriginStorageManager::DataTypeSizeMap OriginStorageManager::StorageBucket::fetch
 OptionSet<WebsiteDataType> OriginStorageManager::StorageBucket::fetchDataTypesInListFromMemory(OptionSet<WebsiteDataType> types)
 {
     OptionSet<WebsiteDataType> result;
+    if (types.contains(WebsiteDataType::FileSystem)) {
+        RefPtr fileSystemStorageManager = m_fileSystemStorageManager;
+        if (fileSystemStorageManager && fileSystemStorageManager->hasDataInMemory())
+            result.add(WebsiteDataType::FileSystem);
+    }
+
     if (types.contains(WebsiteDataType::LocalStorage)) {
         if (m_localStorageManager && m_localStorageManager->hasDataInMemory())
             result.add(WebsiteDataType::LocalStorage);
@@ -641,6 +649,9 @@ Ref<OriginQuotaManager> OriginStorageManager::createQuotaManager(OriginQuotaMana
         if (RefPtr fileSystemStorageManager = checkedThis->existingFileSystemStorageManager()) {
             CheckedUint64 totalFileSystemStorageSize = fileSystemStorageSize;
             totalFileSystemStorageSize += fileSystemStorageManager->allocatedUnusedCapacity();
+            // Zero unless the session is ephemeral, in which case the files are not on
+            // disk and directorySize() above found nothing to count.
+            totalFileSystemStorageSize += fileSystemStorageManager->memoryUsage();
             if (!totalFileSystemStorageSize.hasOverflowed())
                 fileSystemStorageSize = totalFileSystemStorageSize;
         }

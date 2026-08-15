@@ -71,9 +71,13 @@ private:
     void addGlobalIdentifierReference(WebCore::ClientOrigin&&, WebCore::FileSystemHandleGlobalIdentifier) final;
     void removeGlobalIdentifierReferences(WebCore::ClientOrigin&&, Vector<WebCore::FileSystemHandleGlobalIdentifier>&&) final;
     void resolveGlobalIdentifier(WebCore::ClientOrigin&&, WebCore::FileSystemHandleGlobalIdentifier, ResolveGlobalIdentifierCallback&&) final;
-    void getFile(WebCore::FileSystemHandleIdentifier, StringCallback&&) final;
+    void getFile(WebCore::FileSystemHandleIdentifier, FileDataCallback&&) final;
 
     void createSyncAccessHandle(WebCore::FileSystemHandleIdentifier, WebCore::FileSystemStorageConnection::GetAccessHandleCallback&&) final;
+    void readFromSyncAccessHandle(WebCore::FileSystemHandleIdentifier, WebCore::FileSystemSyncAccessHandleIdentifier, uint64_t offset, uint64_t count, ReadCallback&&) final;
+    void writeToSyncAccessHandle(WebCore::FileSystemHandleIdentifier, WebCore::FileSystemSyncAccessHandleIdentifier, uint64_t offset, std::span<const uint8_t>, SizeCallback&&) final;
+    void truncateSyncAccessHandle(WebCore::FileSystemHandleIdentifier, WebCore::FileSystemSyncAccessHandleIdentifier, uint64_t size, VoidCallback&&) final;
+    void getSizeOfSyncAccessHandle(WebCore::FileSystemHandleIdentifier, WebCore::FileSystemSyncAccessHandleIdentifier, SizeCallback&&) final;
     void closeSyncAccessHandle(WebCore::FileSystemHandleIdentifier, WebCore::FileSystemSyncAccessHandleIdentifier, EmptyCallback&&) final;
     void requestNewCapacityForSyncAccessHandle(WebCore::FileSystemHandleIdentifier, WebCore::FileSystemSyncAccessHandleIdentifier, uint64_t newCapacity, RequestCapacityCallback&& completionHandler) final;
     void registerSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier, WebCore::ScriptExecutionContextIdentifier) final;

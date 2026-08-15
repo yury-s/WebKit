@@ -64,8 +64,11 @@ public:
     void invalidate();
 
 private:
-    // The file this handle reads and writes. Splitting it out from the descriptor keeps
-    // the spec logic below independent of how the bytes are actually reached.
+    // The file this handle reads and writes. A file with a descriptor is served directly
+    // from this process; one that exists only in the storage process's memory, as in an
+    // ephemeral session, is served over IPC. "Sync" describes the JavaScript API, not the
+    // transport: these handles are exposed on worker threads only, so blocking one on a
+    // message is acceptable.
     class Delegate {
         WTF_MAKE_NONCOPYABLE(Delegate);
     public:
@@ -80,6 +83,8 @@ private:
         virtual void close() = 0;
     };
     class FileHandleDelegate;
+    class IPCDelegate;
+    static UniqueRef<Delegate> createDelegate(FileSystemFileHandle&, FileSystemSyncAccessHandleIdentifier, FileSystem::FileHandle&&);
 
     FileSystemSyncAccessHandle(ScriptExecutionContext&, FileSystemFileHandle&, FileSystemSyncAccessHandleIdentifier, FileSystem::FileHandle&&, uint64_t capacity);
     using CloseCallback = CompletionHandler<void(ExceptionOr<void>&&)>;

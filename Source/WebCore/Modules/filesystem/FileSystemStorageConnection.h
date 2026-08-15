@@ -59,6 +59,8 @@ public:
     using ResolveCallback = CompletionHandler<void(ExceptionOr<std::optional<Vector<String>>>&&)>;
     struct SyncAccessHandleInfo {
         FileSystemSyncAccessHandleIdentifier identifier;
+        // Invalid when the file lives only in memory in the storage process, in which
+        // case the access handle does its I/O over IPC instead of on a descriptor.
         FileSystem::FileHandle file;
         uint64_t capacity { 0 };
         SyncAccessHandleInfo isolatedCopy() && { return { identifier, WTF::move(file), capacity }; }
@@ -67,9 +69,14 @@ public:
     using VoidCallback = CompletionHandler<void(ExceptionOr<void>&&)>;
     using EmptyCallback = CompletionHandler<void()>;
     using GetHandleNamesCallback = CompletionHandler<void(ExceptionOr<Vector<String>>&&)>;
-    using StringCallback = CompletionHandler<void(ExceptionOr<String>&&)>;
+    // getFile() answers with a path when the file is on disk, and with its bytes when it
+    // lives in the storage process's memory and there is no path to open.
+    using FileData = Variant<String, Vector<uint8_t>>;
+    using FileDataCallback = CompletionHandler<void(ExceptionOr<FileData>&&)>;
     using StreamCallback = CompletionHandler<void(ExceptionOr<FileSystemWritableFileStreamIdentifier>&&)>;
     using RequestCapacityCallback = CompletionHandler<void(std::optional<uint64_t>&&)>;
+    using ReadCallback = CompletionHandler<void(ExceptionOr<Vector<uint8_t>>&&)>;
+    using SizeCallback = CompletionHandler<void(ExceptionOr<uint64_t>&&)>;
     using ResolveGlobalIdentifierCallback = CompletionHandler<void(ExceptionOr<FileSystemHandleIdentifier>&&)>;
 
     virtual bool isWorker() const { return false; }
@@ -80,8 +87,14 @@ public:
     virtual void getDirectoryHandle(FileSystemHandleIdentifier, const String& name, bool createIfNecessary, GetHandleCallback&&) = 0;
     virtual void removeEntry(FileSystemHandleIdentifier, const String& name, bool deleteRecursively, VoidCallback&&) = 0;
     virtual void resolve(FileSystemHandleIdentifier, FileSystemHandleIdentifier, ResolveCallback&&) = 0;
-    virtual void getFile(FileSystemHandleIdentifier, StringCallback&&) = 0;
+    virtual void getFile(FileSystemHandleIdentifier, FileDataCallback&&) = 0;
     virtual void createSyncAccessHandle(FileSystemHandleIdentifier, GetAccessHandleCallback&&) = 0;
+    // Serve a sync access handle that has no file descriptor. Offsets are absolute: the
+    // cursor stays in this process, so each call is self-contained.
+    virtual void readFromSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t offset, uint64_t count, ReadCallback&&) = 0;
+    virtual void writeToSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t offset, std::span<const uint8_t>, SizeCallback&&) = 0;
+    virtual void truncateSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t size, VoidCallback&&) = 0;
+    virtual void getSizeOfSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, SizeCallback&&) = 0;
     virtual void closeSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, EmptyCallback&&) = 0;
     virtual void requestNewCapacityForSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t newCapacity, RequestCapacityCallback&&) = 0;
     virtual void registerSyncAccessHandle(FileSystemSyncAccessHandleIdentifier, ScriptExecutionContextIdentifier) = 0;

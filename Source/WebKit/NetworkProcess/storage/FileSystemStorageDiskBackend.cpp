@@ -66,6 +66,7 @@ private:
 FileSystemStorageDiskBackend::FileSystemStorageDiskBackend(String&& rootPath)
     : m_rootPath(WTF::move(rootPath))
 {
+    ASSERT(!m_rootPath.isEmpty());
 }
 
 bool FileSystemStorageDiskBackend::fileExists(const String& path)
@@ -135,6 +136,48 @@ std::unique_ptr<FileSystemStorageBackend::OpenFile> FileSystemStorageDiskBackend
         return nullptr;
 
     return makeUnique<DiskOpenFile>(WTF::move(handle));
+}
+
+std::optional<Vector<uint8_t>> FileSystemStorageDiskBackend::readFile(const String& path)
+{
+    auto handle = FileSystem::openFile(path, FileSystem::FileOpenMode::Read);
+    if (!handle)
+        return std::nullopt;
+
+    return handle.readAll();
+}
+
+std::optional<uint64_t> FileSystemStorageDiskBackend::readFileRange(const String& path, uint64_t offset, std::span<uint8_t> buffer)
+{
+    auto handle = FileSystem::openFile(path, FileSystem::FileOpenMode::Read);
+    if (!handle)
+        return std::nullopt;
+
+    if (!handle.seek(offset, FileSystem::FileSeekOrigin::Beginning))
+        return std::nullopt;
+
+    return handle.read(buffer);
+}
+
+std::optional<uint64_t> FileSystemStorageDiskBackend::writeFileRange(const String& path, uint64_t offset, std::span<const uint8_t> data)
+{
+    auto handle = FileSystem::openFile(path, FileSystem::FileOpenMode::ReadWrite);
+    if (!handle)
+        return std::nullopt;
+
+    if (!handle.seek(offset, FileSystem::FileSeekOrigin::Beginning))
+        return std::nullopt;
+
+    return handle.write(data);
+}
+
+bool FileSystemStorageDiskBackend::truncateFile(const String& path, uint64_t size)
+{
+    auto handle = FileSystem::openFile(path, FileSystem::FileOpenMode::ReadWrite);
+    if (!handle)
+        return false;
+
+    return handle.truncate(size);
 }
 
 FileSystem::FileHandle FileSystemStorageDiskBackend::openFileForDirectAccess(const String& path)

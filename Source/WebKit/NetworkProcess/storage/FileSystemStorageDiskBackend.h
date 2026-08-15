@@ -39,6 +39,7 @@ public:
 
 private:
     const String& rootPath() const LIFETIME_BOUND final { return m_rootPath; }
+    bool isMemoryBacked() const final { return false; }
 
     bool fileExists(const String&) final;
     std::optional<FileSystem::FileType> fileType(const String&) final;
@@ -56,7 +57,15 @@ private:
     String createTemporaryFile() final;
     std::unique_ptr<OpenFile> openFile(const String&) final;
 
+    std::optional<Vector<uint8_t>> readFile(const String&) final;
+    std::optional<uint64_t> readFileRange(const String&, uint64_t offset, std::span<uint8_t>) final;
+    std::optional<uint64_t> writeFileRange(const String&, uint64_t offset, std::span<const uint8_t>) final;
+    bool truncateFile(const String&, uint64_t size) final;
+
     FileSystem::FileHandle openFileForDirectAccess(const String&) final;
+
+    uint64_t memoryUsage() const final { return 0; }
+    bool hasDataInMemory() const final { return false; }
 
     String m_rootPath;
 };

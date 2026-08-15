@@ -86,6 +86,27 @@ FileSystemStorageBackend* FileSystemStorageHandle::backend() const
     return manager ? &manager->backend() : nullptr;
 }
 
+bool FileSystemStorageHandle::fileExists() const
+{
+    auto* backend = this->backend();
+    return backend && backend->fileExists(m_path);
+}
+
+std::optional<Vector<uint8_t>> FileSystemStorageHandle::readFile() const
+{
+    auto* backend = this->backend();
+    if (!backend)
+        return std::nullopt;
+
+    return backend->readFile(m_path);
+}
+
+bool FileSystemStorageHandle::isMemoryBacked() const
+{
+    auto* backend = this->backend();
+    return backend && backend->isMemoryBacked();
+}
+
 void FileSystemStorageHandle::close()
 {
     RefPtr manager = m_manager.get();
@@ -234,20 +255,90 @@ Expected<FileSystemSyncAccessHandleInfo, FileSystemStorageError> FileSystemStora
     });
 
     auto& backend = manager->backend();
-    auto handle = backend.openFileForDirectAccess(m_path);
-    if (!handle)
-        return makeUnexpected(FileSystemStorageError::Unknown);
+    std::optional<IPC::SharedFileHandle> ipcHandle;
+    // A memory-backed file has no descriptor to hand over, so the web process reads and
+    // writes it over IPC instead. That is what makes sync access handles work in a
+    // session that keeps nothing on disk.
+    if (!backend.isMemoryBacked()) {
+        auto handle = backend.openFileForDirectAccess(m_path);
+        if (!handle)
+            return makeUnexpected(FileSystemStorageError::Unknown);
 
-    auto ipcHandle = IPC::SharedFileHandle::create(WTF::move(handle));
-    if (!ipcHandle)
-        return makeUnexpected(FileSystemStorageError::BackendNotSupported);
+        ipcHandle = IPC::SharedFileHandle::create(WTF::move(handle));
+        if (!ipcHandle)
+            return makeUnexpected(FileSystemStorageError::BackendNotSupported);
+    } else if (!backend.fileExists(m_path))
+        return makeUnexpected(FileSystemStorageError::Unknown);
 
     isLockReleaseNeeded = false;
 
     ASSERT(!m_activeSyncAccessHandle);
     m_activeSyncAccessHandle = SyncAccessHandleInfo { WebCore::FileSystemSyncAccessHandleIdentifier::generate() };
     uint64_t initialCapacity = valueOrDefault(backend.fileSize(m_path));
-    return FileSystemSyncAccessHandleInfo { m_activeSyncAccessHandle->identifier, WTF::move(*ipcHandle), initialCapacity };
+    return FileSystemSyncAccessHandleInfo { m_activeSyncAccessHandle->identifier, WTF::move(ipcHandle), initialCapacity };
+}
+
+// The four operations below serve a sync access handle whose file has no descriptor to
+// share, i.e. one that lives in memory. Offsets are absolute: the web process keeps the
+// cursor, so each call is self-contained and needs no state here.
+Expected<Vector<uint8_t>, FileSystemStorageError> FileSystemStorageHandle::readFromSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, uint64_t count)
+{
+    auto* backend = this->backend();
+    if (!backend || !isActiveSyncAccessHandle(accessHandleIdentifier))
+        return makeUnexpected(FileSystemStorageError::InvalidState);
+
+    auto size = backend->fileSize(m_path);
+    if (!size)
+        return makeUnexpected(FileSystemStorageError::Unknown);
+
+    // Clamp before allocating, so an oversized request cannot make us allocate more than
+    // the file holds.
+    if (offset >= *size)
+        return Vector<uint8_t> { };
+
+    Vector<uint8_t> buffer;
+    buffer.grow(std::min<uint64_t>(count, *size - offset));
+    auto readCount = backend->readFileRange(m_path, offset, buffer.mutableSpan());
+    if (!readCount)
+        return makeUnexpected(FileSystemStorageError::Unknown);
+
+    buffer.shrink(*readCount);
+    return buffer;
+}
+
+Expected<uint64_t, FileSystemStorageError> FileSystemStorageHandle::writeToSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, std::span<const uint8_t> data)
+{
+    auto* backend = this->backend();
+    if (!backend || !isActiveSyncAccessHandle(accessHandleIdentifier))
+        return makeUnexpected(FileSystemStorageError::InvalidState);
+
+    auto writtenCount = backend->writeFileRange(m_path, offset, data);
+    if (!writtenCount)
+        return makeUnexpected(FileSystemStorageError::Unknown);
+
+    return *writtenCount;
+}
+
+std::optional<FileSystemStorageError> FileSystemStorageHandle::truncateSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t size)
+{
+    auto* backend = this->backend();
+    if (!backend || !isActiveSyncAccessHandle(accessHandleIdentifier))
+        return FileSystemStorageError::InvalidState;
+
+    return backend->truncateFile(m_path, size) ? std::nullopt : std::optional { FileSystemStorageError::Unknown };
+}
+
+Expected<uint64_t, FileSystemStorageError> FileSystemStorageHandle::sizeOfSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier)
+{
+    auto* backend = this->backend();
+    if (!backend || !isActiveSyncAccessHandle(accessHandleIdentifier))
+        return makeUnexpected(FileSystemStorageError::InvalidState);
+
+    auto size = backend->fileSize(m_path);
+    if (!size)
+        return makeUnexpected(FileSystemStorageError::Unknown);
+
+    return *size;
 }
 
 std::optional<FileSystemStorageError> FileSystemStorageHandle::closeSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier)
@@ -325,6 +416,8 @@ std::optional<FileSystemStorageError> FileSystemStorageHandle::closeWritable(Web
     if (!backend.copyFile(m_path, activeWritableFile.path))
         return FileSystemStorageError::Unknown;
 
+    activeWritableFile.handle = nullptr;
+    backend.deleteFile(activeWritableFile.path);
     return std::nullopt;
 }
 

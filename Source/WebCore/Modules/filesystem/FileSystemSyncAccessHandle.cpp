@@ -69,6 +69,39 @@ private:
     FileSystem::FileHandle m_file;
 };
 
+// The file has no descriptor because it lives in the storage process's memory, so every
+// operation is a blocking message to it. Blocking is safe here: sync access handles are
+// only exposed on worker threads.
+class FileSystemSyncAccessHandle::IPCDelegate final : public FileSystemSyncAccessHandle::Delegate {
+    WTF_MAKE_TZONE_ALLOCATED_INLINE(IPCDelegate);
+public:
+    IPCDelegate(FileSystemFileHandle& source, FileSystemSyncAccessHandleIdentifier identifier)
+        : m_source(source)
+        , m_identifier(identifier)
+    {
+    }
+
+private:
+    std::optional<uint64_t> size() final { return m_source->getSizeOfSyncAccessHandle(m_identifier); }
+    std::optional<uint64_t> read(std::span<uint8_t> buffer, uint64_t offset) final { return m_source->readFromSyncAccessHandle(m_identifier, offset, buffer); }
+    std::optional<uint64_t> write(std::span<const uint8_t> data, uint64_t offset) final { return m_source->writeToSyncAccessHandle(m_identifier, offset, data); }
+    bool truncate(uint64_t size) final { return m_source->truncateSyncAccessHandle(m_identifier, size); }
+    // Nothing is buffered on this side, so there is nothing to push out.
+    bool flush() final { return true; }
+    void close() final { }
+
+    const Ref<FileSystemFileHandle> m_source;
+    FileSystemSyncAccessHandleIdentifier m_identifier;
+};
+
+UniqueRef<FileSystemSyncAccessHandle::Delegate> FileSystemSyncAccessHandle::createDelegate(FileSystemFileHandle& source, FileSystemSyncAccessHandleIdentifier identifier, FileSystem::FileHandle&& file)
+{
+    if (file)
+        return makeUniqueRef<FileSystemSyncAccessHandle::FileHandleDelegate>(WTF::move(file));
+
+    return makeUniqueRef<FileSystemSyncAccessHandle::IPCDelegate>(source, identifier);
+}
+
 Ref<FileSystemSyncAccessHandle> FileSystemSyncAccessHandle::create(ScriptExecutionContext& context, FileSystemFileHandle& source, FileSystemSyncAccessHandleIdentifier identifier, FileSystem::FileHandle&& file, uint64_t capacity)
 {
     auto handle = adoptRef(*new FileSystemSyncAccessHandle(context, source, identifier, WTF::move(file), capacity));
@@ -80,7 +113,7 @@ FileSystemSyncAccessHandle::FileSystemSyncAccessHandle(ScriptExecutionContext& c
     : ActiveDOMObject(&context)
     , m_source(source)
     , m_identifier(identifier)
-    , m_file(makeUniqueRef<FileHandleDelegate>(WTF::move(file)))
+    , m_file(createDelegate(source, identifier, WTF::move(file)))
     , m_capacity(capacity)
 {
     m_source->registerSyncAccessHandle(m_identifier, *this);

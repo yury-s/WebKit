@@ -22,6 +22,6 @@
 
 struct WebKit::FileSystemSyncAccessHandleInfo {
     Markable<WebCore::FileSystemSyncAccessHandleIdentifier> identifier;
-    IPC::SharedFileHandle handle;
+    std::optional<IPC::SharedFileHandle> handle;
     uint64_t capacity;
 }

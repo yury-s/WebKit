@@ -49,11 +49,18 @@ public:
     void registerSyncAccessHandle(FileSystemSyncAccessHandleIdentifier, FileSystemSyncAccessHandle&);
     void closeSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier);
     std::optional<uint64_t> requestNewCapacityForSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t newCapacity);
+    // Blocking variants for a sync access handle with no file descriptor. FileSystemSyncAccessHandle
+    // is only exposed on worker threads, so blocking one while the storage process answers is
+    // acceptable, and it is what requestNewCapacityForSyncAccessHandle() above already does.
+    std::optional<uint64_t> readFromSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t offset, std::span<uint8_t>);
+    std::optional<uint64_t> writeToSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t offset, std::span<const uint8_t>);
+    bool truncateSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t size);
+    std::optional<uint64_t> getSizeOfSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier);
     using CallbackIdentifier = WorkerFileSystemStorageConnectionCallbackIdentifier;
     void didIsSameEntry(CallbackIdentifier, ExceptionOr<bool>&&);
     void didGetHandle(CallbackIdentifier, ExceptionOr<Ref<FileSystemHandleCloseScope>>&&);
     void didResolve(CallbackIdentifier, ExceptionOr<std::optional<Vector<String>>>&&);
-    void completeStringCallback(CallbackIdentifier, ExceptionOr<String>&&);
+    void completeFileDataCallback(CallbackIdentifier, ExceptionOr<FileData>&&);
     void didResolveGlobalIdentifier(CallbackIdentifier, ExceptionOr<FileSystemHandleIdentifier>&&);
     void didCreateSyncAccessHandle(CallbackIdentifier, ExceptionOr<FileSystemStorageConnection::SyncAccessHandleInfo>&&);
     void completeVoidCallback(CallbackIdentifier, ExceptionOr<void>&& result);
@@ -61,6 +68,8 @@ public:
 
 private:
     WorkerFileSystemStorageConnection(WorkerGlobalScope&, Ref<FileSystemStorageConnection>&&);
+
+    template<typename Operation> bool performBlockingOperation(const Operation&);
 
     // FileSystemStorageConnection
     bool isWorker() const final { return true; }
@@ -76,13 +85,17 @@ private:
     void addGlobalIdentifierReference(ClientOrigin&&, FileSystemHandleGlobalIdentifier) final;
     void removeGlobalIdentifierReferences(ClientOrigin&&, Vector<FileSystemHandleGlobalIdentifier>&&) final;
     void resolveGlobalIdentifier(ClientOrigin&&, FileSystemHandleGlobalIdentifier, ResolveGlobalIdentifierCallback&&) final;
-    void getFile(FileSystemHandleIdentifier, StringCallback&&) final;
+    void getFile(FileSystemHandleIdentifier, FileDataCallback&&) final;
     void createSyncAccessHandle(FileSystemHandleIdentifier, FileSystemStorageConnection::GetAccessHandleCallback&&) final;
     void closeSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, EmptyCallback&&) final;
     void registerSyncAccessHandle(FileSystemSyncAccessHandleIdentifier, ScriptExecutionContextIdentifier) final { };
     void unregisterSyncAccessHandle(FileSystemSyncAccessHandleIdentifier) final;
     void invalidateAccessHandle(FileSystemSyncAccessHandleIdentifier) final;
     void requestNewCapacityForSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t, RequestCapacityCallback&&) final;
+    void readFromSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t offset, uint64_t count, ReadCallback&&) final;
+    void writeToSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t offset, std::span<const uint8_t>, SizeCallback&&) final;
+    void truncateSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t size, VoidCallback&&) final;
+    void getSizeOfSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, SizeCallback&&) final;
     void createWritable(ScriptExecutionContextIdentifier, FileSystemHandleIdentifier, bool keepExistingData, StreamCallback&&) final;
     void closeWritable(FileSystemHandleIdentifier, FileSystemWritableFileStreamIdentifier, FileSystemWriteCloseReason, VoidCallback&&) final;
     void executeCommandForWritable(FileSystemHandleIdentifier, FileSystemWritableFileStreamIdentifier, FileSystemWriteCommandType, std::optional<uint64_t> position, std::optional<uint64_t> size, std::span<const uint8_t> dataBytes, bool hasDataError, VoidCallback&&) final;
@@ -95,7 +108,7 @@ private:
     HashMap<CallbackIdentifier, GetAccessHandleCallback> m_getAccessHandlCallbacks;
     HashMap<CallbackIdentifier, VoidCallback> m_voidCallbacks;
     HashMap<CallbackIdentifier, GetHandleNamesCallback> m_getHandleNamesCallbacks;
-    HashMap<CallbackIdentifier, StringCallback> m_stringCallbacks;
+    HashMap<CallbackIdentifier, FileDataCallback> m_fileDataCallbacks;
     HashMap<CallbackIdentifier, ResolveGlobalIdentifierCallback> m_resolveGlobalIdentifierCallbacks;
     HashMap<CallbackIdentifier, StreamCallback> m_streamCallbacks;
     HashMap<FileSystemSyncAccessHandleIdentifier, WeakPtr<FileSystemSyncAccessHandle>> m_syncAccessHandles;

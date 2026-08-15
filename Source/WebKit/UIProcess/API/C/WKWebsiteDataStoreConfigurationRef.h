@@ -36,6 +36,11 @@ WK_EXPORT WKTypeID WKWebsiteDataStoreConfigurationGetTypeID();
 
 WK_EXPORT WKWebsiteDataStoreConfigurationRef WKWebsiteDataStoreConfigurationCreate();
 
+// Configuration for a session that keeps nothing on disk. Pass it to
+// WKWebsiteDataStoreCreateWithConfiguration() to get an ephemeral data store whose quota and
+// other settings you control, unlike WKWebsiteDataStoreCreateNonPersistentDataStore().
+WK_EXPORT WKWebsiteDataStoreConfigurationRef WKWebsiteDataStoreConfigurationCreateNonPersistent();
+
 WK_EXPORT WKStringRef WKWebsiteDataStoreConfigurationCopyNetworkCacheDirectory(WKWebsiteDataStoreConfigurationRef configuration);
 WK_EXPORT void WKWebsiteDataStoreConfigurationSetNetworkCacheDirectory(WKWebsiteDataStoreConfigurationRef configuration, WKStringRef directory);
 

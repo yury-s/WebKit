@@ -81,8 +81,8 @@ void WorkerFileSystemStorageConnection::scopeClosed()
     for (auto& callback : resolveCallbacks.values())
         callback(Exception { ExceptionCode::InvalidStateError });
 
-    auto stringCallbacks = std::exchange(m_stringCallbacks, { });
-    for (auto& callback : stringCallbacks.values())
+    auto fileDataCallbacks = std::exchange(m_fileDataCallbacks, { });
+    for (auto& callback : fileDataCallbacks.values())
         callback(Exception { ExceptionCode::InvalidStateError });
 
     auto resolveGlobalIdentifierCallbacks = std::exchange(m_resolveGlobalIdentifierCallbacks, { });
@@ -227,20 +227,20 @@ void WorkerFileSystemStorageConnection::didResolve(CallbackIdentifier callbackId
         callback(WTF::move(result));
 }
 
-void WorkerFileSystemStorageConnection::getFile(FileSystemHandleIdentifier identifier, StringCallback&& callback)
+void WorkerFileSystemStorageConnection::getFile(FileSystemHandleIdentifier identifier, FileDataCallback&& callback)
 {
     RefPtr scope = m_scope.get();
     if (!scope)
         return callback(Exception { ExceptionCode::InvalidStateError });
 
     auto callbackIdentifier = CallbackIdentifier::generate();
-    m_stringCallbacks.add(callbackIdentifier, WTF::move(callback));
+    m_fileDataCallbacks.add(callbackIdentifier, WTF::move(callback));
 
     callOnMainThread([callbackIdentifier, workerThread = Ref { scope->thread() }, mainThreadConnection = m_mainThreadConnection, identifier]() mutable {
         auto mainThreadCallback = [callbackIdentifier, workerThread = WTF::move(workerThread)](auto&& result) mutable {
             workerThread->runLoop().postTaskForMode([callbackIdentifier, result = crossThreadCopy(WTF::move(result))] (auto& scope) mutable {
                 if (auto connection = downcast<WorkerGlobalScope>(scope).fileSystemStorageConnection())
-                    connection->completeStringCallback(callbackIdentifier, WTF::move(result));
+                    connection->completeFileDataCallback(callbackIdentifier, WTF::move(result));
             }, WorkerRunLoop::defaultMode());
         };
 
@@ -248,9 +248,9 @@ void WorkerFileSystemStorageConnection::getFile(FileSystemHandleIdentifier ident
     });
 }
 
-void WorkerFileSystemStorageConnection::completeStringCallback(CallbackIdentifier callbackIdentifier, ExceptionOr<String>&& result)
+void WorkerFileSystemStorageConnection::completeFileDataCallback(CallbackIdentifier callbackIdentifier, ExceptionOr<FileData>&& result)
 {
-    if (auto callback = m_stringCallbacks.take(callbackIdentifier))
+    if (auto callback = m_fileDataCallbacks.take(callbackIdentifier))
         callback(WTF::move(result));
 }
 
@@ -506,6 +506,112 @@ void WorkerFileSystemStorageConnection::requestNewCapacityForSyncAccessHandle(Fi
 {
     ASSERT_NOT_REACHED();
     return callback(std::nullopt);
+}
+
+// Runs `operation` on the main thread and blocks this worker thread until it completes,
+// the same way requestNewCapacityForSyncAccessHandle() above does. `operation` receives
+// the main thread connection and a callback it must invoke exactly once.
+template<typename Operation>
+bool WorkerFileSystemStorageConnection::performBlockingOperation(const Operation& operation)
+{
+    RefPtr scope = m_scope.get();
+    if (!scope || !m_mainThreadConnection)
+        return false;
+
+    BinarySemaphore semaphore;
+    callOnMainThread([mainThreadConnection = m_mainThreadConnection, &operation, &semaphore] {
+        operation(*mainThreadConnection, [&semaphore] {
+            semaphore.signal();
+        });
+    });
+    {
+        JSC::VMBlockingScope blockingScope(scope->vm());
+        semaphore.wait();
+    }
+    return true;
+}
+
+std::optional<uint64_t> WorkerFileSystemStorageConnection::readFromSyncAccessHandle(FileSystemHandleIdentifier identifier, FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, std::span<uint8_t> buffer)
+{
+    std::optional<uint64_t> readCount;
+    bool performed = performBlockingOperation([&](auto& connection, auto&& done) {
+        connection.readFromSyncAccessHandle(identifier, accessHandleIdentifier, offset, buffer.size(), [&, done = WTF::move(done)](auto result) mutable {
+            if (!result.hasException()) {
+                auto data = result.releaseReturnValue();
+                auto count = std::min(data.size(), buffer.size());
+                memcpySpan(buffer.first(count), data.span().first(count));
+                readCount = count;
+            }
+            done();
+        });
+    });
+
+    return performed ? readCount : std::nullopt;
+}
+
+std::optional<uint64_t> WorkerFileSystemStorageConnection::writeToSyncAccessHandle(FileSystemHandleIdentifier identifier, FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, std::span<const uint8_t> data)
+{
+    std::optional<uint64_t> writtenCount;
+    bool performed = performBlockingOperation([&](auto& connection, auto&& done) {
+        connection.writeToSyncAccessHandle(identifier, accessHandleIdentifier, offset, data, [&, done = WTF::move(done)](auto result) mutable {
+            if (!result.hasException())
+                writtenCount = result.releaseReturnValue();
+            done();
+        });
+    });
+
+    return performed ? writtenCount : std::nullopt;
+}
+
+bool WorkerFileSystemStorageConnection::truncateSyncAccessHandle(FileSystemHandleIdentifier identifier, FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t size)
+{
+    bool succeeded = false;
+    bool performed = performBlockingOperation([&](auto& connection, auto&& done) {
+        connection.truncateSyncAccessHandle(identifier, accessHandleIdentifier, size, [&, done = WTF::move(done)](auto result) mutable {
+            succeeded = !result.hasException();
+            done();
+        });
+    });
+
+    return performed && succeeded;
+}
+
+std::optional<uint64_t> WorkerFileSystemStorageConnection::getSizeOfSyncAccessHandle(FileSystemHandleIdentifier identifier, FileSystemSyncAccessHandleIdentifier accessHandleIdentifier)
+{
+    std::optional<uint64_t> size;
+    bool performed = performBlockingOperation([&](auto& connection, auto&& done) {
+        connection.getSizeOfSyncAccessHandle(identifier, accessHandleIdentifier, [&, done = WTF::move(done)](auto result) mutable {
+            if (!result.hasException())
+                size = result.releaseReturnValue();
+            done();
+        });
+    });
+
+    return performed ? size : std::nullopt;
+}
+
+void WorkerFileSystemStorageConnection::readFromSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t, uint64_t, ReadCallback&& callback)
+{
+    ASSERT_NOT_REACHED();
+    return callback(Exception { ExceptionCode::NotSupportedError });
+}
+
+void WorkerFileSystemStorageConnection::writeToSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t, std::span<const uint8_t>, SizeCallback&& callback)
+{
+    ASSERT_NOT_REACHED();
+    return callback(Exception { ExceptionCode::NotSupportedError });
+}
+
+void WorkerFileSystemStorageConnection::truncateSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, uint64_t, VoidCallback&& callback)
+{
+    ASSERT_NOT_REACHED();
+    return callback(Exception { ExceptionCode::NotSupportedError });
+}
+
+void WorkerFileSystemStorageConnection::getSizeOfSyncAccessHandle(FileSystemHandleIdentifier, FileSystemSyncAccessHandleIdentifier, SizeCallback&& callback)
+{
+    ASSERT_NOT_REACHED();
+    return callback(Exception { ExceptionCode::NotSupportedError });
 }
 
 void WorkerFileSystemStorageConnection::addGlobalIdentifierReference(ClientOrigin&& origin, FileSystemHandleGlobalIdentifier globalIdentifier)

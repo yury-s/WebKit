@@ -1174,7 +1174,7 @@ void NetworkStorageManager::resolve(IPC::Connection& connection, WebCore::FileSy
     completionHandler(handle->resolve(targetIdentifier));
 }
 
-void NetworkStorageManager::getFile(IPC::Connection& connection, WebCore::FileSystemHandleIdentifier identifier, CompletionHandler<void(Expected<String, FileSystemStorageError>)>&& completionHandler)
+void NetworkStorageManager::getFile(IPC::Connection& connection, WebCore::FileSystemHandleIdentifier identifier, CompletionHandler<void(Expected<WebCore::FileSystemStorageConnection::FileData, FileSystemStorageError>)>&& completionHandler)
 {
     ASSERT(!RunLoop::isMain());
 
@@ -1184,8 +1184,18 @@ void NetworkStorageManager::getFile(IPC::Connection& connection, WebCore::FileSy
 
     MESSAGE_CHECK_COMPLETION(canConnectionAccessFileSystemHandle(connection.uniqueID(), *handle), connection, completionHandler(makeUnexpected(FileSystemStorageError::Unknown)));
 
-    if (!FileSystem::fileExists(handle->path()))
+    if (!handle->fileExists())
         return completionHandler(makeUnexpected(FileSystemStorageError::FileNotFound));
+
+    // A memory-backed file has no path for the web process to open, so hand over its
+    // contents instead of a path to grant access to.
+    if (handle->isMemoryBacked()) {
+        auto data = handle->readFile();
+        if (!data)
+            return completionHandler(makeUnexpected(FileSystemStorageError::Unknown));
+
+        return completionHandler({ WebCore::FileSystemStorageConnection::FileData { WTF::move(*data) } });
+    }
 
     RunLoop::mainSingleton().dispatch([protectedThis = Ref { *this }, connection = Ref { connection }, path = crossThreadCopy(handle->path()), completionHandler = WTF::move(completionHandler)] mutable {
         if (RefPtr process = protectedThis->m_process.get()) {
@@ -1193,7 +1203,7 @@ void NetworkStorageManager::getFile(IPC::Connection& connection, WebCore::FileSy
                 webConnection->allowAccessToFile(path);
         }
         protectedThis->workQueue().dispatch([path = crossThreadCopy(WTF::move(path)), completionHandler = WTF::move(completionHandler)] mutable {
-            completionHandler(WTF::move(path));
+            completionHandler({ WebCore::FileSystemStorageConnection::FileData { WTF::move(path) } });
         });
     });
 }
@@ -1209,6 +1219,58 @@ void NetworkStorageManager::createSyncAccessHandle(IPC::Connection& connection, 
     MESSAGE_CHECK_COMPLETION(canConnectionAccessFileSystemHandle(connection.uniqueID(), *handle), connection, completionHandler(makeUnexpected(FileSystemStorageError::Unknown)));
 
     completionHandler(handle->createSyncAccessHandle());
+}
+
+void NetworkStorageManager::readFromSyncAccessHandle(IPC::Connection& connection, WebCore::FileSystemHandleIdentifier identifier, WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, uint64_t count, CompletionHandler<void(Expected<Vector<uint8_t>, FileSystemStorageError>)>&& completionHandler)
+{
+    ASSERT(!RunLoop::isMain());
+
+    RefPtr handle = m_fileSystemStorageHandleRegistry->getHandle(identifier);
+    if (!handle)
+        return completionHandler(makeUnexpected(FileSystemStorageError::Unknown));
+
+    MESSAGE_CHECK_COMPLETION(canConnectionAccessFileSystemHandle(connection.uniqueID(), *handle), connection, completionHandler(makeUnexpected(FileSystemStorageError::Unknown)));
+
+    completionHandler(handle->readFromSyncAccessHandle(accessHandleIdentifier, offset, count));
+}
+
+void NetworkStorageManager::writeToSyncAccessHandle(IPC::Connection& connection, WebCore::FileSystemHandleIdentifier identifier, WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, std::span<const uint8_t> dataBytes, CompletionHandler<void(Expected<uint64_t, FileSystemStorageError>)>&& completionHandler)
+{
+    ASSERT(!RunLoop::isMain());
+
+    RefPtr handle = m_fileSystemStorageHandleRegistry->getHandle(identifier);
+    if (!handle)
+        return completionHandler(makeUnexpected(FileSystemStorageError::Unknown));
+
+    MESSAGE_CHECK_COMPLETION(canConnectionAccessFileSystemHandle(connection.uniqueID(), *handle), connection, completionHandler(makeUnexpected(FileSystemStorageError::Unknown)));
+
+    completionHandler(handle->writeToSyncAccessHandle(accessHandleIdentifier, offset, dataBytes));
+}
+
+void NetworkStorageManager::truncateSyncAccessHandle(IPC::Connection& connection, WebCore::FileSystemHandleIdentifier identifier, WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t size, CompletionHandler<void(std::optional<FileSystemStorageError>)>&& completionHandler)
+{
+    ASSERT(!RunLoop::isMain());
+
+    RefPtr handle = m_fileSystemStorageHandleRegistry->getHandle(identifier);
+    if (!handle)
+        return completionHandler(FileSystemStorageError::Unknown);
+
+    MESSAGE_CHECK_COMPLETION(canConnectionAccessFileSystemHandle(connection.uniqueID(), *handle), connection, completionHandler(FileSystemStorageError::Unknown));
+
+    completionHandler(handle->truncateSyncAccessHandle(accessHandleIdentifier, size));
+}
+
+void NetworkStorageManager::getSizeOfSyncAccessHandle(IPC::Connection& connection, WebCore::FileSystemHandleIdentifier identifier, WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, CompletionHandler<void(Expected<uint64_t, FileSystemStorageError>)>&& completionHandler)
+{
+    ASSERT(!RunLoop::isMain());
+
+    RefPtr handle = m_fileSystemStorageHandleRegistry->getHandle(identifier);
+    if (!handle)
+        return completionHandler(makeUnexpected(FileSystemStorageError::Unknown));
+
+    MESSAGE_CHECK_COMPLETION(canConnectionAccessFileSystemHandle(connection.uniqueID(), *handle), connection, completionHandler(makeUnexpected(FileSystemStorageError::Unknown)));
+
+    completionHandler(handle->sizeOfSyncAccessHandle(accessHandleIdentifier));
 }
 
 void NetworkStorageManager::closeSyncAccessHandle(IPC::Connection& connection, WebCore::FileSystemHandleIdentifier identifier, WebCore::FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, CompletionHandler<void()>&& completionHandler)

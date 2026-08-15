@@ -51,6 +51,10 @@ public:
 
     bool NODELETE isActive() const;
     uint64_t allocatedUnusedCapacity() const;
+    // Bytes this origin keeps in memory instead of on disk, and whether there are any.
+    // Both are zero/false for a session with a storage directory.
+    uint64_t memoryUsage() const;
+    bool hasDataInMemory() const;
     FileSystemStorageBackend& backend() LIFETIME_BOUND { return m_backend.get(); }
     Expected<std::pair<WebCore::FileSystemHandleGlobalIdentifier, WebCore::FileSystemHandleIdentifier>, FileSystemStorageError> createHandle(IPC::Connection::UniqueID, FileSystemStorageHandle::Type, String&& path, String&& name, bool createIfNecessary);
     const String& NODELETE getPath(WebCore::FileSystemHandleIdentifier);

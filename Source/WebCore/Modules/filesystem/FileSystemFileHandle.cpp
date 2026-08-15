@@ -26,6 +26,7 @@
 #include "config.h"
 #include "FileSystemFileHandle.h"
 
+#include "Blob.h"
 #include "ContextDestructionObserverInlines.h"
 #include "File.h"
 #include "FileSystemHandleCloseScope.h"
@@ -81,7 +82,16 @@ void FileSystemFileHandle::getFile(DOMPromiseDeferred<IDLInterface<File>>&& prom
             if (!context)
                 return promise.reject(Exception { ExceptionCode::InvalidStateError, "Context has stopped"_s });
 
-            promise.resolve(File::create(context.get(), result.returnValue(), { }, protectedThis->name()));
+            // A file kept in memory by the storage process arrives as bytes rather than as a
+            // path this process could open.
+            promise.resolve(WTF::switchOn(result.releaseReturnValue(),
+                [&](String&& path) {
+                    return File::create(context.get(), path, { }, protectedThis->name());
+                },
+                [&](Vector<uint8_t>&& data) {
+                    Ref blob = Blob::create(context.get(), WTF::move(data), { });
+                    return File::create(context.get(), blob.get(), protectedThis->name());
+                }));
         });
     });
 }
@@ -99,10 +109,10 @@ void FileSystemFileHandle::createSyncAccessHandle(DOMPromiseDeferred<IDLInterfac
             if (result.hasException())
                 return promise.reject(result.releaseException());
 
+            // An invalid file handle is not a failure: it means the file has no descriptor
+            // to share because it lives in memory, and the access handle does its I/O over
+            // IPC instead.
             auto info = result.releaseReturnValue();
-            if (!info.file)
-                return promise.reject(Exception { ExceptionCode::UnknownError, "Invalid platform file handle"_s });
-
             RefPtr context = protectedThis->scriptExecutionContext();
             if (!context) {
                 protectedThis->closeSyncAccessHandle(info.identifier);
@@ -128,6 +138,38 @@ std::optional<uint64_t> FileSystemFileHandle::requestNewCapacityForSyncAccessHan
         return std::nullopt;
 
     return downcast<WorkerFileSystemStorageConnection>(connection()).requestNewCapacityForSyncAccessHandle(identifier(), accessHandleIdentifier, newCapacity);
+}
+
+std::optional<uint64_t> FileSystemFileHandle::readFromSyncAccessHandle(FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, std::span<uint8_t> buffer)
+{
+    if (isClosed())
+        return std::nullopt;
+
+    return downcast<WorkerFileSystemStorageConnection>(connection()).readFromSyncAccessHandle(identifier(), accessHandleIdentifier, offset, buffer);
+}
+
+std::optional<uint64_t> FileSystemFileHandle::writeToSyncAccessHandle(FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t offset, std::span<const uint8_t> data)
+{
+    if (isClosed())
+        return std::nullopt;
+
+    return downcast<WorkerFileSystemStorageConnection>(connection()).writeToSyncAccessHandle(identifier(), accessHandleIdentifier, offset, data);
+}
+
+bool FileSystemFileHandle::truncateSyncAccessHandle(FileSystemSyncAccessHandleIdentifier accessHandleIdentifier, uint64_t size)
+{
+    if (isClosed())
+        return false;
+
+    return downcast<WorkerFileSystemStorageConnection>(connection()).truncateSyncAccessHandle(identifier(), accessHandleIdentifier, size);
+}
+
+std::optional<uint64_t> FileSystemFileHandle::getSizeOfSyncAccessHandle(FileSystemSyncAccessHandleIdentifier accessHandleIdentifier)
+{
+    if (isClosed())
+        return std::nullopt;
+
+    return downcast<WorkerFileSystemStorageConnection>(connection()).getSizeOfSyncAccessHandle(identifier(), accessHandleIdentifier);
 }
 
 void FileSystemFileHandle::registerSyncAccessHandle(FileSystemSyncAccessHandleIdentifier identifier, FileSystemSyncAccessHandle& handle)

@@ -177,8 +177,10 @@ NetworkProcess/storage/CacheStorageManager.cpp
 NetworkProcess/storage/CacheStorageDiskStore.cpp
 NetworkProcess/storage/CacheStorageRecord.cpp
 NetworkProcess/storage/CacheStorageRegistry.cpp
+NetworkProcess/storage/FileSystemStorageBackend.cpp
 NetworkProcess/storage/FileSystemStorageDiskBackend.cpp
 NetworkProcess/storage/FileSystemStorageManager.cpp
+NetworkProcess/storage/FileSystemStorageMemoryBackend.cpp
 NetworkProcess/storage/FileSystemStorageHandle.cpp
 NetworkProcess/storage/FileSystemStorageHandleRegistry.cpp
 NetworkProcess/storage/IDBStorageConnectionToClient.cpp
