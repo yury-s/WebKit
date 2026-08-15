@@ -1833,6 +1833,8 @@
 		93085DE126E5BD13000EC6A7 /* NetworkStorageManagerMessages.h in Headers */ = {isa = PBXBuildFile; fileRef = 93085DCD26E2E902000EC6A7 /* NetworkStorageManagerMessages.h */; };
 		93122C862710CCDF001D819F /* SharedFileHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 93122C852710CCDE001D819F /* SharedFileHandle.h */; };
 		9312BAD526F33C2600FDDF5F /* FileSystemStorageManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 931A075026F06310004474CD /* FileSystemStorageManager.h */; };
+		FB0F50000000000000001006 /* FileSystemStorageBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0F50000000000000001000 /* FileSystemStorageBackend.h */; };
+		FB0F50000000000000001008 /* FileSystemStorageDiskBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0F50000000000000001002 /* FileSystemStorageDiskBackend.h */; };
 		9312BAD626F33C2900FDDF5F /* FileSystemStorageHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 931A075326F06AB4004474CD /* FileSystemStorageHandle.h */; };
 		931A1BE226F870090081A7E5 /* FileSystemStorageError.h in Headers */ = {isa = PBXBuildFile; fileRef = 931A1BE026F85C320081A7E5 /* FileSystemStorageError.h */; };
 		9321D5861A38EE3C008052BE /* WKImmediateActionController.h in Headers */ = {isa = PBXBuildFile; fileRef = 9321D5851A38EE3C008052BE /* WKImmediateActionController.h */; };
@@ -7439,6 +7441,9 @@
 		93085DCD26E2E902000EC6A7 /* NetworkStorageManagerMessages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetworkStorageManagerMessages.h; sourceTree = "<group>"; };
 		93122C852710CCDE001D819F /* SharedFileHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SharedFileHandle.h; sourceTree = "<group>"; };
 		931A075026F06310004474CD /* FileSystemStorageManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageManager.h; sourceTree = "<group>"; };
+		FB0F50000000000000001000 /* FileSystemStorageBackend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageBackend.h; sourceTree = "<group>"; };
+		FB0F50000000000000001002 /* FileSystemStorageDiskBackend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageDiskBackend.h; sourceTree = "<group>"; };
+		FB0F50000000000000001003 /* FileSystemStorageDiskBackend.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemStorageDiskBackend.cpp; sourceTree = "<group>"; };
 		931A075126F06310004474CD /* FileSystemStorageManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemStorageManager.cpp; sourceTree = "<group>"; };
 		931A075226F06AB4004474CD /* FileSystemStorageHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileSystemStorageHandle.cpp; sourceTree = "<group>"; };
 		931A075326F06AB4004474CD /* FileSystemStorageHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemStorageHandle.h; sourceTree = "<group>"; };
@@ -15434,6 +15439,9 @@
 				935BF8082936CA2F00B41326 /* CacheStorageRegistry.cpp */,
 				935BF8062936C9FC00B41326 /* CacheStorageRegistry.h */,
 				935BF7F52936BF1800B41326 /* CacheStorageStore.h */,
+				FB0F50000000000000001000 /* FileSystemStorageBackend.h */,
+				FB0F50000000000000001003 /* FileSystemStorageDiskBackend.cpp */,
+				FB0F50000000000000001002 /* FileSystemStorageDiskBackend.h */,
 				931A1BE026F85C320081A7E5 /* FileSystemStorageError.h */,
 				2D1DE35B2AFA46BA00D955D4 /* FileSystemStorageError.serialization.in */,
 				931A075226F06AB4004474CD /* FileSystemStorageHandle.cpp */,
@@ -18423,6 +18431,8 @@
 				F47FD8B52F7854C5008BF1DD /* ExtractedNodeInfo.h in Headers */,
 				572EBBD72537EBAE000552B3 /* ExtraPrivateSymbolsForTAPI.h in Headers */,
 				57B8264823050C5100B72EB0 /* FidoService.h in Headers */,
+				FB0F50000000000000001006 /* FileSystemStorageBackend.h in Headers */,
+				FB0F50000000000000001008 /* FileSystemStorageDiskBackend.h in Headers */,
 				931A1BE226F870090081A7E5 /* FileSystemStorageError.h in Headers */,
 				9312BAD626F33C2900FDDF5F /* FileSystemStorageHandle.h in Headers */,
 				935B579A26F51933008B48AC /* FileSystemStorageHandleRegistry.h in Headers */,

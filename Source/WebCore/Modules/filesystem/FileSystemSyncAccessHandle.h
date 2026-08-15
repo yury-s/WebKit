@@ -32,7 +32,9 @@
 #include <wtf/Deque.h>
 #include <wtf/FileHandle.h>
 #include <wtf/FileSystem.h>
+#include <wtf/Noncopyable.h>
 #include <wtf/RefCountedAndCanMakeWeakPtr.h>
+#include <wtf/UniqueRef.h>
 #include <wtf/WeakPtr.h>
 
 namespace WebCore {
@@ -62,6 +64,23 @@ public:
     void invalidate();
 
 private:
+    // The file this handle reads and writes. Splitting it out from the descriptor keeps
+    // the spec logic below independent of how the bytes are actually reached.
+    class Delegate {
+        WTF_MAKE_NONCOPYABLE(Delegate);
+    public:
+        Delegate() = default;
+        virtual ~Delegate() = default;
+
+        virtual std::optional<uint64_t> size() = 0;
+        virtual std::optional<uint64_t> read(std::span<uint8_t>, uint64_t offset) = 0;
+        virtual std::optional<uint64_t> write(std::span<const uint8_t>, uint64_t offset) = 0;
+        virtual bool truncate(uint64_t size) = 0;
+        virtual bool flush() = 0;
+        virtual void close() = 0;
+    };
+    class FileHandleDelegate;
+
     FileSystemSyncAccessHandle(ScriptExecutionContext&, FileSystemFileHandle&, FileSystemSyncAccessHandleIdentifier, FileSystem::FileHandle&&, uint64_t capacity);
     using CloseCallback = CompletionHandler<void(ExceptionOr<void>&&)>;
     enum class ShouldNotifyBackend : bool { No, Yes };
@@ -74,7 +93,9 @@ private:
 
     const Ref<FileSystemFileHandle> m_source;
     FileSystemSyncAccessHandleIdentifier m_identifier;
-    FileSystem::FileHandle m_file;
+    const UniqueRef<Delegate> m_file;
+    // The file cursor, kept here rather than in the delegate so both transports share it.
+    uint64_t m_offset { 0 };
     bool m_isClosed { false };
     uint64_t m_capacity;
 };

@@ -26,6 +26,7 @@
 #pragma once
 
 #include "Connection.h"
+#include "FileSystemStorageBackend.h"
 #include "FileSystemSyncAccessHandleInfo.h"
 #include <WebCore/FileSystemHandleGlobalIdentifier.h>
 #include <WebCore/FileSystemHandleIdentifier.h>
@@ -94,6 +95,7 @@ private:
     bool NODELETE isActiveSyncAccessHandle(WebCore::FileSystemSyncAccessHandleIdentifier);
     std::optional<FileSystemStorageError> executeCommandForWritableInternal(WebCore::FileSystemWritableFileStreamIdentifier, WebCore::FileSystemWriteCommandType, std::optional<uint64_t> position, std::optional<uint64_t> size, std::span<const uint8_t>, bool hasDataError);
     std::optional<size_t> computeCommandSpace(WebCore::FileSystemWritableFileStreamIdentifier, WebCore::FileSystemWriteCommandType, std::optional<uint64_t> position, std::optional<uint64_t> size, std::span<const uint8_t>, bool hasDataError);
+    FileSystemStorageBackend* backend() const;
 
     WeakPtr<FileSystemStorageManager> m_manager;
     Type m_type;
@@ -104,7 +106,7 @@ private:
         uint64_t capacity { 0 };
     };
     struct FileHandleWithPath {
-        FileSystem::FileHandle handle;
+        std::unique_ptr<FileSystemStorageBackend::OpenFile> handle;
         String path;
     };
 

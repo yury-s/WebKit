@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include "FileSystemStorageBackend.h"
 #include "FileSystemStorageHandle.h"
 #include "FileSystemStorageManagerLock.h"
 #include <WebCore/ClientOrigin.h>
@@ -50,6 +51,7 @@ public:
 
     bool NODELETE isActive() const;
     uint64_t allocatedUnusedCapacity() const;
+    FileSystemStorageBackend& backend() LIFETIME_BOUND { return m_backend.get(); }
     Expected<std::pair<WebCore::FileSystemHandleGlobalIdentifier, WebCore::FileSystemHandleIdentifier>, FileSystemStorageError> createHandle(IPC::Connection::UniqueID, FileSystemStorageHandle::Type, String&& path, String&& name, bool createIfNecessary);
     const String& NODELETE getPath(WebCore::FileSystemHandleIdentifier);
     const String& rootPath() const LIFETIME_BOUND { return m_path; }
@@ -88,6 +90,7 @@ private:
 
     using Lock = FileSystemStorageManagerLock;
 
+    UniqueRef<FileSystemStorageBackend> m_backend;
     String m_path;
     WebCore::ClientOrigin m_origin;
     WeakPtr<FileSystemStorageHandleRegistry> m_registry;

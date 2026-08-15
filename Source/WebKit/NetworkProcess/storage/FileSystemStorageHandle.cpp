@@ -49,11 +49,10 @@ RefPtr<FileSystemStorageHandle> FileSystemStorageHandle::create(FileSystemStorag
     bool canAccess = false;
     switch (type) {
     case FileSystemStorageHandle::Type::Directory:
-        canAccess = FileSystem::makeAllDirectories(path);
+        canAccess = manager.backend().makeAllDirectories(path);
         break;
     case FileSystemStorageHandle::Type::File:
-        if (auto handle = FileSystem::openFile(path, FileSystem::FileOpenMode::ReadWrite); handle)
-            canAccess = true;
+        canAccess = manager.backend().createFile(path);
         break;
     case FileSystemStorageHandle::Type::Any:
         ASSERT_NOT_REACHED();
@@ -79,6 +78,12 @@ std::optional<WebCore::ClientOrigin> FileSystemStorageHandle::origin() const
     if (RefPtr manager = m_manager.get())
         return manager->origin();
     return std::nullopt;
+}
+
+FileSystemStorageBackend* FileSystemStorageHandle::backend() const
+{
+    RefPtr manager = m_manager.get();
+    return manager ? &manager->backend() : nullptr;
 }
 
 void FileSystemStorageHandle::close()
@@ -154,34 +159,35 @@ std::optional<FileSystemStorageError> FileSystemStorageHandle::removeEntry(const
     if (!isValidFileName(m_path, name))
         return FileSystemStorageError::InvalidName;
 
-    auto path = FileSystem::pathByAppendingComponent(m_path, name);
-    if (!FileSystem::fileExists(path))
-        return FileSystemStorageError::FileNotFound;
-
     RefPtr manager = m_manager;
     if (!manager)
         return FileSystemStorageError::Unknown;
 
+    auto& backend = manager->backend();
+    auto path = FileSystem::pathByAppendingComponent(m_path, name);
+    if (!backend.fileExists(path))
+        return FileSystemStorageError::FileNotFound;
+
     if (manager->hasActiveLock(path))
         return FileSystemStorageError::NoModificationAllowed;
 
-    auto type = FileSystem::fileType(path);
+    auto type = backend.fileType(path);
     if (!type)
         return FileSystemStorageError::TypeMismatch;
 
     std::optional<FileSystemStorageError> result;
     switch (type.value()) {
     case FileSystem::FileType::Regular:
-        if (!FileSystem::deleteFile(path))
+        if (!backend.deleteFile(path))
             result = FileSystemStorageError::Unknown;
         break;
     case FileSystem::FileType::Directory:
         if (!deleteRecursively) {
-            if (!FileSystem::deleteEmptyDirectory(path)) {
-                auto entries = FileSystem::listDirectory(path);
+            if (!backend.deleteEmptyDirectory(path)) {
+                auto entries = backend.listDirectory(path);
                 result = entries.isEmpty() ? FileSystemStorageError::Unknown : FileSystemStorageError::InvalidModification;
             }
-        } else if (!FileSystem::deleteNonEmptyDirectory(path))
+        } else if (!backend.deleteNonEmptyDirectory(path))
             result = FileSystemStorageError::Unknown;
         break;
     case FileSystem::FileType::SymbolicLink:
@@ -227,7 +233,8 @@ Expected<FileSystemSyncAccessHandleInfo, FileSystemStorageError> FileSystemStora
             manager->releaseLockForFile(m_path);
     });
 
-    auto handle = FileSystem::openFile(m_path, FileSystem::FileOpenMode::ReadWrite);
+    auto& backend = manager->backend();
+    auto handle = backend.openFileForDirectAccess(m_path);
     if (!handle)
         return makeUnexpected(FileSystemStorageError::Unknown);
 
@@ -239,7 +246,7 @@ Expected<FileSystemSyncAccessHandleInfo, FileSystemStorageError> FileSystemStora
 
     ASSERT(!m_activeSyncAccessHandle);
     m_activeSyncAccessHandle = SyncAccessHandleInfo { WebCore::FileSystemSyncAccessHandleIdentifier::generate() };
-    uint64_t initialCapacity = valueOrDefault(FileSystem::fileSize(m_path));
+    uint64_t initialCapacity = valueOrDefault(backend.fileSize(m_path));
     return FileSystemSyncAccessHandleInfo { m_activeSyncAccessHandle->identifier, WTF::move(*ipcHandle), initialCapacity };
 }
 
@@ -264,7 +271,8 @@ Expected<WebCore::FileSystemWritableFileStreamIdentifier, FileSystemStorageError
     if (!manager)
         return makeUnexpected(FileSystemStorageError::Unknown);
 
-    if (!FileSystem::fileExists(m_path))
+    auto& backend = manager->backend();
+    if (!backend.fileExists(m_path))
         return makeUnexpected(FileSystemStorageError::FileNotFound);
 
     bool acquired = manager->acquireLockForFile(m_path, FileSystemStorageManager::LockType::Shared);
@@ -277,14 +285,14 @@ Expected<WebCore::FileSystemWritableFileStreamIdentifier, FileSystemStorageError
             manager->releaseLockForFile(m_path);
     });
 
-    auto path = FileSystem::createTemporaryFile("FileSystemWritableStream"_s);
+    auto path = backend.createTemporaryFile();
     if (keepExistingData)
-        FileSystem::copyFile(path, m_path);
+        backend.copyFile(path, m_path);
 
     auto streamIdentifier = WebCore::FileSystemWritableFileStreamIdentifier::generate();
     ASSERT(!m_activeWritableFiles.contains(streamIdentifier));
 
-    auto activeWritableFile = FileSystem::openFile(path, FileSystem::FileOpenMode::ReadWrite);
+    auto activeWritableFile = backend.openFile(path);
     if (!activeWritableFile)
         return makeUnexpected(FileSystemStorageError::Unknown);
 
@@ -306,14 +314,15 @@ std::optional<FileSystemStorageError> FileSystemStorageHandle::closeWritable(Web
 
     manager->releaseLockForFile(m_path);
 
+    auto& backend = manager->backend();
     if (reason == WebCore::FileSystemWriteCloseReason::Aborted) {
-        activeWritableFile.handle = { };
-        FileSystem::deleteFile(activeWritableFile.path);
+        activeWritableFile.handle = nullptr;
+        backend.deleteFile(activeWritableFile.path);
         return std::nullopt;
     }
 
     ASSERT(!activeWritableFile.path.isEmpty());
-    if (!FileSystem::copyFile(m_path, activeWritableFile.path))
+    if (!backend.copyFile(m_path, activeWritableFile.path))
         return FileSystemStorageError::Unknown;
 
     return std::nullopt;
@@ -333,12 +342,12 @@ std::optional<FileSystemStorageError> FileSystemStorageHandle::executeCommandFor
     switch (type) {
     case WebCore::FileSystemWriteCommandType::Write: {
         if (position) {
-            auto result = activeWritableFile.handle.seek(*position, FileSystem::FileSeekOrigin::Beginning);
+            auto result = activeWritableFile.handle->seek(*position, FileSystem::FileSeekOrigin::Beginning);
             if (!result)
                 return FileSystemStorageError::Unknown;
         }
 
-        if (!activeWritableFile.handle.write(dataBytes))
+        if (!activeWritableFile.handle->write(dataBytes))
             return FileSystemStorageError::Unknown;
 
         return std::nullopt;
@@ -347,7 +356,7 @@ std::optional<FileSystemStorageError> FileSystemStorageHandle::executeCommandFor
         if (!position)
             return FileSystemStorageError::MissingArgument;
 
-        auto result = activeWritableFile.handle.seek(*position, FileSystem::FileSeekOrigin::Beginning);
+        auto result = activeWritableFile.handle->seek(*position, FileSystem::FileSeekOrigin::Beginning);
         if (!result)
             return FileSystemStorageError::Unknown;
 
@@ -357,13 +366,13 @@ std::optional<FileSystemStorageError> FileSystemStorageHandle::executeCommandFor
         if (!size)
             return FileSystemStorageError::MissingArgument;
 
-        bool truncated = activeWritableFile.handle.truncate(*size);
+        bool truncated = activeWritableFile.handle->truncate(*size);
         if (!truncated)
             return FileSystemStorageError::Unknown;
 
-        auto currentOffset = activeWritableFile.handle.seek(0, FileSystem::FileSeekOrigin::Current);
+        auto currentOffset = activeWritableFile.handle->seek(0, FileSystem::FileSeekOrigin::Current);
         if (!currentOffset || *currentOffset > *size)
-            activeWritableFile.handle.seek(*size, FileSystem::FileSeekOrigin::Beginning);
+            activeWritableFile.handle->seek(*size, FileSystem::FileSeekOrigin::Beginning);
 
         return std::nullopt;
     }
@@ -386,7 +395,11 @@ std::optional<size_t> FileSystemStorageHandle::computeCommandSpace(WebCore::File
 
     auto& activeWritableFile = iterator->value;
 
-    auto fileSize = FileSystem::fileSize(m_path);
+    auto* backend = this->backend();
+    if (!backend)
+        return { };
+
+    auto fileSize = backend->fileSize(m_path);
     if (!fileSize)
         return { };
 
@@ -397,7 +410,7 @@ std::optional<size_t> FileSystemStorageHandle::computeCommandSpace(WebCore::File
     if (position)
         writeStart = *position;
     else {
-        auto currentOffset = activeWritableFile.handle.seek(0, FileSystem::FileSeekOrigin::Current);
+        auto currentOffset = activeWritableFile.handle->seek(0, FileSystem::FileSeekOrigin::Current);
         if (!currentOffset)
             return { };
         writeStart = *currentOffset;
@@ -451,7 +464,11 @@ Expected<Vector<String>, FileSystemStorageError> FileSystemStorageHandle::getHan
     if (m_type != Type::Directory)
         return makeUnexpected(FileSystemStorageError::TypeMismatch);
 
-    return FileSystem::listDirectory(m_path);
+    auto* backend = this->backend();
+    if (!backend)
+        return makeUnexpected(FileSystemStorageError::Unknown);
+
+    return backend->listDirectory(m_path);
 }
 
 Expected<WebCore::FileSystemHandleInfo, FileSystemStorageError> FileSystemStorageHandle::getHandle(IPC::Connection::UniqueID connection, String&& name)
@@ -493,7 +510,7 @@ std::optional<FileSystemStorageError> FileSystemStorageHandle::move(WebCore::Fil
         return FileSystemStorageError::InvalidName;
 
     auto destinationPath = FileSystem::pathByAppendingComponent(path, newName);
-    if (!FileSystem::moveFile(m_path, destinationPath))
+    if (!manager->backend().moveFile(m_path, destinationPath))
         return FileSystemStorageError::Unknown;
 
     m_path = destinationPath;
@@ -520,7 +537,11 @@ uint64_t FileSystemStorageHandle::allocatedUnusedCapacity()
     if (!m_activeSyncAccessHandle)
         return 0;
 
-    auto actualSize = valueOrDefault(FileSystem::fileSize(m_path));
+    auto* backend = this->backend();
+    if (!backend)
+        return 0;
+
+    auto actualSize = valueOrDefault(backend->fileSize(m_path));
     return actualSize > m_activeSyncAccessHandle->capacity ? 0 : m_activeSyncAccessHandle->capacity - actualSize;
 }
 

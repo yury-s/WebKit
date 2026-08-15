@@ -26,6 +26,7 @@
 #include "config.h"
 #include "FileSystemStorageManager.h"
 
+#include "FileSystemStorageDiskBackend.h"
 #include "FileSystemStorageError.h"
 #include "FileSystemStorageHandleRegistry.h"
 #include "WebFileSystemStorageConnectionMessages.h"
@@ -42,7 +43,8 @@ Ref<FileSystemStorageManager> FileSystemStorageManager::create(String&& path, Fi
 }
 
 FileSystemStorageManager::FileSystemStorageManager(String&& path, FileSystemStorageHandleRegistry& registry, const WebCore::ClientOrigin& origin, QuotaCheckFunction&& quotaCheckFunction)
-    : m_path(WTF::move(path))
+    : m_backend(makeUniqueRef<FileSystemStorageDiskBackend>(WTF::move(path)))
+    , m_path(m_backend->rootPath())
     , m_origin(origin)
     , m_registry(registry)
     , m_quotaCheckFunction(WTF::move(quotaCheckFunction))
@@ -81,12 +83,12 @@ Expected<std::pair<WebCore::FileSystemHandleGlobalIdentifier, WebCore::FileSyste
     if (path.isEmpty())
         return makeUnexpected(FileSystemStorageError::Unknown);
 
-    auto fileExists = FileSystem::fileExists(path);
+    auto fileExists = m_backend->fileExists(path);
     if (!createIfNecessary && !fileExists)
         return makeUnexpected(FileSystemStorageError::FileNotFound);
 
     if (fileExists) {
-        auto existingFileType = FileSystem::fileType(path);
+        auto existingFileType = m_backend->fileType(path);
         if (!existingFileType)
             return makeUnexpected(FileSystemStorageError::Unknown);
 
