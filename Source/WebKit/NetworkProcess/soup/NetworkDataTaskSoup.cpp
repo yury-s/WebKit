@@ -173,7 +173,10 @@ void NetworkDataTaskSoup::createRequest(ResourceRequest&& request, WasBlockingCo
     messageFlags |= SOUP_MESSAGE_COLLECT_METRICS;
     if (m_shouldContentSniff == ContentSniffingPolicy::DoNotSniffContent)
         soup_message_disable_feature(m_soupMessage.get(), SOUP_TYPE_CONTENT_SNIFFER);
-    if (m_user.isEmpty() && m_password.isEmpty() && m_storedCredentialsPolicy == StoredCredentialsPolicy::DoNotUse) {
+    // A request that brings its own Authorization header must be sent as-is, otherwise libsoup
+    // replaces the header with the auth it cached for the domain.
+    if ((m_user.isEmpty() && m_password.isEmpty() && m_storedCredentialsPolicy == StoredCredentialsPolicy::DoNotUse)
+        || m_currentRequest.hasHTTPHeaderField(HTTPHeaderName::Authorization)) {
         messageFlags |= SOUP_MESSAGE_DO_NOT_USE_AUTH_CACHE;
     }
     soup_message_set_flags(m_soupMessage.get(), static_cast<SoupMessageFlags>(soup_message_get_flags(m_soupMessage.get()) | messageFlags));
