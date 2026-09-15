@@ -51,6 +51,7 @@
 #include "WebPageMessages.h"
 #include "WebPageProxy.h"
 #include "WebPreferences.h"
+#include "WebProcessMessages.h"
 #include "WebProcessPool.h"
 #include "WebProcessProxy.h"
 #include "WebsiteDataRecord.h"
@@ -828,6 +829,17 @@ void InspectorPlaywrightAgent::getAllCookies(const String& browserContextID, Ref
         });
 }
 
+// Web processes learn about cookie changes asynchronously and may keep serving stale document.cookie
+// values. There is no need to wait for the replies: later commands reach them over the same IPC connections.
+static void clearWebProcessCookieCaches(WebsiteDataStore& dataStore)
+{
+    for (auto& processPool : dataStore.processPools()) {
+        processPool->forEachProcessForSession(dataStore.sessionID(), [](auto& process) {
+            process.sendWithAsyncReply(Messages::WebProcess::DeleteAllCookies(), [] { });
+        });
+    }
+}
+
 void InspectorPlaywrightAgent::setCookies(const String& browserContextID, Ref<JSON::Array>&& in_cookies, Ref<SetCookiesCallback>&& callback) {
     String errorString;
     BrowserContext* browserContext = lookupBrowserContext(errorString, browserContextID);
@@ -887,7 +899,8 @@ void InspectorPlaywrightAgent::setCookies(const String& browserContextID, Ref<JS
     }
 
     browserContext->dataStore->cookieStore().setCookies(WTF::move(cookies),
-        [callback = WTF::move(callback)]() {
+        [dataStore = Ref { *browserContext->dataStore }, callback = WTF::move(callback)]() {
+            clearWebProcessCookieCaches(dataStore);
             if (!callback->isActive())
                 return;
             callback->sendSuccess();
@@ -903,7 +916,8 @@ void InspectorPlaywrightAgent::deleteAllCookies(const String& browserContextID, 
     }
 
     browserContext->dataStore->cookieStore().deleteAllCookies(
-        [callback = WTF::move(callback)]() {
+        [dataStore = Ref { *browserContext->dataStore }, callback = WTF::move(callback)]() {
+            clearWebProcessCookieCaches(dataStore);
             if (!callback->isActive())
                 return;
             callback->sendSuccess();
