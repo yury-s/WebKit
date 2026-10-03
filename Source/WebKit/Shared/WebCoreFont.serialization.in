@@ -82,6 +82,14 @@ using WebCore::FontPlatformData::IPCData = Variant<WebCore::FontPlatformSerializ
 }
 #endif
 
+#if USE(SKIA)
+header: <WebCore/FontPlatformData.h>
+[CustomHeader] struct WebCore::FontPlatformVariation {
+    SkFourByteTag axis;
+    float value;
+};
+#endif
+
 header: <WebCore/FontPlatformData.h>
 [CustomHeader] struct WebCore::FontPlatformDataAttributes {
     WebCore::FontMetadata m_metadata;
@@ -98,6 +106,7 @@ header: <WebCore/FontPlatformData.h>
     SkString m_familyName;
     SkFontStyle m_style;
     Vector<hb_feature_t> m_features;
+    Vector<WebCore::FontPlatformVariation> m_variations;
 #endif
 };
 

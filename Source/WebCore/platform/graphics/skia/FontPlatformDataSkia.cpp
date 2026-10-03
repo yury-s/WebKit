@@ -242,21 +242,44 @@ RefPtr<SharedBuffer> FontPlatformData::openTypeTable(uint32_t table) const
 FontPlatformData FontPlatformData::create(const Attributes& data, const FontCustomPlatformData* custom)
 {
     Vector<hb_feature_t> features = data.m_features;
+    auto applyVariations = [&](sk_sp<SkTypeface>&& typeface) -> sk_sp<SkTypeface> {
+        if (!typeface || data.m_variations.isEmpty())
+            return WTF::move(typeface);
+        auto coordinates = WTF::map(data.m_variations, [](auto& variation) {
+            return SkFontArguments::VariationPosition::Coordinate { variation.axis, variation.value };
+        });
+        SkFontArguments fontArgs;
+        fontArgs.setVariationDesignPosition({ coordinates.span().data(), static_cast<int>(coordinates.size()) });
+        if (auto variationTypeface = typeface->makeClone(fontArgs))
+            return variationTypeface;
+        return WTF::move(typeface);
+    };
     if (custom) {
-        sk_sp<SkTypeface> typeface = custom->m_typeface;
+        sk_sp<SkTypeface> typeface = applyVariations(sk_sp<SkTypeface>(custom->m_typeface));
         return { WTF::move(typeface), data.m_metadata, WTF::move(features), custom };
     }
-    sk_sp<SkTypeface> typeface = FontCache::forCurrentThread().fontManager().matchFamilyStyle(data.m_familyName.c_str(), data.m_style);
+    sk_sp<SkTypeface> typeface = applyVariations(FontCache::forCurrentThread().fontManager().matchFamilyStyle(data.m_familyName.c_str(), data.m_style));
     return { WTF::move(typeface), data.m_metadata, WTF::move(features) };
 }
 
 FontPlatformData::Attributes FontPlatformData::attributes() const
 {
+    auto* typeface = skFont().getTypeface();
     SkString familyName;
-    skFont().getTypeface()->getFamilyName(&familyName);
-    SkFontStyle style = skFont().getTypeface()->fontStyle();
+    typeface->getFamilyName(&familyName);
+    SkFontStyle style = typeface->fontStyle();
     Vector<hb_feature_t> features = m_features;
-    return { m_metadata, familyName, style, WTF::move(features) };
+    Vector<FontPlatformVariation> variations;
+    int coordinateCount = typeface->getVariationDesignPosition({ });
+    if (coordinateCount > 0) {
+        Vector<SkFontArguments::VariationPosition::Coordinate> coordinates(coordinateCount);
+        if (typeface->getVariationDesignPosition(coordinates.mutableSpan()) == coordinateCount) {
+            variations = WTF::map(coordinates, [](auto& coordinate) {
+                return FontPlatformVariation { coordinate.axis, coordinate.value };
+            });
+        }
+    }
+    return { m_metadata, familyName, style, WTF::move(features), WTF::move(variations) };
 }
 
 hb_font_t* FontPlatformData::hbFont() const

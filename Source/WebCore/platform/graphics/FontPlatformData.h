@@ -104,6 +104,13 @@ struct FontMetadata {
     friend bool operator==(const FontMetadata&, const FontMetadata&) = default;
 };
 
+#if USE(SKIA)
+struct FontPlatformVariation {
+    SkFourByteTag axis;
+    float value;
+};
+#endif
+
 struct FontPlatformDataAttributes {
     FontPlatformDataAttributes(const FontMetadata& metadata)
         : m_metadata(metadata)
@@ -131,11 +138,12 @@ struct FontPlatformDataAttributes {
 #endif
 
 #if USE(SKIA)
-    FontPlatformDataAttributes(const FontMetadata& metadata, SkString familyName, SkFontStyle style, Vector<hb_feature_t>&& features)
+    FontPlatformDataAttributes(const FontMetadata& metadata, SkString familyName, SkFontStyle style, Vector<hb_feature_t>&& features, Vector<FontPlatformVariation>&& variations)
         : m_metadata(metadata)
         , m_familyName(familyName)
         , m_style(style)
         , m_features(WTF::move(features))
+        , m_variations(WTF::move(variations))
         { }
 #endif
 
@@ -152,6 +160,7 @@ struct FontPlatformDataAttributes {
     SkString m_familyName;
     SkFontStyle m_style;
     Vector<hb_feature_t> m_features;
+    Vector<FontPlatformVariation> m_variations;
 #endif
 };
 
