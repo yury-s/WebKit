@@ -4965,6 +4965,12 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     if (!document)
         return false;
 
+#if PLATFORM(MAC)
+    auto* page = m_frame->page();
+    if (page && !page->overrideDragPasteboardName().isEmpty())
+        dragState().dataTransfer = DataTransfer::createForDrag(*document, page->overrideDragPasteboardName());
+    else
+#endif
     dragState().dataTransfer = DataTransfer::createForDrag(*document);
     auto hasNonDefaultPasteboardData = HasNonDefaultPasteboardData::No;
     
@@ -5700,7 +5706,7 @@ std::expected<bool, RemoteFrameGeometryTransformer> EventHandler::handleTouchEve
         if (!targetFrame)
             continue;
 
-#if PLATFORM(WPE) || PLATFORM(GTK)
+#if !ENABLE(IOS_TOUCH_EVENTS)
         RefPtr<EventTarget> pointerTarget = touchTarget;
 
         if (pointState != PlatformTouchPoint::TouchPressed) {
