@@ -40,6 +40,7 @@
 #include <WebCore/PublicSuffixStore.h>
 #include <WebCore/ReferrerPolicy.h>
 #include <WebCore/ResourceRequest.h>
+#include <WebCore/ResourceResponse.h>
 #include <WebCore/ShouldTreatAsContinuingLoad.h>
 #include <WebCore/SubstituteData.h>
 #include <wtf/MonotonicTime.h>
@@ -87,6 +88,7 @@ struct LoadParameters {
     std::optional<WebCore::OwnerPermissionsPolicyData> ownerPermissionsPolicy;
     std::optional<NavigatingToAppBoundDomain> isNavigatingToAppBoundDomain;
     std::optional<NetworkResourceLoadIdentifier> existingNetworkResourceLoadIdentifierToResume;
+    WebCore::ResourceResponse redirectResponseFromAnotherProcess;
     MonotonicTime originalNavigationStartTime;
     bool isServiceWorkerLoad { false };
 

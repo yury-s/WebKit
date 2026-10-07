@@ -46,6 +46,7 @@ public:
     static void interceptRequest(ResourceLoader&, Function<void(const ResourceRequest&)>&&);
     static void interceptResponse(const LocalFrame*, const ResourceResponse&, ResourceLoaderIdentifier, CompletionHandler<void(const ResourceResponse&, RefPtr<FragmentedSharedBuffer>)>&&);
     static void setStoppingLoadingDueToProcessSwap(Page*, bool);
+    static void setDocumentRedirectResponseFromAnotherProcess(Page*, const ResourceResponse&);
 
 private:
     static bool shouldInterceptRequestInternal(const ResourceLoader&);
@@ -53,6 +54,7 @@ private:
     static void interceptRequestInternal(ResourceLoader&, Function<void(const ResourceRequest&)>&&);
     static void interceptResponseInternal(const LocalFrame&, const ResourceResponse&, ResourceLoaderIdentifier, CompletionHandler<void(const ResourceResponse&, RefPtr<FragmentedSharedBuffer>)>&&);
     static void setStoppingLoadingDueToProcessSwapInternal(Page*, bool);
+    static void setDocumentRedirectResponseFromAnotherProcessInternal(Page*, const ResourceResponse&);
 };
 
 inline bool InspectorInstrumentationWebKit::shouldInterceptRequest(const ResourceLoader& loader)
@@ -86,6 +88,12 @@ inline void InspectorInstrumentationWebKit::setStoppingLoadingDueToProcessSwap(P
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
     setStoppingLoadingDueToProcessSwapInternal(page, value);
+}
+
+inline void InspectorInstrumentationWebKit::setDocumentRedirectResponseFromAnotherProcess(Page* page, const ResourceResponse& redirectResponse)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    setDocumentRedirectResponseFromAnotherProcessInternal(page, redirectResponse);
 }
 
 }

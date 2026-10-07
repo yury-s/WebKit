@@ -37,6 +37,7 @@
 #include "NetworkAgentInstrumentation.h"
 #include "NetworkResourcesData.h"
 #include "ResourceError.h"
+#include "ResourceResponse.h"
 #include "SharedBuffer.h"
 #include "WebSocket.h"
 #include <JavaScriptCore/ContentSearchUtilities.h>
@@ -144,6 +145,7 @@ public:
     void interceptResponse(const ResourceResponse&, ResourceLoaderIdentifier, CompletionHandler<void(const ResourceResponse&, RefPtr<FragmentedSharedBuffer>)>&&) override;
     void interceptRequest(ResourceLoader&, Function<void(const ResourceRequest&)>&&) override;
     void setStoppingLoadingDueToProcessSwap(bool);
+    void setDocumentRedirectResponseFromAnotherProcess(const ResourceResponse&);
 
     void searchOtherRequests(const JSC::Yarr::RegularExpression&, Ref<JSON::ArrayOf<Inspector::Protocol::Page::SearchResult>>&, const HashSet<String>& alreadySearchedURLs);
     void searchInRequest(Inspector::Protocol::ErrorString&, const Inspector::Protocol::Network::RequestId&, const String& query, bool caseSensitive, bool isRegex, RefPtr<JSON::ArrayOf<Inspector::Protocol::GenericTypes::SearchMatch>>&);
@@ -177,6 +179,7 @@ private:
     Ref<Inspector::Protocol::Network::CachedResource> buildObjectForCachedResource(CachedResource*);
 
     double timestamp();
+    String requestIdentifier(ResourceLoaderIdentifier);
 
     const UniqueRef<Inspector::NetworkFrontendDispatcher> m_frontendDispatcher;
     const Ref<Inspector::NetworkBackendDispatcher> m_backendDispatcher;
@@ -200,6 +203,9 @@ private:
     bool m_interceptionEnabled { false };
     bool m_clearResourceDataOnNavigate { true };
     bool m_stoppingLoadingDueToProcessSwap { false };
+    ResourceResponse m_documentRedirectResponseFromAnotherProcess;
+    std::optional<ResourceLoaderIdentifier> m_requestRedirectedFromAnotherProcess;
+    HashMap<ResourceLoaderIdentifier, String> m_documentRequestIds;
 };
 
 } // namespace WebCore

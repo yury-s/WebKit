@@ -27,6 +27,8 @@
 #include "InspectorInstrumentationWebKit.h"
 
 #include "InspectorInstrumentation.h"
+#include "InspectorNetworkAgent.h"
+#include "InstrumentingAgents.h"
 
 namespace WebCore {
 
@@ -53,6 +55,15 @@ void InspectorInstrumentationWebKit::interceptResponseInternal(const LocalFrame&
 void InspectorInstrumentationWebKit::setStoppingLoadingDueToProcessSwapInternal(Page* page, bool value)
 {
     InspectorInstrumentation::setStoppingLoadingDueToProcessSwap(page, value);
+}
+
+void InspectorInstrumentationWebKit::setDocumentRedirectResponseFromAnotherProcessInternal(Page* page, const ResourceResponse& redirectResponse)
+{
+    RefPtr agents = InspectorInstrumentation::instrumentingAgents(page);
+    if (!agents)
+        return;
+    if (CheckedPtr networkAgent = agents->enabledNetworkAgent())
+        networkAgent->setDocumentRedirectResponseFromAnotherProcess(redirectResponse);
 }
 
 } // namespace WebCore

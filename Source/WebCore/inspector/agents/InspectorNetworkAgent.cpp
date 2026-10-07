@@ -225,6 +225,12 @@ double InspectorNetworkAgent::timestamp()
     return protect(protect(environment())->executionStopwatch())->elapsedTime().seconds();
 }
 
+String InspectorNetworkAgent::requestIdentifier(ResourceLoaderIdentifier identifier)
+{
+    auto requestId = m_documentRequestIds.get(identifier);
+    return requestId.isNull() ? IdentifiersFactory::requestId(identifier.toUInt64()) : requestId;
+}
+
 void InspectorNetworkAgent::willSendRequest(ResourceLoaderIdentifier identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, Inspector::ResourceType type, ResourceLoader* resourceLoader)
 {
     if (request.hiddenFromInspector()) {
@@ -235,9 +241,12 @@ void InspectorNetworkAgent::willSendRequest(ResourceLoaderIdentifier identifier,
     double sendTimestamp = timestamp();
     WallTime walltime = WallTime::now();
 
-    auto requestId = IdentifiersFactory::requestId(identifier.toUInt64());
     auto frameId = frameIdentifier(loader);
     auto loaderId = loaderIdentifier(loader);
+    // Like the loader id, the document request id does not change when the navigation continues in another process.
+    if (type == ResourceType::Document && !loaderId.isEmpty())
+        m_documentRequestIds.add(identifier, loaderId);
+    auto requestId = requestIdentifier(identifier);
     String targetId = request.initiatorIdentifier();
 
 
@@ -255,7 +264,15 @@ void InspectorNetworkAgent::willSendRequest(ResourceLoaderIdentifier identifier,
     std::optional<Inspector::Protocol::Page::ResourceType> typePayload;
     if (type != ResourceType::Other)
         typePayload = protocolResourceType;
-    m_frontendDispatcher->requestWillBeSent(requestId, frameId, loaderId, url, buildObjectForResourceRequest(request, resourceLoader), sendTimestamp, walltime.secondsSinceEpoch().seconds(), WTF::move(initiatorObject), buildObjectForResourceResponse(redirectResponse, nullptr), WTF::move(typePayload), targetId);
+
+    // The redirect was received in another process, report it with the first document request in this process.
+    ResourceResponse redirectResponseFromAnotherProcess;
+    if (type == ResourceType::Document && redirectResponse.isNull() && !m_documentRedirectResponseFromAnotherProcess.isNull()) {
+        redirectResponseFromAnotherProcess = std::exchange(m_documentRedirectResponseFromAnotherProcess, { });
+        m_requestRedirectedFromAnotherProcess = identifier;
+    }
+    const auto& reportedRedirectResponse = redirectResponseFromAnotherProcess.isNull() ? redirectResponse : redirectResponseFromAnotherProcess;
+    m_frontendDispatcher->requestWillBeSent(requestId, frameId, loaderId, url, buildObjectForResourceRequest(request, resourceLoader), sendTimestamp, walltime.secondsSinceEpoch().seconds(), WTF::move(initiatorObject), buildObjectForResourceResponse(reportedRedirectResponse, nullptr), WTF::move(typePayload), targetId);
 }
 
 static ResourceType resourceTypeForCachedResource(const CachedResource* resource)
@@ -317,7 +334,7 @@ void InspectorNetworkAgent::didReceiveResponse(ResourceLoaderIdentifier identifi
     if (m_hiddenRequestIdentifiers.contains(identifier))
         return;
 
-    String requestId = IdentifiersFactory::requestId(identifier.toUInt64());
+    String requestId = requestIdentifier(identifier);
 
     std::optional<ResourceResponse> realResponse;
     if (platformStrategies()->loaderStrategy()->havePerformedSecurityChecks(response)) {
@@ -393,7 +410,7 @@ void InspectorNetworkAgent::didReceiveData(ResourceLoaderIdentifier identifier, 
     if (m_hiddenRequestIdentifiers.contains(identifier))
         return;
 
-    String requestId = IdentifiersFactory::requestId(identifier.toUInt64());
+    String requestId = requestIdentifier(identifier);
 
     if (data) {
         NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->maybeAddResourceData(requestId, *data);
@@ -419,7 +436,10 @@ void InspectorNetworkAgent::didFinishLoading(ResourceLoaderIdentifier identifier
     else
         elapsedFinishTime = timestamp();
 
-    String requestId = IdentifiersFactory::requestId(identifier.toUInt64());
+    String requestId = requestIdentifier(identifier);
+    m_documentRequestIds.remove(identifier);
+    if (m_requestRedirectedFromAnotherProcess == identifier)
+        m_requestRedirectedFromAnotherProcess = std::nullopt;
     if (loader && loader->frameLoader() && m_resourcesData->resourceType(requestId) == ResourceType::Document)
         m_resourcesData->addResourceSharedBuffer(requestId, protect(loader->frameLoader()->documentLoader())->mainResourceData(), protect(loader->frame()->document())->encoding());
 
@@ -446,7 +466,10 @@ void InspectorNetworkAgent::didFailLoading(ResourceLoaderIdentifier identifier, 
     if (m_hiddenRequestIdentifiers.remove(identifier))
         return;
 
-    String requestId = IdentifiersFactory::requestId(identifier.toUInt64());
+    String requestId = requestIdentifier(identifier);
+    m_documentRequestIds.remove(identifier);
+    if (m_requestRedirectedFromAnotherProcess == identifier)
+        m_requestRedirectedFromAnotherProcess = std::nullopt;
 
     if (loader && m_resourcesData->resourceType(requestId) == ResourceType::Document) {
         if (m_stoppingLoadingDueToProcessSwap)
@@ -487,21 +510,21 @@ void InspectorNetworkAgent::didLoadResourceFromMemoryCache(DocumentLoader* loade
 
 void InspectorNetworkAgent::setInitialScriptContent(ResourceLoaderIdentifier identifier, const String& sourceString)
 {
-    m_resourcesData->setResourceContent(IdentifiersFactory::requestId(identifier.toUInt64()), sourceString);
+    m_resourcesData->setResourceContent(requestIdentifier(identifier), sourceString);
 }
 
 void InspectorNetworkAgent::didReceiveScriptResponse(ResourceLoaderIdentifier identifier)
 {
-    m_resourcesData->setResourceType(IdentifiersFactory::requestId(identifier.toUInt64()), ResourceType::Script);
+    m_resourcesData->setResourceType(requestIdentifier(identifier), ResourceType::Script);
 }
 
 void InspectorNetworkAgent::didReceiveThreadableLoaderResponse(ResourceLoaderIdentifier identifier, DocumentThreadableLoader& documentThreadableLoader)
 {
     String initiatorType = documentThreadableLoader.options().initiatorType;
     if (initiatorType == cachedResourceRequestInitiatorTypes().fetch)
-        m_resourcesData->setResourceType(IdentifiersFactory::requestId(identifier.toUInt64()), ResourceType::Fetch);
+        m_resourcesData->setResourceType(requestIdentifier(identifier), ResourceType::Fetch);
     else if (initiatorType == cachedResourceRequestInitiatorTypes().xmlhttprequest)
-        m_resourcesData->setResourceType(IdentifiersFactory::requestId(identifier.toUInt64()), ResourceType::XHR);
+        m_resourcesData->setResourceType(requestIdentifier(identifier), ResourceType::XHR);
 }
 
 void InspectorNetworkAgent::willLoadXHRSynchronously()
@@ -652,6 +675,9 @@ Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::disable()
     m_resourcesData->clear();
     m_extraRequestHeaders.clear();
     m_stoppingLoadingDueToProcessSwap = false;
+    m_documentRedirectResponseFromAnotherProcess = { };
+    m_requestRedirectedFromAnotherProcess = std::nullopt;
+    m_documentRequestIds.clear();
 
     continuePendingRequests();
     continuePendingResponses();
@@ -918,6 +944,10 @@ bool InspectorNetworkAgent::shouldInterceptRequest(const ResourceLoader& loader)
     if (loader.options().serviceWorkerRegistrationIdentifier)
         return false;
 
+    // Redirects are not intercepted.
+    if (m_requestRedirectedFromAnotherProcess && loader.identifier() == m_requestRedirectedFromAnotherProcess)
+        return false;
+
     return shouldIntercept(loader.url(), Inspector::Protocol::Network::NetworkStage::Request);
 }
 
@@ -934,7 +964,7 @@ void InspectorNetworkAgent::interceptRequest(ResourceLoader& loader, Function<vo
     ASSERT(m_enabled);
     ASSERT(m_interceptionEnabled);
 
-    String requestId = IdentifiersFactory::requestId(loader.identifier()->toUInt64());
+    String requestId = requestIdentifier(*loader.identifier());
     if (m_pendingInterceptRequests.contains(requestId)) {
         handler(loader.request());
         return;
@@ -948,7 +978,7 @@ void InspectorNetworkAgent::interceptResponse(const ResourceResponse& response, 
     ASSERT(m_enabled);
     ASSERT(m_interceptionEnabled);
 
-    String requestId = IdentifiersFactory::requestId(identifier.toUInt64());
+    String requestId = requestIdentifier(identifier);
     if (m_pendingInterceptResponses.contains(requestId)) {
         ASSERT_NOT_REACHED();
         handler(response, nullptr);
@@ -967,6 +997,13 @@ void InspectorNetworkAgent::interceptResponse(const ResourceResponse& response, 
 void InspectorNetworkAgent::setStoppingLoadingDueToProcessSwap(bool stopping)
 {
     m_stoppingLoadingDueToProcessSwap = stopping;
+}
+
+void InspectorNetworkAgent::setDocumentRedirectResponseFromAnotherProcess(const ResourceResponse& redirectResponse)
+{
+    // The load that continues in another process goes to a new page, so only one redirect response can be pending.
+    ASSERT(m_documentRedirectResponseFromAnotherProcess.isNull());
+    m_documentRedirectResponseFromAnotherProcess = redirectResponse;
 }
 
 Inspector::Protocol::ErrorStringOr<void> InspectorNetworkAgent::interceptContinue(const Inspector::Protocol::Network::RequestId& requestId, Inspector::Protocol::Network::NetworkStage networkStage)

@@ -70,6 +70,7 @@
 #include "HistoryItem.h"
 #include "IconLoader.h"
 #include "InspectorInstrumentation.h"
+#include "InspectorInstrumentationWebKit.h"
 #include "IntegrityPolicy.h"
 #include "LegacySchemeRegistry.h"
 #include "LinkIconCollector.h"
@@ -816,8 +817,13 @@ void DocumentLoader::willSendRequest(ResourceRequest&& newRequest, const Resourc
         InspectorInstrumentation::didCheckNavigationPolicy(*frame, navigationPolicyDecision != NavigationPolicyDecision::ContinueLoad);
         switch (navigationPolicyDecision) {
         case NavigationPolicyDecision::IgnoreLoad:
+            stopLoadingForPolicyChange(LoadWillContinueInAnotherProcess::No);
+            break;
         case NavigationPolicyDecision::LoadWillContinueInAnotherProcess:
-            stopLoadingForPolicyChange(navigationPolicyDecision == NavigationPolicyDecision::LoadWillContinueInAnotherProcess ? LoadWillContinueInAnotherProcess::Yes : LoadWillContinueInAnotherProcess::No);
+            // The new process reports the redirect, do not report the load as failed here.
+            InspectorInstrumentationWebKit::setStoppingLoadingDueToProcessSwap(frame->page(), true);
+            stopLoadingForPolicyChange(LoadWillContinueInAnotherProcess::Yes);
+            InspectorInstrumentationWebKit::setStoppingLoadingDueToProcessSwap(frame->page(), false);
             break;
         case NavigationPolicyDecision::ContinueLoad:
             if (!frame->isMainFrame()) {

@@ -2646,6 +2646,9 @@ void WebPage::loadRequest(LoadParameters&& loadParameters)
 
     m_shouldConsiderEnhancedSecurityForInsecureResponseForCurrentNavigation = loadParameters.shouldConsiderEnhancedSecurityForInsecureResponse;
 
+    if (!loadParameters.redirectResponseFromAnotherProcess.isNull())
+        InspectorInstrumentationWebKit::setDocumentRedirectResponseFromAnotherProcess(m_page.get(), loadParameters.redirectResponseFromAnotherProcess);
+
     SendStopResponsivenessTimer stopper;
 
     m_pendingNavigationID = loadParameters.navigationID;
