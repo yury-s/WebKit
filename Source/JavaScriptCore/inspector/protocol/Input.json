@@ -156,18 +156,6 @@
                     "description": "Number of times the mouse button was clicked (default: 0).",
                     "optional": true,
                     "type": "integer"
-                },
-                {
-                    "name": "deltaX",
-                    "description": "X delta in CSS pixels for mouse wheel event (default: 0).",
-                    "optional": true,
-                    "type": "integer"
-                },
-                {
-                    "name": "deltaY",
-                    "description": "Y delta in CSS pixels for mouse wheel event (default: 0).",
-                    "optional": true,
-                    "type": "integer"
                 }
             ]
         },

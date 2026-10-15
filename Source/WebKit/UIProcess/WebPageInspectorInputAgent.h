@@ -30,6 +30,8 @@
 #include "WebMouseEvent.h"
 #include <JavaScriptCore/InspectorAgentBase.h>
 #include <JavaScriptCore/InspectorBackendDispatchers.h>
+#include <WebCore/IntPoint.h>
+#include <WebCore/IntSize.h>
 #include <wtf/CheckedPtr.h>
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
@@ -65,7 +67,7 @@ public:
 
     // Protocol handler
     void dispatchKeyEvent(const String& type, std::optional<int>&& modifiers, const String& text, const String& unmodifiedText, const String& code, const String& key, std::optional<int>&& windowsVirtualKeyCode, std::optional<int>&& nativeVirtualKeyCode, std::optional<bool>&& autoRepeat, std::optional<bool>&& isKeypad, std::optional<bool>&& isSystemKey, RefPtr<JSON::Array>&&, Ref<DispatchKeyEventCallback>&& callback) override;
-    void dispatchMouseEvent(const String& type, int x, int y, std::optional<int>&& modifiers, const String& button, std::optional<int>&& buttons, std::optional<int>&& clickCount, std::optional<int>&& deltaX, std::optional<int>&& deltaY, Ref<DispatchMouseEventCallback>&& callback) override;
+    void dispatchMouseEvent(const String& type, int x, int y, std::optional<int>&& modifiers, const String& button, std::optional<int>&& buttons, std::optional<int>&& clickCount, Ref<DispatchMouseEventCallback>&& callback) override;
     void dispatchTapEvent(int x, int y, std::optional<int>&& modifiers, Ref<DispatchTapEventCallback>&& callback) override;
     void dispatchTouchEvent(const String& type, std::optional<int>&& modifiers, RefPtr<JSON::Array>&& touchPoints, Ref<DispatchTouchEventCallback>&& callback) override;
     void dispatchWheelEvent(int x, int y, std::optional<int>&& modifiers, std::optional<int>&& deltaX, std::optional<int>&& deltaY, Ref<DispatchWheelEventCallback>&& callback) override;
@@ -73,7 +75,7 @@ public:
 private:
     void platformDispatchKeyEvent(WebEventType type, const String& text, const String& unmodifiedText, const String& key, const String& code, const String& keyIdentifier, int windowsVirtualKeyCode, int nativeVirtualKeyCode, bool isAutoRepeat, bool isKeypad, bool isSystemKey, OptionSet<WebEventModifier> modifiers, Vector<String>& commands, MonotonicTime timestamp);
 #if PLATFORM(MAC)
-    void platformDispatchMouseEvent(const String& type, int x, int y, std::optional<int>&& modifier, const String& button, std::optional<int>&& clickCount, unsigned short buttons, MonotonicTime timestamp);
+    void platformDispatchMouseEvent(const String& type, const WebCore::IntPoint& position, const WebCore::IntSize& movementDelta, std::optional<int>&& modifier, const String& button, std::optional<int>&& clickCount, unsigned short buttons, MonotonicTime timestamp);
 #endif
 
     Ref<Inspector::InputBackendDispatcher> m_backendDispatcher;
@@ -81,6 +83,7 @@ private:
     // Keep track of currently active modifiers across multiple keystrokes.
     // Most platforms do not track current modifiers from synthesized events.
     unsigned m_currentModifiers { 0 };
+    std::optional<WebCore::IntPoint> m_lastMousePosition;
     class KeyboardCallbacks;
     std::unique_ptr<KeyboardCallbacks> m_keyboardCallbacks;
     class MouseCallbacks;

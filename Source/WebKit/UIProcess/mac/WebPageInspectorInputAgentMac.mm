@@ -39,8 +39,8 @@ namespace WebKit {
 
 using namespace WebCore;
 
-void WebPageInspectorInputAgent::platformDispatchMouseEvent(const String& type, int x, int y, std::optional<int>&& optionalModifiers, const String& button, std::optional<int>&& optionalClickCount, unsigned short buttons, MonotonicTime monotonicTimestamp) {
-    IntPoint locationInWindow(x, y);
+void WebPageInspectorInputAgent::platformDispatchMouseEvent(const String& type, const IntPoint& position, const IntSize& movementDelta, std::optional<int>&& optionalModifiers, const String& button, std::optional<int>&& optionalClickCount, unsigned short buttons, MonotonicTime monotonicTimestamp) {
+    IntPoint locationInWindow(position);
 
     NSEventModifierFlags modifiers = 0;
     if (optionalModifiers) {
@@ -100,11 +100,13 @@ void WebPageInspectorInputAgent::platformDispatchMouseEvent(const String& type, 
         return;
     }
 
-    if (button == "middle"_s) {
-        CGEventRef cgEvent = [event CGEvent];
+    // NSEvent.deltaX/deltaY are read from the underlying CGEvent, see also EventSenderProxy::mouseMoveTo.
+    CGEventRef cgEvent = [event CGEvent];
+    CGEventSetIntegerValueField(cgEvent, kCGMouseEventDeltaX, movementDelta.width());
+    CGEventSetIntegerValueField(cgEvent, kCGMouseEventDeltaY, movementDelta.height());
+    if (button == "middle"_s)
         CGEventSetIntegerValueField(cgEvent, kCGMouseEventButtonNumber, kCGMouseButtonCenter);
-        event = [NSEvent eventWithCGEvent:cgEvent];
-    }
+    event = [NSEvent eventWithCGEvent:cgEvent];
 
     Ref nativeEvent = NativeWebMouseEvent::create(event, nil, [window contentView], WebKit::WebEventInputSource::UserDriven);
     nativeEvent->playwrightSetButtons(buttons);
