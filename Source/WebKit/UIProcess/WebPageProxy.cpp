@@ -3384,9 +3384,10 @@ RefPtr<WebAutomationSession> WebPageProxy::activeAutomationSession() const
     return m_configuration->processPool().automationSession();
 }
 
-void WebPageProxy::setAuthCredentialsForAutomation(std::optional<Vector<std::pair<WebCore::Credential, std::optional<URL>>>>&& credentials)
+void WebPageProxy::setAuthCredentialsForAutomation(Vector<std::pair<WebCore::Credential, std::optional<URL>>>&& credentials, std::optional<WebCore::Credential>&& proxyCredential)
 {
     m_credentialsForAutomation = WTF::move(credentials);
+    m_proxyCredentialForAutomation = WTF::move(proxyCredential);
 }
 
 void WebPageProxy::setPermissionsForAutomation(const UncheckedKeyHashMap<String, HashSet<String>>& permissions)
@@ -15993,6 +15994,8 @@ std::optional<WebCore::Credential> WebPageProxy::automationCredentialsForProtect
 {
     if (!m_credentialsForAutomation.has_value())
         return std::nullopt;
+    if (m_proxyCredentialForAutomation && protectionSpace.protectionSpace().isProxy())
+        return m_proxyCredentialForAutomation;
     for (const auto& [credential, origin] : m_credentialsForAutomation.value()) {
         if (!origin.has_value() || origin.value().isEmpty() || originMatchesProtectionSpace(origin.value(), protectionSpace))
             return credential;

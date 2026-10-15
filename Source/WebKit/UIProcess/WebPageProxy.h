@@ -1015,7 +1015,7 @@ public:
 
     void setPageLoadStateObserver(RefPtr<PageLoadStateObserverBase>&&);
 
-    void setAuthCredentialsForAutomation(std::optional<Vector<std::pair<WebCore::Credential, std::optional<URL>>>>&&);
+    void setAuthCredentialsForAutomation(Vector<std::pair<WebCore::Credential, std::optional<URL>>>&&, std::optional<WebCore::Credential>&& proxyCredential);
     void setPermissionsForAutomation(const UncheckedKeyHashMap<String, HashSet<String>>&);
     std::optional<bool> permissionForAutomation(const String& origin, const String& permission) const;
     void setOrientationOverride(std::optional<int>&& angle);
@@ -4459,6 +4459,7 @@ private:
     };
     Vector<InjectedBundleMessage> m_pendingInjectedBundleMessages;
     std::optional<Vector<std::pair<WebCore::Credential, std::optional<URL>>>> m_credentialsForAutomation;
+    std::optional<WebCore::Credential> m_proxyCredentialForAutomation;
     UncheckedKeyHashMap<String, HashSet<String>> m_permissionsForAutomation;
     std::optional<int> m_deviceOrientationOverride;
     std::optional<bool> m_activeForAutomation;

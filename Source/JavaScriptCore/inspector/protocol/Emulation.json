@@ -11,6 +11,15 @@
                 { "name": "password", "type": "string" },
                 { "name": "origin", "type": "string", "optional": true, "description": "When specified, the credentials are only used for challenges from the matching origin." }
             ]
+        },
+        {
+            "id": "ProxyCredentials",
+            "type": "object",
+            "description": "Credentials for proxy authentication.",
+            "properties": [
+                { "name": "username", "type": "string" },
+                { "name": "password", "type": "string" }
+            ]
         }
     ],
     "commands": [
@@ -34,9 +43,10 @@
         },
         {
             "name": "setAuthCredentials",
-            "description": "Credentials to use during HTTP authentication. The first credentials with matching origin are used. When missing, automation handling of authentication challenges is disabled.",
+            "description": "Credentials to use during HTTP authentication. The first credentials with matching origin are used.",
             "parameters": [
-                { "name": "credentials", "type": "array", "items": { "$ref": "AuthCredentials" }, "optional": true }
+                { "name": "credentials", "type": "array", "items": { "$ref": "AuthCredentials" } },
+                { "name": "proxyCredentials", "$ref": "ProxyCredentials", "optional": true, "description": "When specified, proxy challenges are answered only with these credentials, and the credentials above are used only for server challenges." }
             ]
         },
         {

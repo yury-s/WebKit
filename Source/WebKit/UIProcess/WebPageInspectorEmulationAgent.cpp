@@ -103,11 +103,19 @@ Inspector::Protocol::ErrorStringOr<void> WebPageInspectorEmulationAgent::setJava
     return { };
 }
 
-Inspector::Protocol::ErrorStringOr<void> WebPageInspectorEmulationAgent::setAuthCredentials(RefPtr<JSON::Array>&& credentials)
+Inspector::Protocol::ErrorStringOr<void> WebPageInspectorEmulationAgent::setAuthCredentials(Ref<JSON::Array>&& credentials, RefPtr<JSON::Object>&& proxyCredentials)
 {
-    if (!credentials) {
-        m_page->setAuthCredentialsForAutomation(std::nullopt);
-        return { };
+    std::optional<WebCore::Credential> proxyCredential;
+    if (proxyCredentials) {
+        String username;
+        if (!proxyCredentials->getString("username"_s, username))
+            return makeUnexpected("Proxy credentials must contain username"_s);
+
+        String password;
+        if (!proxyCredentials->getString("password"_s, password))
+            return makeUnexpected("Proxy credentials must contain password"_s);
+
+        proxyCredential = WebCore::Credential(username, password, WebCore::CredentialPersistence::Permanent);
     }
 
     Vector<std::pair<WebCore::Credential, std::optional<URL>>> parsedCredentials;
@@ -130,7 +138,7 @@ Inspector::Protocol::ErrorStringOr<void> WebPageInspectorEmulationAgent::setAuth
             originURL = URL(origin);
         parsedCredentials.append({ WebCore::Credential(username, password, WebCore::CredentialPersistence::Permanent), WTF::move(originURL) });
     }
-    m_page->setAuthCredentialsForAutomation(WTF::move(parsedCredentials));
+    m_page->setAuthCredentialsForAutomation(WTF::move(parsedCredentials), WTF::move(proxyCredential));
     return { };
 }
 
