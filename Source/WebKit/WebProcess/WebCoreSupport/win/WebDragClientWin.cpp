@@ -50,7 +50,7 @@ void WebDragClient::didConcludeEditDrag()
 void WebDragClient::startDrag(DragItem, DataTransfer& dataTransfer, Frame& frame, const std::optional<NodeIdentifier>&)
 {
     m_page->willStartDrag();
-    m_page->send(Messages::WebPageProxy::StartDrag(dataTransfer.pasteboard().createDragDataMap()));
+    m_page->send(Messages::WebPageProxy::StartDrag(dataTransfer.pasteboard().createDragDataMap(), dataTransfer.sourceOperationMask()));
 }
 
 }; // namespace WebKit.

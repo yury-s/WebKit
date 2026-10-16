@@ -1918,7 +1918,7 @@ public:
     bool cancelDragIfNeeded();
 #if PLATFORM(COCOA)
     void propagateDragAndDrop(DragEventForwardingData&&, const String&, WebCore::DragData&&);
-    void startDrag(const WebCore::DragItem&, WebCore::ShareableBitmapHandle&& dragImageHandle, const std::optional<WebCore::NodeIdentifier>&, const std::optional<WebCore::FrameIdentifier>& = std::nullopt);
+    void startDrag(const WebCore::DragItem&, OptionSet<WebCore::DragOperation> dragOperationMask, WebCore::ShareableBitmapHandle&& dragImageHandle, const std::optional<WebCore::NodeIdentifier>&, const std::optional<WebCore::FrameIdentifier>& = std::nullopt);
     void setPromisedDataForImage(IPC::Connection&, const String& pasteboardName, WebCore::SharedMemoryHandle&& imageHandle, const String& filename, const String& extension,
         const String& title, const String& url, const String& visibleURL, WebCore::SharedMemoryHandle&& archiveHandle, const String& originIdentifier);
     void releaseInspectorDragPasteboard();
@@ -1930,7 +1930,7 @@ public:
     void modelDragEnded(const WebCore::NodeIdentifier);
 #endif
 #if PLATFORM(WIN)
-    void startDrag(WebCore::DragDataMap&& dragDataMap);
+    void startDrag(WebCore::DragDataMap&& dragDataMap, OptionSet<WebCore::DragOperation> dragOperationMask);
 #endif
 #endif
 

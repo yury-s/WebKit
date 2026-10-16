@@ -495,7 +495,7 @@ bool WebPageProxy::scrollingUpdatesDisabledForTesting()
 
 #if ENABLE(DRAG_SUPPORT)
 
-void WebPageProxy::startDrag(const DragItem& dragItem, ShareableBitmap::Handle&& dragImageHandle, const std::optional<NodeIdentifier>& nodeID, const std::optional<FrameIdentifier>& frameID)
+void WebPageProxy::startDrag(const DragItem& dragItem, OptionSet<DragOperation> dragOperationMask, ShareableBitmap::Handle&& dragImageHandle, const std::optional<NodeIdentifier>& nodeID, const std::optional<FrameIdentifier>& frameID)
 {
     m_dragSourceFrameID = frameID;
     if (m_interceptDrags) {
@@ -504,7 +504,7 @@ void WebPageProxy::startDrag(const DragItem& dragItem, ShareableBitmap::Handle&&
         m_dragSelectionData = String([pasteboard name]);
         if (auto replyID = grantAccessToCurrentPasteboardData(String([pasteboard name]), [] () { }))
             protect(websiteDataStore().networkProcess())->connection().waitForAsyncReplyAndDispatchImmediately<Messages::NetworkProcess::AllowFilesAccessFromWebProcess>(*replyID, 100_ms);
-        m_dragSourceOperationMask = WebCore::anyDragOperation();
+        m_dragSourceOperationMask = dragOperationMask;
 
         if (auto& info = dragItem.promisedAttachmentInfo) {
             auto attachment = attachmentForIdentifier(info.attachmentIdentifier);
