@@ -16175,7 +16175,7 @@ std::optional<WebCore::Credential> WebPageProxy::automationCredentialsForProtect
 {
     if (!m_credentialsForAutomation.has_value())
         return std::nullopt;
-    if (m_proxyCredentialForAutomation && protectionSpace.protectionSpace().isProxy())
+    if (protectionSpace.protectionSpace().isProxy())
         return m_proxyCredentialForAutomation;
     for (const auto& [credential, origin] : m_credentialsForAutomation.value()) {
         if (!origin.has_value() || origin.value().isEmpty() || originMatchesProtectionSpace(origin.value(), protectionSpace))
